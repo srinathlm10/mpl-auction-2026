@@ -47,7 +47,9 @@ npm run dev        # http://localhost:3000
 8. See results at `/auction/summary` (with **Download CSV**) and each squad at `/teams/<id>`.
 9. **Reset Cricket auction (testing)** at the bottom of the control screen restores everything for that sport.
 
-> Cricket has the 21 real players; Volleyball and Football still have 10 sample players each. With 4 teams and a squad size of 11, squads can't fill up yet, so lower the squad size in Settings to try the "squad full" rule.
+> All three sports use the same 21 players (volleyball and football positions not filled in yet). With 4 teams the squads can't fill up (cricket needs 48), so lower the squad size in Settings to try the "squad full" rule.
+
+**Cricket has two wheels.** Tabs above the wheel switch between **Batsmen** (batsmen, wicketkeepers, fielders) and **Bowlers & all-rounders**; the projector follows. A player whose role is in neither list goes on the Batsmen wheel. The groups are `pools` in `src/lib/sports.ts`.
 
 ## Auction rules & settings
 
@@ -55,7 +57,7 @@ Change in **Admin → Settings** (`/admin/auction/settings`):
 
 - **Base price** (default ₹1 lakh) – also updates every player who isn't sold yet.
 - **Bid increment slabs** – any number of "while bid is below X, add Y" rows.
-- **Squad size per sport** – temporary defaults 11 Cricket / 8 Volleyball / 11 Football.
+- **Squad size per sport** – 12 Cricket; temporary defaults 8 Volleyball / 11 Football.
 
 Change in Supabase **Table Editor**:
 

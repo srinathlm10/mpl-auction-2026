@@ -19,6 +19,16 @@ export interface AttributeDef {
   label: string;
 }
 
+/**
+ * A separate auction wheel within a sport, chosen by player role. A player
+ * whose role is in no pool goes on the FIRST wheel, so nobody is left out.
+ */
+export interface WheelPool {
+  key: string;
+  label: string;
+  roles: string[];
+}
+
 export interface SportConfig {
   slug: string;
   name: string;
@@ -30,6 +40,8 @@ export interface SportConfig {
   roles: string[];
   skills: SkillDef[];
   attributes: AttributeDef[];
+  /** Optional separate wheels; leave empty for one wheel with every player. */
+  pools: WheelPool[];
   defaultBasePrice: number;
 }
 
@@ -49,6 +61,10 @@ export const SPORT_CONFIGS: SportConfig[] = [
       { key: "fitness", label: "Fitness" },
     ],
     attributes: [{ key: "bowling_action", label: "Bowling action" }],
+    pools: [
+      { key: "batsmen", label: "Batsmen", roles: ["Batsman", "Wicketkeeper", "Fielder"] },
+      { key: "bowlers", label: "Bowlers & all-rounders", roles: ["Bowler", "All-rounder"] },
+    ],
     defaultBasePrice: 50000,
   },
   {
@@ -66,6 +82,7 @@ export const SPORT_CONFIGS: SportConfig[] = [
       { key: "defense", label: "Defense" },
     ],
     attributes: [],
+    pools: [],
     defaultBasePrice: 40000,
   },
   {
@@ -83,6 +100,7 @@ export const SPORT_CONFIGS: SportConfig[] = [
       { key: "defending", label: "Defending" },
     ],
     attributes: [],
+    pools: [],
     defaultBasePrice: 40000,
   },
 ];
@@ -97,6 +115,7 @@ export const FALLBACK_SPORT: SportConfig = {
   roles: [],
   skills: [],
   attributes: [],
+  pools: [],
   defaultBasePrice: 50000,
 };
 
@@ -104,6 +123,12 @@ export function getSportConfig(slug: string, name?: string): SportConfig {
   const found = SPORT_CONFIGS.find((s) => s.slug === slug);
   if (found) return found;
   return { ...FALLBACK_SPORT, slug, name: name ?? slug };
+}
+
+/** Key of the wheel a player belongs to (undefined when the sport has a single wheel). */
+export function poolOf(player: { role_or_position: string }, config: Pick<SportConfig, "pools">): string | undefined {
+  if (config.pools.length === 0) return undefined;
+  return (config.pools.find((p) => p.roles.includes(player.role_or_position)) ?? config.pools[0]).key;
 }
 
 /** "All-rounder · Round arm · 2025-27" – role, text attributes and batch. */

@@ -40,6 +40,10 @@ create table if not exists public.auction_state (
 );
 insert into public.auction_state (id) values (1) on conflict (id) do nothing;
 
+-- Which wheel is showing when a sport has more than one (cricket: 'batsmen' / 'bowlers').
+-- Null = the sport's first wheel. The pools themselves are defined in src/lib/sports.ts.
+alter table public.auction_state add column if not exists pool text;
+
 create table if not exists public.bids (
   id          bigint generated always as identity primary key,
   player_id   bigint not null references public.players(id) on delete cascade,
@@ -114,7 +118,24 @@ begin
     raise exception 'Unknown sport.';
   end if;
   update public.auction_state
-     set sport_id = p_sport_id, current_player_id = null, current_bid = null,
+     set sport_id = p_sport_id, pool = null, current_player_id = null, current_bid = null,
+         highest_team_id = null, status = 'idle', updated_at = now()
+   where id = 1 returning * into st;
+  return st;
+end $$;
+
+-- Switch between a sport's wheels (e.g. cricket batsmen / bowlers).
+create or replace function public.auction_set_pool(p_pool text)
+returns public.auction_state language plpgsql security definer set search_path = public as $$
+declare st public.auction_state;
+begin
+  perform public.auction_require_admin();
+  select * into st from public.auction_state where id = 1 for update;
+  if st.status in ('spinning', 'bidding') then
+    raise exception 'Finish the current player before switching wheels.';
+  end if;
+  update public.auction_state
+     set pool = nullif(trim(p_pool), ''), current_player_id = null, current_bid = null,
          highest_team_id = null, status = 'idle', updated_at = now()
    where id = 1 returning * into st;
   return st;
@@ -286,7 +307,7 @@ begin
   update public.players set status = 'available', team_id = null, sold_price = null where sport_id = p_sport_id;
   update public.teams set total_purse = total_purse where sport_id = p_sport_id;  -- recalculates purse
   update public.auction_state
-     set sport_id = p_sport_id, current_player_id = null, current_bid = null,
+     set sport_id = p_sport_id, pool = null, current_player_id = null, current_bid = null,
          highest_team_id = null, status = 'idle', updated_at = now()
    where id = 1 returning * into st;
   return st;
@@ -297,7 +318,7 @@ do $$
 declare f text;
 begin
   foreach f in array array[
-    'auction_set_sport(bigint)', 'auction_select_player(bigint)', 'auction_start_bidding()',
+    'auction_set_sport(bigint)', 'auction_set_pool(text)', 'auction_select_player(bigint)', 'auction_start_bidding()',
     'auction_place_bid(bigint,bigint)', 'auction_undo_bid()', 'auction_sold()', 'auction_unsold()',
     'auction_bring_back_unsold()', 'auction_reset_sport(bigint)'
   ] loop

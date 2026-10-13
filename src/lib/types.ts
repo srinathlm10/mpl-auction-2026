@@ -51,6 +51,8 @@ export interface AuctionState {
   current_bid: number | null;
   highest_team_id: number | null;
   status: AuctionStatus;
+  /** Which wheel is showing for sports with several (e.g. cricket "batsmen" / "bowlers"); null = first. */
+  pool: string | null;
   /** Increases on every spin so each screen animates a spin exactly once. */
   spin_id: number;
   updated_at: string;
