@@ -66,7 +66,10 @@ export const SPORT_CONFIGS: SportConfig[] = [
       { key: "fielding", label: "Fielding" },
       { key: "fitness", label: "Fitness" },
     ],
-    attributes: [{ key: "bowling_action", label: "Bowling action" }],
+    attributes: [
+      { key: "bowling_action", label: "Bowling action" },
+      { key: "batting_hand", label: "Batting" },
+    ],
     pools: [
       {
         key: "batsmen",

@@ -22,11 +22,11 @@ export function SportView({ slug }: { slug: string }) {
 
       <header className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-accent to-accent/60 p-5 text-white shadow-lift sm:p-8">
         <div aria-hidden className="absolute inset-0 bg-[repeating-linear-gradient(135deg,transparent_0_16px,rgb(255_255_255/0.07)_16px_32px)]" />
-        <span aria-hidden className="absolute -right-4 -top-6 text-[9rem] leading-none opacity-90 drop-shadow-xl sm:-top-8 sm:text-[12rem]">
+        <span aria-hidden className="absolute -right-6 -top-5 text-[6.5rem] leading-none opacity-90 drop-shadow-xl sm:-right-4 sm:-top-8 sm:text-[12rem]">
           {config.emoji}
         </span>
         <div className="relative">
-          <h1 className="font-display text-5xl font-extrabold uppercase leading-none drop-shadow sm:text-7xl">{sport.name}</h1>
+          <h1 className="relative font-display text-5xl font-extrabold uppercase leading-none [text-shadow:0_2px_12px_rgb(0_0_0/0.35)] sm:text-7xl">{sport.name}</h1>
           {config.tagline && <p className="mt-1 font-medium text-white/90">{config.tagline}</p>}
           <dl className="mt-6 grid max-w-xl grid-cols-4 gap-2">
             {[

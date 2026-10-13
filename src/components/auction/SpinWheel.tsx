@@ -35,7 +35,8 @@ interface Props {
 
 const TWO_PI = Math.PI * 2;
 const PALETTE = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899"];
-const SPIN_MS = 7000;
+/** How long a spin lasts. Fixed (not random) so the control screen and the projector stop together. */
+const SPIN_MS = 500;
 
 const mod = (n: number, m: number) => ((n % m) + m) % m;
 
@@ -263,7 +264,8 @@ export function SpinWheel(props: Props) {
       const jitter = (secureRandomUnit() - 0.5) * a * 0.7;
       const from = rotation.current;
       const delta = mod(angleFor(index, n, jitter) - from, TWO_PI);
-      const extraTurns = 6 + Math.floor(secureRandomUnit() * 3);
+      // One full turn: in half a second, more turns would just be a blur.
+      const extraTurns = 1;
       const to = from + extraTurns * TWO_PI + delta;
 
       spinning.current = true;
@@ -288,7 +290,7 @@ export function SpinWheel(props: Props) {
       const frame = () => {
         const now = performance.now();
         const p = Math.min(1, (now - t0) / SPIN_MS);
-        const eased = 1 - Math.pow(1 - p, 4); // fast start, long slow-down
+        const eased = 1 - Math.pow(1 - p, 3); // fast start, smooth slow-down
         rotation.current = from + (to - from) * eased;
         draw();
 
