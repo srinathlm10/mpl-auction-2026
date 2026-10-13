@@ -1,0 +1,98 @@
+[
+  {
+    "id": 1,
+    "name": "Strategy Strikers",
+    "sport_id": 1,
+    "logo_url": null,
+    "captain": "Aarav Mehta",
+    "total_purse": 1000000
+  },
+  {
+    "id": 2,
+    "name": "Finance Titans",
+    "sport_id": 1,
+    "logo_url": null,
+    "captain": "Rohan Iyer",
+    "total_purse": 1000000
+  },
+  {
+    "id": 3,
+    "name": "Marketing Mavericks",
+    "sport_id": 1,
+    "logo_url": null,
+    "captain": "Kabir Nair",
+    "total_purse": 1000000
+  },
+  {
+    "id": 4,
+    "name": "Ops Overdrive",
+    "sport_id": 1,
+    "logo_url": null,
+    "captain": "Vihaan Rao",
+    "total_purse": 1000000
+  },
+  {
+    "id": 5,
+    "name": "HR Hawks",
+    "sport_id": 2,
+    "logo_url": null,
+    "captain": "Ananya Sharma",
+    "total_purse": 600000
+  },
+  {
+    "id": 6,
+    "name": "Consulting Cobras",
+    "sport_id": 2,
+    "logo_url": null,
+    "captain": "Diya Kapoor",
+    "total_purse": 600000
+  },
+  {
+    "id": 7,
+    "name": "Analytics Avengers",
+    "sport_id": 2,
+    "logo_url": null,
+    "captain": "Ishita Menon",
+    "total_purse": 600000
+  },
+  {
+    "id": 8,
+    "name": "Venture Vipers",
+    "sport_id": 2,
+    "logo_url": null,
+    "captain": "Saanvi Reddy",
+    "total_purse": 600000
+  },
+  {
+    "id": 9,
+    "name": "Brand Blazers",
+    "sport_id": 3,
+    "logo_url": null,
+    "captain": "Arjun Malhotra",
+    "total_purse": 800000
+  },
+  {
+    "id": 10,
+    "name": "Supply Chain Stallions",
+    "sport_id": 3,
+    "logo_url": null,
+    "captain": "Karan Bhatia",
+    "total_purse": 800000
+  },
+  {
+    "id": 11,
+    "name": "Equity Eagles",
+    "sport_id": 3,
+    "logo_url": null,
+    "captain": "Rahul Joshi",
+    "total_purse": 800000
+  },
+  {
+    "id": 12,
+    "name": "Growth Gladiators",
+    "sport_id": 3,
+    "logo_url": null,
+    "captain": "Neel Choudhary",
+    "total_purse": 800000
+  }
+]

@@ -7,10 +7,11 @@ import { formatDate } from "@/lib/format";
 import { siteConfig } from "@/lib/site";
 import { getSportConfig } from "@/lib/sports";
 
-export const revalidate = 60;
-
-export default async function HomePage() {
-  const [sports, players, teams, stats] = await Promise.all([getSports(), getPlayers(), getTeams(), getSiteStats()]);
+export default function HomePage() {
+  const sports = getSports();
+  const players = getPlayers();
+  const teams = getTeams();
+  const stats = getSiteStats();
 
   return (
     <div className="space-y-12 sm:space-y-16">

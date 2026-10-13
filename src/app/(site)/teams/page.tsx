@@ -5,11 +5,11 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { getSports, getTeamsWithPlayers } from "@/lib/data";
 import { accentStyle, getSportConfig } from "@/lib/sports";
 
-export const revalidate = 60;
 export const metadata: Metadata = { title: "Teams" };
 
-export default async function TeamsPage() {
-  const [sports, teams] = await Promise.all([getSports(), getTeamsWithPlayers()]);
+export default function TeamsPage() {
+  const sports = getSports();
+  const teams = getTeamsWithPlayers();
 
   return (
     <>

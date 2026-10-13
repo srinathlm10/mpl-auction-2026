@@ -10,7 +10,6 @@ export function Footer() {
         </p>
         <div className="flex gap-4">
           <Link href="/about" className="hover:text-primary">Rules &amp; contact</Link>
-          <Link href="/admin" className="hover:text-primary">Admin</Link>
         </div>
       </div>
     </footer>

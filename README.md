@@ -1,82 +1,91 @@
 # MPL – Management Premiere League Auction Site
 
-Mobile-first website for the MPL player auction (Cricket, Volleyball, Football).
-Built with **Next.js 15 (App Router) + Tailwind CSS + Supabase**. This is the foundation step – the live bidding system is not built yet, but the schema and code are ready for it.
+A single public, mobile-first website for the MPL player auction (Cricket, Volleyball, Football).
+**Next.js 15 + Tailwind CSS.** No logins, no admin area, no database – all details live in three small data files and the site is built as plain static pages.
 
-## Quick start (no setup needed)
+## Run locally
 
 ```bash
 npm install
 npm run dev        # http://localhost:3000
 ```
 
-With no Supabase keys, the site runs on **built-in sample data** (30 players, 12 teams) in read-only mode. The admin area shows a setup notice.
+## Where to enter / change details
 
-## Connect Supabase (for the admin area and real data)
+Everything is in `src/data/`. Edit, save, and the page updates (locally) or redeploys (on Vercel after you push).
 
-1. Create a project at [supabase.com](https://supabase.com).
-2. **SQL Editor** → run `supabase/schema.sql`, then `supabase/seed.sql` (sample data – optional, skip it for a clean start).
-3. **Authentication → Users** → *Add user* (email + password). Then **Authentication → Providers → Email** → turn off "Allow new users to sign up".
-4. In the SQL editor, make that user an admin:
-   ```sql
-   insert into public.admins (email) values ('you@example.com');
-   ```
-5. Copy `.env.example` to `.env.local` and fill in **Project Settings → API**: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Set `NEXT_PUBLIC_AUCTION_DATE` too.
-6. Restart `npm run dev` and open `/admin`.
+| File | What it holds |
+|------|---------------|
+| `players.json` | every player |
+| `teams.json`   | every team (captain, total purse, logo) |
+| `sports.json`  | the sports (name + url slug) |
 
-Only emails in the `admins` table can write data (enforced by Row Level Security, not just the UI). Photos and logos are stored in the public `mpl-media` storage bucket, created by `schema.sql`.
+### Add a player (`players.json`)
 
-## Deploy to Vercel
+```json
+{
+  "id": 31,
+  "name": "Full Name",
+  "sport_id": 1,
+  "batch": "2025-27",
+  "role_or_position": "Batsman",
+  "skills": { "batting": 8, "bowling": 5, "fielding": 7, "fitness": 6 },
+  "photo_url": "/players/full-name.jpg",
+  "base_price": 50000,
+  "status": "available",
+  "team_id": null,
+  "sold_price": null
+}
+```
 
-1. Push the project to GitHub.
-2. In Vercel: **Add New → Project** → import the repo (framework: Next.js, no changes needed).
-3. Add the environment variables from `.env.local` to the Vercel project settings.
-4. Deploy. Public pages are cached and refresh every 60 seconds; admin changes show up immediately.
+- `id` must be unique. `sport_id` is the sport's id from `sports.json` (1 Cricket, 2 Volleyball, 3 Football).
+- `skills` keys per sport: Cricket `batting, bowling, fielding, fitness` · Volleyball `attack, block, serve, defense` · Football `pace, shooting, passing, defending` (ratings 1–10; skip any you don't want to show).
+- `photo_url`: put the image in `public/players/` and write `"/players/file-name.jpg"`. Use `null` to show the initials placeholder. Portrait photos (4:5) look best.
 
-## Project structure
+### Mark a player sold / unsold
+
+Change these fields on the player:
+
+```json
+"status": "sold", "team_id": 2, "sold_price": 80000
+```
+or `"status": "unsold", "team_id": null, "sold_price": null`.
+
+The team's **remaining purse is calculated automatically** (total purse minus what its sold players cost), so you never edit it.
+
+### Add a team (`teams.json`)
+
+```json
+{ "id": 13, "name": "Team Name", "sport_id": 1, "logo_url": "/teams/team-name.png", "captain": "Captain Name", "total_purse": 1000000 }
+```
+Logos go in `public/teams/`; `null` shows initials.
+
+## Other things to personalise
+
+- `src/lib/site.ts` – league name, auction date, contact email/phone, currency symbol (the date and contacts can also be set with `NEXT_PUBLIC_*` variables, see `.env.example`).
+- `src/lib/content.ts` – About text, league rules, auction rules.
+- `public/logo.svg` – the MPL logo.
+- Colours: `src/app/globals.css` (`--primary` brand colour) and the per-sport accent in `src/lib/sports.ts`.
+
+## Add a new sport
+
+1. Add it to `src/data/sports.json` (`{ "id": 4, "name": "Badminton", "slug": "badminton" }`).
+2. Add an entry in `SPORT_CONFIGS` in `src/lib/sports.ts` with the same `slug`: emoji, accent colour, roles/positions and skill names. (Without it the sport still works with a default colour and no skill bars.)
+3. Add its teams and players. The nav, home card, sport page and teams page pick it up automatically.
+
+## Deploy (Vercel)
+
+1. Push to GitHub.
+2. Vercel → **Add New → Project** → import the repo. No settings or environment variables are required.
+3. Deploy. Every push to `main` redeploys automatically (about a minute).
+
+## Structure
 
 ```
-supabase/            schema.sql (tables, RLS, storage, purse trigger), seed.sql (sample data)
-scripts/             generate-seed.mjs  -> rebuilds seed.sql from src/data/sample-data.json
-public/              logo.svg, sample-players.csv (CSV import template)
 src/
-  middleware.ts      refreshes the session and guards /admin/*
-  app/
-    (site)/          public pages: home, sports/[sport], players/[id], teams, about
-    admin/           login + (panel)/ dashboard, players, teams, import; actions.ts = server actions
-  components/        PlayerCard, TeamCard, SportTabs, FilterBar, PlayerExplorer, SportCard, ...
-    admin/           PlayerForm, TeamForm, CsvImporter, ImageField, DeleteButton, AdminNav
-    ui/              StatusBadge, PlayerAvatar, SkillBar, StatCard, ThemeToggle, Logo, ...
-  lib/
-    sports.ts        per-sport config: accent colour, roles, skill ratings  <- edit to add sports
-    site.ts          league name, auction date, contact, currency
-    content.ts       About / rules text
-    data.ts          all reads (Supabase, or sample data when not configured)
-    validation.ts, csv.ts   shared form and CSV parsing
-    supabase/        public (cached reads), server (admin session), env
-  data/sample-data.json     the sample data used when Supabase is not configured
+  data/        players.json, teams.json, sports.json   <- your data
+  app/(site)/  pages: home, sports/[sport], players/[id], teams, about
+  components/  PlayerCard, TeamCard, SportTabs, FilterBar, PlayerExplorer, SportCard, ui/*
+  lib/         data.ts (reads the JSON), sports.ts, site.ts, content.ts, format.ts
+public/        logo.svg, players/ (photos), teams/ (logos)
 ```
-
-## CSV import
-
-Admin → **Import CSV**. Columns: `name, sport, batch, role_or_position, base_price` (required), `photo_url` and `skill_<key>` columns such as `skill_batting` (optional). `sport` is the name or slug. Download `/sample-players.csv` as a template. Rows with problems are listed and skipped; the rest import as *Available*.
-
-## Adding a new sport later
-
-1. **Database** – add a row: `insert into public.sports (name, slug) values ('Badminton', 'badminton');`
-2. **Look & skills** – add an entry to `SPORT_CONFIGS` in `src/lib/sports.ts` with the same `slug`: emoji, accent colour (`"R G B"`), roles/positions, and skill ratings.
-3. Done. The nav, home card, sport page, teams page, admin forms and CSV import pick it up automatically. (Without step 2 the sport still works, using a default colour, a free-text role and no skill bars.)
-
-## Theming
-
-Colours are CSS variables in `src/app/globals.css` (`--primary` for the brand, `--accent` re-pointed per sport via `accentStyle()`). Dark/light follows the device setting and the toggle in the header remembers the choice.
-
-## Design notes for the bidding step
-
-- `players.status`, `team_id` and `sold_price` are what a winning bid should set; a database trigger keeps each team's `remaining_purse` correct automatically.
-- `auctions` and `bids` table sketches are commented at the bottom of `schema.sql`.
-- Supabase Realtime can be enabled on `players` / `teams` / `bids` for live updates.
-
-## Scripts
-
-`npm run dev` · `npm run build` · `npm run start` · `npm run typecheck` · `npm run seed:generate`

@@ -15,6 +15,7 @@ export interface Team {
   logo_url: string | null;
   captain: string;
   total_purse: number;
+  /** Calculated in lib/data.ts from the players the team has bought. */
   remaining_purse: number;
 }
 
@@ -34,10 +35,3 @@ export interface Player {
 }
 
 export type TeamWithPlayers = Team & { players: Player[] };
-
-/** Shape used when creating / updating a player (admin form + CSV import). */
-export type PlayerInput = Omit<Player, "id" | "team_id" | "sold_price" | "status"> & {
-  status?: PlayerStatus;
-  team_id?: number | null;
-  sold_price?: number | null;
-};

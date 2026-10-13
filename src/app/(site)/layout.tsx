@@ -2,10 +2,8 @@ import { Footer } from "@/components/layout/Footer";
 import { Header, type NavItem } from "@/components/layout/Header";
 import { getSports } from "@/lib/data";
 
-export const revalidate = 60;
-
-export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const sports = await getSports();
+export default function SiteLayout({ children }: { children: React.ReactNode }) {
+  const sports = getSports();
 
   const items: NavItem[] = [
     { href: "/", label: "Home" },

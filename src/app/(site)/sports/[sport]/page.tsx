@@ -6,23 +6,27 @@ import { StatCard } from "@/components/ui/StatCard";
 import { getPlayers, getSportBySlug, getSports, getTeams } from "@/lib/data";
 import { accentStyle, getSportConfig } from "@/lib/sports";
 
-export const revalidate = 60;
-
 type Props = { params: Promise<{ sport: string }> };
+
+export function generateStaticParams() {
+  return getSports().map((s) => ({ sport: s.slug }));
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { sport: slug } = await params;
-  const sport = await getSportBySlug(slug);
+  const sport = getSportBySlug(slug);
   return { title: sport ? `${sport.name} players` : "Sport not found" };
 }
 
 export default async function SportPage({ params }: Props) {
   const { sport: slug } = await params;
-  const sport = await getSportBySlug(slug);
+  const sport = getSportBySlug(slug);
   if (!sport) notFound();
 
   const config = getSportConfig(sport.slug, sport.name);
-  const [sports, players, teams] = await Promise.all([getSports(), getPlayers(sport.id), getTeams(sport.id)]);
+  const sports = getSports();
+  const players = getPlayers(sport.id);
+  const teams = getTeams(sport.id);
   const teamNames = Object.fromEntries(teams.map((t) => [t.id, t.name]));
   const count = (status: string) => players.filter((p) => p.status === status).length;
 
