@@ -55,7 +55,7 @@ Then commit and push; the site rebuilds with the new players.
 
 1. Open **two windows**: `http://localhost:3000/auction` (runs the auction) and `http://localhost:3000/auction/screen` (the projector screen: press **Full screen + sound**).
 2. Choose **Cricket**. The projector switches to Cricket by itself.
-3. Press **Spin** (or tap the wheel). Both screens spin and stop on the same player; the player card appears.
+3. Press **Spin** (or tap the wheel). Both screens spin for about 2.5 seconds and stop on the same player; the player card appears. (The spin time is `SPIN_MS` in `src/components/auction/SpinWheel.tsx`.)
 4. **Start Bidding**. Set the amount with **−** / **+** (₹1 lakh steps) or type the full bid in lakh, then tap a team's **Bid** button. The first bid can be the base price; every later bid must be higher than the current one. Try:
    - tapping the same team twice (blocked: already highest bidder),
    - **Undo last bid**,
@@ -66,10 +66,6 @@ Then commit and push; the site rebuilds with the new players.
 8. **Reset Cricket auction (testing)** at the bottom of the control screen clears that sport.
 
 **Cricket has two wheels.** After choosing Cricket you pick the **Batsmen** wheel (batsmen, wicketkeepers, fielders) or the **Bowlers** wheel (bowlers, all-rounders); each has its own colours. **Switch wheel** goes back to the choice between players, and when one wheel is empty there is a button to go to the other. A player whose role is in neither list goes on the Batsmen wheel. The wheels are `pools` in `src/lib/sports.ts`.
-
-**Keyboard shortcuts** (on `/auction`): **Space** spin / start bidding · **1–4** bid for that corner's team · **U** undo (last bid, or the last Sold/Unsold) · **S** sold · **N** unsold.
-
-**When the wheel stops** a full-screen card shows the player (photo left; sport, role/position, playing style, batch on the right). From there either **assign the player straight to a team** (enter the price – it starts at the base price – and tap the team) or **Start Bidding**, or **Skip** (unsold). Assigning follows the same purse and squad rules as bidding.
 
 **Keyboard shortcuts** (on `/auction`): **Space** spin / start bidding · **1–4** bid for that corner's team · **+ / −** change the bid amount by ₹1 lakh · **U** undo (last bid, or the last Sold/Unsold) · **S** sold · **N** unsold.
 
