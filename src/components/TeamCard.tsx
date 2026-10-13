@@ -3,7 +3,7 @@ import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { formatPrice } from "@/lib/format";
 import type { TeamWithPlayers } from "@/lib/types";
 
-export function TeamCard({ team }: { team: TeamWithPlayers }) {
+export function TeamCard({ team, squadSize }: { team: TeamWithPlayers; squadSize?: number }) {
   const spentPct = team.total_purse > 0 ? Math.min(100, ((team.total_purse - team.remaining_purse) / team.total_purse) * 100) : 0;
 
   return (
@@ -13,7 +13,9 @@ export function TeamCard({ team }: { team: TeamWithPlayers }) {
           <PlayerAvatar name={team.name} src={team.logo_url} sizes="64px" className="text-2xl" />
         </div>
         <div className="min-w-0">
-          <h3 className="line-clamp-2 font-display text-2xl font-bold leading-tight">{team.name}</h3>
+          <h3 className="line-clamp-2 font-display text-2xl font-bold leading-tight">
+            <Link href={`/teams/${team.id}`} className="hover:text-primary">{team.name}</Link>
+          </h3>
           <p className="text-sm text-muted">
             Captain: <span className="font-semibold text-foreground">{team.captain || "TBA"}</span>
           </p>
@@ -33,7 +35,7 @@ export function TeamCard({ team }: { team: TeamWithPlayers }) {
 
       <div className="flex-1 p-4">
         <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
-          Players bought ({team.players.length})
+          Players bought ({team.players.length}{squadSize ? `/${squadSize}` : ""})
         </h4>
         {team.players.length === 0 ? (
           <p className="text-sm text-muted">No players yet.</p>
@@ -52,6 +54,9 @@ export function TeamCard({ team }: { team: TeamWithPlayers }) {
             ))}
           </ul>
         )}
+        <Link href={`/teams/${team.id}`} className="mt-3 inline-block text-sm font-semibold text-primary hover:underline">
+          Full squad →
+        </Link>
       </div>
     </article>
   );

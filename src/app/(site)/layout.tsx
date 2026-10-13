@@ -2,13 +2,17 @@ import { Footer } from "@/components/layout/Footer";
 import { Header, type NavItem } from "@/components/layout/Header";
 import { getSports } from "@/lib/data";
 
-export default function SiteLayout({ children }: { children: React.ReactNode }) {
-  const sports = getSports();
+export const revalidate = 30;
+
+export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+  const sports = await getSports();
 
   const items: NavItem[] = [
     { href: "/", label: "Home" },
     ...sports.map((s) => ({ href: `/sports/${s.slug}`, label: s.name })),
     { href: "/teams", label: "Teams" },
+    { href: "/auction/summary", label: "Results" },
+    { href: "/auction", label: "Live Auction" },
     { href: "/about", label: "Rules" },
   ];
 

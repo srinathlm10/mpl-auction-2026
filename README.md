@@ -1,7 +1,15 @@
 # MPL – Management Premiere League Auction Site
 
-A single public, mobile-first website for the MPL player auction (Cricket, Volleyball, Football).
-**Next.js 15 + Tailwind CSS.** No logins, no admin area, no database – all details live in three small data files and the site is built as plain static pages.
+Mobile-first website for the MPL player auction (Cricket, Volleyball, Football), with a **live auction**: spin wheel, bidding, SOLD alerts, and a projector screen that mirrors the auctioneer in real time.
+
+**Next.js 15 + Tailwind CSS + Supabase** (Postgres, Auth, Realtime).
+
+## What runs where
+
+| Part | Needs Supabase? |
+|------|-----------------|
+| Public pages (home, sports, players, teams, rules, results) | No – falls back to the JSON files in `src/data` |
+| Live auction: `/admin/auction` (control) and `/auction` (projector) | **Yes** |
 
 ## Run locally
 
@@ -10,82 +18,95 @@ npm install
 npm run dev        # http://localhost:3000
 ```
 
-## Where to enter / change details
+## Set up Supabase (needed for the live auction)
 
-Everything is in `src/data/`. Edit, save, and the page updates (locally) or redeploys (on Vercel after you push).
+1. Create a free project at [supabase.com](https://supabase.com).
+2. **SQL Editor** → run these files **in this order**:
+   1. `supabase/schema.sql` – tables, security, purse trigger
+   2. `supabase/auction.sql` – auction settings, live state, bids log, auction actions, realtime
+   3. `supabase/seed.sql` – sample data: 30 players, 12 teams, all at ₹1 lakh base and ₹2 crore purse
+3. **Authentication → Users → Add user** (email + password) for the auctioneer. Then **Authentication → Providers → Email** → turn off *Allow new users to sign up*.
+4. Allow that user to run the auction:
+   ```sql
+   insert into public.admins (email) values ('auctioneer@example.com');
+   ```
+5. Copy `.env.example` to `.env.local`, fill in `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Project Settings → API), and restart `npm run dev`.
 
-| File | What it holds |
-|------|---------------|
-| `players.json` | every player |
-| `teams.json`   | every team (captain, total purse, logo) |
-| `sports.json`  | the sports (name + url slug) |
+## Test the live auction with the sample data
 
-### Add a player (`players.json`)
+1. Open **two windows**: `http://localhost:3000/admin/auction` (sign in) and `http://localhost:3000/auction` (the projector screen – press **Full screen + sound**).
+2. Admin: choose **Cricket**. The projector switches to Cricket by itself.
+3. Press **Spin** (or tap the wheel). Both screens spin and stop on the same player; the player card appears.
+4. **Start Bidding**. Tap team buttons: the bid goes ₹1 L → ₹6 L → ₹11 L … (₹5 L steps below ₹50 L, ₹10 L steps up to ₹1 Cr, ₹25 L steps above). Try:
+   - tapping the same team twice (blocked: already highest bidder),
+   - **Undo last bid**,
+   - pushing the bid near ₹1.9 Cr – a team with 11 players still to buy must keep ₹10 L back, so its button greys out with the reason.
+5. **Sold** → full-screen SOLD alert on both screens, purse and squad update, player leaves the wheel.
+6. Spin again, Start Bidding, and press **Unsold** without bidding → player leaves the wheel. **Bring back N unsold** puts them back for round two.
+7. Refresh either window in the middle of bidding – it comes back exactly where it was.
+8. See results at `/auction/summary` (with **Download CSV**) and each squad at `/teams/<id>`.
+9. **Reset Cricket auction (testing)** at the bottom of the control screen restores everything for that sport.
 
-```json
-{
-  "id": 31,
-  "name": "Full Name",
-  "sport_id": 1,
-  "batch": "2025-27",
-  "role_or_position": "Batsman",
-  "skills": { "batting": 8, "bowling": 5, "fielding": 7, "fitness": 6 },
-  "photo_url": "/players/full-name.jpg",
-  "base_price": 50000,
-  "status": "available",
-  "team_id": null,
-  "sold_price": null
-}
-```
+> The sample data has 10 players per sport, so squads can't fill up during a test. Add more players to try the "squad full" rule.
 
-- `id` must be unique. `sport_id` is the sport's id from `sports.json` (1 Cricket, 2 Volleyball, 3 Football).
-- `skills` keys per sport: Cricket `batting, bowling, fielding, fitness` · Volleyball `attack, block, serve, defense` · Football `pace, shooting, passing, defending` (ratings 1–10; skip any you don't want to show).
-- `photo_url`: put the image in `public/players/` and write `"/players/file-name.jpg"`. Use `null` to show the initials placeholder. Portrait photos (4:5) look best.
+## Auction rules & settings
 
-### Mark a player sold / unsold
+Change in **Admin → Settings** (`/admin/auction/settings`):
 
-Change these fields on the player:
+- **Base price** (default ₹1 lakh) – also updates every player who isn't sold yet.
+- **Bid increment slabs** – any number of "while bid is below X, add Y" rows.
+- **Squad size per sport** – temporary defaults 11 Cricket / 8 Volleyball / 11 Football.
 
-```json
-"status": "sold", "team_id": 2, "sold_price": 80000
-```
-or `"status": "unsold", "team_id": null, "sold_price": null`.
+Change in Supabase **Table Editor**:
 
-The team's **remaining purse is calculated automatically** (total purse minus what its sold players cost), so you never edit it.
+- Team purse: `teams.total_purse` (default ₹2 crore). `remaining_purse` is calculated automatically.
+- Number of teams: add or remove rows in `teams` (the bid buttons follow).
+- Players: edit `players`, or edit `src/data/*.json` and run `npm run seed:generate` to rebuild `seed.sql` (re-running the seed wipes auction results).
 
-### Add a team (`teams.json`)
+**Rules the database enforces** (in `supabase/auction.sql`, one locked transaction per action): a team can bid only if, after paying, its remaining purse still covers the rest of its squad at base price; full squads can't bid; a team can't outbid itself; a double-tap can't place two bids; selling updates the player and team purse together; only emails in `admins` can run any of it.
 
-```json
-{ "id": 13, "name": "Team Name", "sport_id": 1, "logo_url": "/teams/team-name.png", "captain": "Captain Name", "total_purse": 1000000 }
-```
-Logos go in `public/teams/`; `null` shows initials.
+## Screens
 
-## Other things to personalise
-
-- `src/lib/site.ts` – league name, auction date, contact email/phone, currency symbol (the date and contacts can also be set with `NEXT_PUBLIC_*` variables, see `.env.example`).
-- `src/lib/content.ts` – About text, league rules, auction rules.
-- `public/logo.svg` – the MPL logo.
-- Colours: `src/app/globals.css` (`--primary` brand colour) and the per-sport accent in `src/lib/sports.ts`.
-
-## Add a new sport
-
-1. Add it to `src/data/sports.json` (`{ "id": 4, "name": "Badminton", "slug": "badminton" }`).
-2. Add an entry in `SPORT_CONFIGS` in `src/lib/sports.ts` with the same `slug`: emoji, accent colour, roles/positions and skill names. (Without it the sport still works with a default colour and no skill bars.)
-3. Add its teams and players. The nav, home card, sport page and teams page pick it up automatically.
+| URL | Who | What |
+|-----|-----|------|
+| `/admin/auction` | Admin | Sport picker, wheel, Spin, Start Bidding, team bid buttons, Undo / Sold / Unsold, bring back unsold |
+| `/auction` | Anyone | Projector view of the same live state, SOLD alerts, sound, full screen |
+| `/admin/auction/settings` | Admin | Base price, increments, squad sizes |
+| `/auction/summary` | Anyone | Sold and unsold lists, totals, CSV download |
+| `/teams/<id>` | Anyone | One team's squad, spent and remaining purse |
 
 ## Deploy (Vercel)
 
-1. Push to GitHub.
-2. Vercel → **Add New → Project** → import the repo. No settings or environment variables are required.
-3. Deploy. Every push to `main` redeploys automatically (about a minute).
+1. Push to GitHub, then Vercel → **Add New → Project** → import the repo.
+2. Add the environment variables from `.env.local`.
+3. Deploy. Every push to `main` redeploys.
 
 ## Structure
 
 ```
+supabase/      schema.sql, auction.sql (live auction migration), seed.sql
+scripts/       generate-seed.mjs  (src/data/*.json -> supabase/seed.sql)
 src/
-  data/        players.json, teams.json, sports.json   <- your data
-  app/(site)/  pages: home, sports/[sport], players/[id], teams, about
-  components/  PlayerCard, TeamCard, SportTabs, FilterBar, PlayerExplorer, SportCard, ui/*
-  lib/         data.ts (reads the JSON), sports.ts, site.ts, content.ts, format.ts
-public/        logo.svg, players/ (photos), teams/ (logos)
+  data/        players.json, teams.json, sports.json (sample data / no-database fallback)
+  middleware.ts  protects /admin
+  app/
+    (site)/      public pages + auction/summary + teams/[id]
+    (display)/auction/   projector screen
+    admin/       login, (control)/auction, (panel) dashboard + settings, actions.ts
+  components/
+    auction/     AuctionStage, SpinWheel, BiddingPanel, PlayerReveal, TeamStrip, SoldOverlay, Confetti, SportSelector
+    admin/       AdminGuard, AdminNav, SettingsForm, SetupNotice
+  lib/
+    auction.ts   bid increment + affordability rules (mirrors the SQL)
+    use-auction.ts  live snapshot hook (Realtime + fallback polling)
+    random.ts    crypto.getRandomValues helpers for the wheel
+    sound.ts     synthesised sounds + mute
+    data.ts      public page data (Supabase, or JSON fallback)
+    sports.ts    per-sport colours, roles, skills
 ```
+
+## Adding a new sport
+
+1. `insert into public.sports (name, slug, squad_size) values ('Badminton', 'badminton', 6);` (and add it to `src/data/sports.json` for the no-database fallback).
+2. Add an entry to `SPORT_CONFIGS` in `src/lib/sports.ts` with the same `slug` (emoji, accent colour, roles, skills).
+3. Add its teams and players. The site and the auction pick it up automatically.

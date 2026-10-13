@@ -20,7 +20,7 @@ export function Header({ items }: { items: NavItem[] }) {
   // Close the mobile menu after navigating.
   useEffect(() => setOpen(false), [pathname]);
 
-  const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  const isActive = (href: string) => (href === "/" || href === "/auction" ? pathname === href : pathname.startsWith(href));
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
@@ -30,7 +30,7 @@ export function Header({ items }: { items: NavItem[] }) {
           <span className="font-display text-2xl font-extrabold uppercase tracking-wider">{siteConfig.shortName}</span>
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
           {items.map((item) => (
             <Link
               key={item.href}
@@ -49,7 +49,7 @@ export function Header({ items }: { items: NavItem[] }) {
           <ThemeToggle />
           <button
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-surface md:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-surface lg:hidden"
             aria-label="Toggle menu"
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
@@ -60,7 +60,7 @@ export function Header({ items }: { items: NavItem[] }) {
       </div>
 
       {open && (
-        <nav className="border-t border-border bg-background md:hidden" aria-label="Mobile">
+        <nav className="border-t border-border bg-background lg:hidden" aria-label="Mobile">
           <div className="container-page grid gap-1 py-3">
             {items.map((item) => (
               <Link

@@ -5,7 +5,7 @@
     "sport_id": 1,
     "logo_url": null,
     "captain": "Aarav Mehta",
-    "total_purse": 1000000
+    "total_purse": 20000000
   },
   {
     "id": 2,
@@ -13,7 +13,7 @@
     "sport_id": 1,
     "logo_url": null,
     "captain": "Rohan Iyer",
-    "total_purse": 1000000
+    "total_purse": 20000000
   },
   {
     "id": 3,
@@ -21,7 +21,7 @@
     "sport_id": 1,
     "logo_url": null,
     "captain": "Kabir Nair",
-    "total_purse": 1000000
+    "total_purse": 20000000
   },
   {
     "id": 4,
@@ -29,7 +29,7 @@
     "sport_id": 1,
     "logo_url": null,
     "captain": "Vihaan Rao",
-    "total_purse": 1000000
+    "total_purse": 20000000
   },
   {
     "id": 5,
@@ -37,7 +37,7 @@
     "sport_id": 2,
     "logo_url": null,
     "captain": "Ananya Sharma",
-    "total_purse": 600000
+    "total_purse": 20000000
   },
   {
     "id": 6,
@@ -45,7 +45,7 @@
     "sport_id": 2,
     "logo_url": null,
     "captain": "Diya Kapoor",
-    "total_purse": 600000
+    "total_purse": 20000000
   },
   {
     "id": 7,
@@ -53,7 +53,7 @@
     "sport_id": 2,
     "logo_url": null,
     "captain": "Ishita Menon",
-    "total_purse": 600000
+    "total_purse": 20000000
   },
   {
     "id": 8,
@@ -61,7 +61,7 @@
     "sport_id": 2,
     "logo_url": null,
     "captain": "Saanvi Reddy",
-    "total_purse": 600000
+    "total_purse": 20000000
   },
   {
     "id": 9,
@@ -69,7 +69,7 @@
     "sport_id": 3,
     "logo_url": null,
     "captain": "Arjun Malhotra",
-    "total_purse": 800000
+    "total_purse": 20000000
   },
   {
     "id": 10,
@@ -77,7 +77,7 @@
     "sport_id": 3,
     "logo_url": null,
     "captain": "Karan Bhatia",
-    "total_purse": 800000
+    "total_purse": 20000000
   },
   {
     "id": 11,
@@ -85,7 +85,7 @@
     "sport_id": 3,
     "logo_url": null,
     "captain": "Rahul Joshi",
-    "total_purse": 800000
+    "total_purse": 20000000
   },
   {
     "id": 12,
@@ -93,6 +93,6 @@
     "sport_id": 3,
     "logo_url": null,
     "captain": "Neel Choudhary",
-    "total_purse": 800000
+    "total_purse": 20000000
   }
 ]

@@ -4,33 +4,30 @@ import { notFound } from "next/navigation";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { SkillBar } from "@/components/ui/SkillBar";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { getPlayer, getPlayers, getSports, getTeams } from "@/lib/data";
+import { getPlayer, getSports, getTeams } from "@/lib/data";
 import { formatPrice } from "@/lib/format";
 import { accentStyle, getSportConfig } from "@/lib/sports";
 
 type Props = { params: Promise<{ id: string }> };
 
-function loadPlayer(rawId: string) {
+export const revalidate = 30;
+
+async function loadPlayer(rawId: string) {
   const id = Number(rawId);
   if (!Number.isInteger(id)) return undefined;
   return getPlayer(id);
 }
 
-export function generateStaticParams() {
-  return getPlayers().map((p) => ({ id: String(p.id) }));
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const player = loadPlayer((await params).id);
+  const player = await loadPlayer((await params).id);
   return { title: player ? player.name : "Player not found" };
 }
 
 export default async function PlayerPage({ params }: Props) {
-  const player = loadPlayer((await params).id);
+  const player = await loadPlayer((await params).id);
   if (!player) notFound();
 
-  const sports = getSports();
-  const teams = getTeams(player.sport_id);
+  const [sports, teams] = await Promise.all([getSports(), getTeams(player.sport_id)]);
   const sport = sports.find((s) => s.id === player.sport_id);
   const config = getSportConfig(sport?.slug ?? "", sport?.name);
   const team = player.team_id ? teams.find((t) => t.id === player.team_id) : undefined;

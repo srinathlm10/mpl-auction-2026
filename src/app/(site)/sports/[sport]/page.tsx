@@ -8,25 +8,21 @@ import { accentStyle, getSportConfig } from "@/lib/sports";
 
 type Props = { params: Promise<{ sport: string }> };
 
-export function generateStaticParams() {
-  return getSports().map((s) => ({ sport: s.slug }));
-}
+export const revalidate = 30;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { sport: slug } = await params;
-  const sport = getSportBySlug(slug);
+  const sport = await getSportBySlug(slug);
   return { title: sport ? `${sport.name} players` : "Sport not found" };
 }
 
 export default async function SportPage({ params }: Props) {
   const { sport: slug } = await params;
-  const sport = getSportBySlug(slug);
+  const sport = await getSportBySlug(slug);
   if (!sport) notFound();
 
   const config = getSportConfig(sport.slug, sport.name);
-  const sports = getSports();
-  const players = getPlayers(sport.id);
-  const teams = getTeams(sport.id);
+  const [sports, players, teams] = await Promise.all([getSports(), getPlayers(sport.id), getTeams(sport.id)]);
   const teamNames = Object.fromEntries(teams.map((t) => [t.id, t.name]));
   const count = (status: string) => players.filter((p) => p.status === status).length;
 

@@ -5,11 +5,11 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { getSports, getTeamsWithPlayers } from "@/lib/data";
 import { accentStyle, getSportConfig } from "@/lib/sports";
 
+export const revalidate = 30;
 export const metadata: Metadata = { title: "Teams" };
 
-export default function TeamsPage() {
-  const sports = getSports();
-  const teams = getTeamsWithPlayers();
+export default async function TeamsPage() {
+  const [sports, teams] = await Promise.all([getSports(), getTeamsWithPlayers()]);
 
   return (
     <>
@@ -31,7 +31,7 @@ export default function TeamsPage() {
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   {sportTeams.map((team) => (
-                    <TeamCard key={team.id} team={team} />
+                    <TeamCard key={team.id} team={team} squadSize={sport.squad_size} />
                   ))}
                 </div>
               )}

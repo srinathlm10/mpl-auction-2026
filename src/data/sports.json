@@ -2,16 +2,19 @@
   {
     "id": 1,
     "name": "Cricket",
-    "slug": "cricket"
+    "slug": "cricket",
+    "squad_size": 11
   },
   {
     "id": 2,
     "name": "Volleyball",
-    "slug": "volleyball"
+    "slug": "volleyball",
+    "squad_size": 8
   },
   {
     "id": 3,
     "name": "Football",
-    "slug": "football"
+    "slug": "football",
+    "squad_size": 11
   }
 ]
