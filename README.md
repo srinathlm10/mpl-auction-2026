@@ -55,7 +55,7 @@ Then commit and push; the site rebuilds with the new players.
 
 1. Open **two windows**: `http://localhost:3000/auction` (runs the auction) and `http://localhost:3000/auction/screen` (the projector screen: press **Full screen + sound**).
 2. Choose **Cricket**. The projector switches to Cricket by itself.
-3. Press **Spin** (or tap the wheel). Both screens spin for about 1 second and stop on the same player; the player card appears. (The spin time is `SPIN_MS` in `src/components/auction/SpinWheel.tsx`.)
+3. Press **Spin** (or tap the wheel). Both screens spin for half a second and stop on the same player; the player card appears. (The spin time is `SPIN_MS` in `src/components/auction/SpinWheel.tsx`.)
 4. **Start Bidding**. Set the amount with **−** / **+** (₹1 lakh steps) or type the full bid in lakh, then tap a team's **Bid** button. The first bid can be the base price; every later bid must be higher than the current one. Try:
    - tapping the same team twice (blocked: already highest bidder),
    - **Undo last bid**,
