@@ -8,6 +8,8 @@ interface Props {
   sizes: string;
   priority?: boolean;
   className?: string;
+  /** "cover" fills the frame (photos); "contain" shows the whole image on white (team logos). */
+  fit?: "cover" | "contain";
 }
 
 /**
@@ -15,7 +17,7 @@ interface Props {
  * have a size. Images are lazy-loaded and optimised by next/image; without a
  * photo we show initials on the current accent colour.
  */
-export function PlayerAvatar({ name, src, sizes, priority = false, className }: Props) {
+export function PlayerAvatar({ name, src, sizes, priority = false, className, fit = "cover" }: Props) {
   if (src) {
     return (
       <Image
@@ -26,7 +28,7 @@ export function PlayerAvatar({ name, src, sizes, priority = false, className }: 
         priority={priority}
         // SVGs (like the placeholder photo) are already tiny and sharp; serve them as-is.
         unoptimized={src.endsWith(".svg")}
-        className={cn("object-cover object-top", className)}
+        className={cn(fit === "contain" ? "bg-white object-contain p-[4%]" : "object-cover object-top", className)}
       />
     );
   }

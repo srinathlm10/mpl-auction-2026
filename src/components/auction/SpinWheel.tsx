@@ -123,8 +123,10 @@ export function SpinWheel(props: Props) {
     const photoR = Math.min(R * 0.1, arcAt(R * 0.84) * 0.42);
     const showPhotos = photoR >= 7;
     const textEnd = showPhotos ? R * 0.84 - photoR - 6 : R * 0.94;
-    const textStart = R * 0.2;
-    const fontPx = Math.max(8, Math.min(R * 0.075, arcAt(R * 0.55) * 0.62));
+    // Names stop short of the centre SPIN button (about 0.24R) so nothing is drawn under it.
+    const textStart = R * 0.3;
+    // Text height must fit the slice where the name is narrowest, so neighbouring names never touch.
+    const fontPx = Math.max(8, Math.min(R * 0.07, arcAt(R * 0.42) * 0.72));
 
     for (let i = 0; i < n; i++) {
       const p = list[i];

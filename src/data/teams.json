@@ -1,98 +1,98 @@
 [
   {
     "id": 1,
-    "name": "Strategy Strikers",
+    "name": "Brand Blasters",
     "sport_id": 1,
-    "logo_url": null,
-    "captain": "Aarav Mehta",
+    "logo_url": "/teams/brand_blasters.jpeg",
+    "captain": "",
     "total_purse": 20000000
   },
   {
     "id": 2,
-    "name": "Finance Titans",
+    "name": "Process Panther",
     "sport_id": 1,
-    "logo_url": null,
-    "captain": "Rohan Iyer",
+    "logo_url": "/teams/process_panthers.jpeg",
+    "captain": "",
     "total_purse": 20000000
   },
   {
     "id": 3,
-    "name": "Marketing Mavericks",
+    "name": "Risk Rangers",
     "sport_id": 1,
-    "logo_url": null,
-    "captain": "Kabir Nair",
+    "logo_url": "/teams/risk_rangers.jpeg",
+    "captain": "",
     "total_purse": 20000000
   },
   {
     "id": 4,
-    "name": "Ops Overdrive",
+    "name": "Talent Titan",
     "sport_id": 1,
-    "logo_url": null,
-    "captain": "Vihaan Rao",
+    "logo_url": "/teams/talent_titan.jpeg",
+    "captain": "",
     "total_purse": 20000000
   },
   {
     "id": 5,
-    "name": "HR Hawks",
+    "name": "Brand Blasters",
     "sport_id": 2,
-    "logo_url": null,
-    "captain": "Ananya Sharma",
+    "logo_url": "/teams/brand_blasters.jpeg",
+    "captain": "",
     "total_purse": 20000000
   },
   {
     "id": 6,
-    "name": "Consulting Cobras",
+    "name": "Process Panther",
     "sport_id": 2,
-    "logo_url": null,
-    "captain": "Diya Kapoor",
+    "logo_url": "/teams/process_panthers.jpeg",
+    "captain": "",
     "total_purse": 20000000
   },
   {
     "id": 7,
-    "name": "Analytics Avengers",
+    "name": "Risk Rangers",
     "sport_id": 2,
-    "logo_url": null,
-    "captain": "Ishita Menon",
+    "logo_url": "/teams/risk_rangers.jpeg",
+    "captain": "",
     "total_purse": 20000000
   },
   {
     "id": 8,
-    "name": "Venture Vipers",
+    "name": "Talent Titan",
     "sport_id": 2,
-    "logo_url": null,
-    "captain": "Saanvi Reddy",
+    "logo_url": "/teams/talent_titan.jpeg",
+    "captain": "",
     "total_purse": 20000000
   },
   {
     "id": 9,
-    "name": "Brand Blazers",
+    "name": "Brand Blasters",
     "sport_id": 3,
-    "logo_url": null,
-    "captain": "Arjun Malhotra",
+    "logo_url": "/teams/brand_blasters.jpeg",
+    "captain": "",
     "total_purse": 20000000
   },
   {
     "id": 10,
-    "name": "Supply Chain Stallions",
+    "name": "Process Panther",
     "sport_id": 3,
-    "logo_url": null,
-    "captain": "Karan Bhatia",
+    "logo_url": "/teams/process_panthers.jpeg",
+    "captain": "",
     "total_purse": 20000000
   },
   {
     "id": 11,
-    "name": "Equity Eagles",
+    "name": "Risk Rangers",
     "sport_id": 3,
-    "logo_url": null,
-    "captain": "Rahul Joshi",
+    "logo_url": "/teams/risk_rangers.jpeg",
+    "captain": "",
     "total_purse": 20000000
   },
   {
     "id": 12,
-    "name": "Growth Gladiators",
+    "name": "Talent Titan",
     "sport_id": 3,
-    "logo_url": null,
-    "captain": "Neel Choudhary",
+    "logo_url": "/teams/talent_titan.jpeg",
+    "captain": "",
     "total_purse": 20000000
   }
 ]

@@ -426,6 +426,44 @@ begin
   return st;
 end $$;
 
+-- Put the player on the block straight into a team, from the player pop-up.
+-- p_price: what the team pays (default: the current bid while bidding, else the base price).
+-- Same rules as bidding: the right sport, squad not full, and the team must still
+-- afford the rest of its squad at base price. Undo with auction_undo_result().
+create or replace function public.auction_assign(p_team_id bigint, p_price bigint default null)
+returns public.auction_state language plpgsql security definer set search_path = public as $$
+declare
+  st public.auction_state; tm public.teams;
+  v_squad int; v_bought int; v_base bigint; v_price bigint; v_reserve bigint;
+begin
+  select * into st from public.auction_state where id = 1 for update;
+  if st.status not in ('spinning', 'bidding') then raise exception 'No player is on the block.'; end if;
+
+  select * into tm from public.teams where id = p_team_id and sport_id = st.sport_id;
+  if not found then raise exception 'That team does not play this sport.'; end if;
+
+  v_base := public.auction_settings_base();
+  v_price := coalesce(p_price, case when st.status = 'bidding' then st.current_bid end, v_base);
+  if v_price < v_base then raise exception 'The price cannot be below the base price.'; end if;
+
+  select squad_size into v_squad from public.sports where id = st.sport_id;
+  select count(*) into v_bought from public.players where team_id = tm.id and status = 'sold';
+  if v_bought >= v_squad then raise exception '% already has a full squad.', tm.name; end if;
+
+  v_reserve := (v_squad - v_bought - 1) * v_base;
+  if tm.remaining_purse - v_price < v_reserve then
+    raise exception '% cannot afford this price: it must keep % for % more player(s).',
+      tm.name, v_reserve, (v_squad - v_bought - 1);
+  end if;
+
+  insert into public.bids (player_id, team_id, amount) values (st.current_player_id, tm.id, v_price);
+  update public.players set status = 'sold', team_id = tm.id, sold_price = v_price where id = st.current_player_id;
+  update public.auction_state
+     set status = 'sold', current_bid = v_price, highest_team_id = tm.id, updated_at = now()
+   where id = 1 returning * into st;
+  return st;
+end $$;
+
 -- Undo a mistaken Sold / Unsold for the player just auctioned (only until the next spin).
 -- Sold   -> bidding again at the same price and leader; the team gets its money back.
 -- Unsold -> back to the player card, before bidding.
@@ -502,7 +540,7 @@ begin
     'auction_set_sport(bigint)', 'auction_set_pool(text)', 'auction_select_player(bigint)', 'auction_start_bidding()',
     'auction_place_bid(bigint,bigint)', 'auction_undo_bid()', 'auction_sold()', 'auction_unsold()',
     'auction_bring_back_unsold()', 'auction_reset_sport(bigint)', 'auction_save_settings(bigint,jsonb,jsonb)',
-    'auction_undo_result()'
+    'auction_undo_result()', 'auction_assign(bigint,bigint)'
   ] loop
     execute format('grant execute on function public.%s to anon, authenticated', f);
   end loop;
@@ -546,18 +584,18 @@ insert into public.sports (id, name, slug, squad_size) overriding system value v
   (3, 'Football', 'football', 8);
 
 insert into public.teams (id, name, sport_id, logo_url, captain, total_purse) overriding system value values
-  (1, 'Strategy Strikers', 1, null, 'Aarav Mehta', 20000000),
-  (2, 'Finance Titans', 1, null, 'Rohan Iyer', 20000000),
-  (3, 'Marketing Mavericks', 1, null, 'Kabir Nair', 20000000),
-  (4, 'Ops Overdrive', 1, null, 'Vihaan Rao', 20000000),
-  (5, 'HR Hawks', 2, null, 'Ananya Sharma', 20000000),
-  (6, 'Consulting Cobras', 2, null, 'Diya Kapoor', 20000000),
-  (7, 'Analytics Avengers', 2, null, 'Ishita Menon', 20000000),
-  (8, 'Venture Vipers', 2, null, 'Saanvi Reddy', 20000000),
-  (9, 'Brand Blazers', 3, null, 'Arjun Malhotra', 20000000),
-  (10, 'Supply Chain Stallions', 3, null, 'Karan Bhatia', 20000000),
-  (11, 'Equity Eagles', 3, null, 'Rahul Joshi', 20000000),
-  (12, 'Growth Gladiators', 3, null, 'Neel Choudhary', 20000000);
+  (1, 'Brand Blasters', 1, '/teams/brand_blasters.jpeg', '', 20000000),
+  (2, 'Process Panther', 1, '/teams/process_panthers.jpeg', '', 20000000),
+  (3, 'Risk Rangers', 1, '/teams/risk_rangers.jpeg', '', 20000000),
+  (4, 'Talent Titan', 1, '/teams/talent_titan.jpeg', '', 20000000),
+  (5, 'Brand Blasters', 2, '/teams/brand_blasters.jpeg', '', 20000000),
+  (6, 'Process Panther', 2, '/teams/process_panthers.jpeg', '', 20000000),
+  (7, 'Risk Rangers', 2, '/teams/risk_rangers.jpeg', '', 20000000),
+  (8, 'Talent Titan', 2, '/teams/talent_titan.jpeg', '', 20000000),
+  (9, 'Brand Blasters', 3, '/teams/brand_blasters.jpeg', '', 20000000),
+  (10, 'Process Panther', 3, '/teams/process_panthers.jpeg', '', 20000000),
+  (11, 'Risk Rangers', 3, '/teams/risk_rangers.jpeg', '', 20000000),
+  (12, 'Talent Titan', 3, '/teams/talent_titan.jpeg', '', 20000000);
 
 -- Teams' remaining_purse is recalculated by trigger when players are inserted.
 insert into public.players (id, name, sport_id, batch, role_or_position, skills, attributes, photo_url, base_price, status, team_id, sold_price) overriding system value values

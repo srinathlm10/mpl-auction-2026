@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { SportCard } from "@/components/SportCard";
 import { Logo } from "@/components/ui/Logo";
@@ -21,7 +22,11 @@ export default async function HomePage() {
         <div className="relative flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:gap-10">
           <Logo size={112} className="drop-shadow-xl" />
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-amber-300">Player Auction</p>
+            <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-100">
+              <Image src="/nitr_logo.png" alt="" width={28} height={27} className="h-7 w-auto rounded-full bg-white p-0.5" />
+              NIT Rourkela presents
+            </p>
+            <p className="mt-2 text-sm font-semibold uppercase tracking-[0.25em] text-amber-300">Player Auction</p>
             <h1 className="mt-1 font-display text-5xl font-extrabold uppercase leading-none tracking-wide sm:text-7xl">
               {siteConfig.name}
             </h1>

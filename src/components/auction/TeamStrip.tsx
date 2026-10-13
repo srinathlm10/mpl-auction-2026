@@ -38,7 +38,7 @@ export function TeamStrip({ teams, players, squadSize, highlightTeamId }: Props)
               >
                 <div className="flex items-center gap-3">
                   <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-border 2xl:h-16 2xl:w-16">
-                    <PlayerAvatar name={team.name} src={team.logo_url} sizes="64px" className="text-lg" />
+                    <PlayerAvatar fit="contain" name={team.name} src={team.logo_url} sizes="64px" className="text-lg" />
                   </div>
                   <div className="min-w-0">
                     <p className="truncate font-display text-xl font-bold uppercase leading-tight 2xl:text-3xl">{team.name}</p>

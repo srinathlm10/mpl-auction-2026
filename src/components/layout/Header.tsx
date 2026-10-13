@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -25,7 +26,9 @@ export function Header({ items }: { items: NavItem[] }) {
   return (
     <header className="site-nav sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
       <div className="container-page flex h-16 items-center justify-between gap-3">
-        <Link href="/" className="flex items-center gap-2.5" aria-label={`${siteConfig.shortName} home`}>
+        <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label={`${siteConfig.shortName} home`}>
+          <Image src="/nitr_logo.png" alt="NIT Rourkela" width={38} height={37} className="h-9 w-auto" priority />
+          <span aria-hidden className="h-7 w-px bg-border" />
           <Logo size={36} />
           <span className="font-display text-2xl font-extrabold uppercase tracking-wider">{siteConfig.shortName}</span>
         </Link>

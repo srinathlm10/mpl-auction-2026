@@ -42,7 +42,7 @@ export function TeamCorner({ team, bought, squadSize, isHolder, canBid, nextAmou
 
       <button type="button" onClick={onOpenSquad} className="flex items-center gap-3 text-left" aria-label={`${team.name} squad`}>
         <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-border 2xl:h-20 2xl:w-20">
-          <PlayerAvatar name={team.name} src={team.logo_url} sizes="80px" className="text-xl" />
+          <PlayerAvatar fit="contain" name={team.name} src={team.logo_url} sizes="80px" className="text-xl" />
         </div>
         <div className="min-w-0">
           <p className="font-display text-2xl font-extrabold uppercase leading-tight 2xl:text-4xl">{team.name}</p>

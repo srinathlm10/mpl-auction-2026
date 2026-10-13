@@ -62,7 +62,7 @@ export function BiddingPanel({
           {holder ? (
             <>
               <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-border 2xl:h-16 2xl:w-16">
-                <PlayerAvatar name={holder.name} src={holder.logo_url} sizes="64px" className="text-lg" />
+                <PlayerAvatar fit="contain" name={holder.name} src={holder.logo_url} sizes="64px" className="text-lg" />
               </div>
               <p className="font-display text-3xl font-bold uppercase text-accent 2xl:text-5xl">{holder.name}</p>
             </>
@@ -101,7 +101,7 @@ export function BiddingPanel({
                   )}
                 >
                   <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-border">
-                    <PlayerAvatar name={team.name} src={team.logo_url} sizes="56px" className="text-xl" />
+                    <PlayerAvatar fit="contain" name={team.name} src={team.logo_url} sizes="56px" className="text-xl" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-display text-2xl font-bold uppercase leading-tight">{team.name}</p>

@@ -10,7 +10,7 @@ export function TeamCard({ team, squadSize }: { team: TeamWithPlayers; squadSize
     <article className="card flex flex-col overflow-hidden">
       <div className="flex items-center gap-4 border-b border-border p-4">
         <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-border">
-          <PlayerAvatar name={team.name} src={team.logo_url} sizes="64px" className="text-2xl" />
+          <PlayerAvatar fit="contain" name={team.name} src={team.logo_url} sizes="64px" className="text-2xl" />
         </div>
         <div className="min-w-0">
           <h3 className="line-clamp-2 font-display text-2xl font-bold leading-tight">

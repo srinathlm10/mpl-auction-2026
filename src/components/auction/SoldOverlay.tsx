@@ -52,7 +52,7 @@ export function SoldOverlay({ player, team, price, onClose, duration = 9000 }: P
 
           <div className="mt-5 flex items-center justify-center gap-4 md:justify-start">
             <div className="relative h-[clamp(4rem,10vh,7rem)] w-[clamp(4rem,10vh,7rem)] shrink-0 overflow-hidden rounded-2xl border-2 border-white/70 bg-white/10">
-              <PlayerAvatar name={team.name} src={team.logo_url} sizes="112px" className="text-3xl" />
+              <PlayerAvatar fit="contain" name={team.name} src={team.logo_url} sizes="112px" className="text-3xl" />
             </div>
             <div>
               <p className="text-sm uppercase tracking-widest text-indigo-200">Bought by</p>

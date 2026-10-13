@@ -42,7 +42,7 @@ export default async function TeamSquadPage({ params }: Props) {
 
       <header className="mb-6 flex items-center gap-5">
         <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-3xl bg-border">
-          <PlayerAvatar name={team.name} src={team.logo_url} sizes="96px" className="text-4xl" priority />
+          <PlayerAvatar fit="contain" name={team.name} src={team.logo_url} sizes="96px" className="text-4xl" priority />
         </div>
         <div>
           <p className="text-sm font-bold uppercase tracking-widest text-accent">{config.emoji} {sport?.name}</p>

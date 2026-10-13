@@ -50,6 +50,10 @@ npm run dev        # http://localhost:3000
 
 **Keyboard shortcuts** (on `/auction`): **Space** spin / start bidding · **1–4** bid for that corner's team · **U** undo (last bid, or the last Sold/Unsold) · **S** sold · **N** unsold.
 
+**When the wheel stops** a full-screen card shows the player (photo left; sport, role/position, playing style, batch on the right). From there either **assign the player straight to a team** (enter the price – it starts at the base price – and tap the team) or **Start Bidding**, or **Skip** (unsold). Assigning follows the same purse and squad rules as bidding.
+
+**Teams** are Brand Blasters, Process Panther, Risk Rangers and Talent Titan in every sport; their logos are in `public/teams/`. To change a name, captain or logo, edit `src/data/teams.json` and run `npm run db:sync`.
+
 **Mistakes:** *Undo last bid* during bidding, and *Undo sale / Undo unsold* after a result (until the next spin) puts the player back exactly where they were and refunds the purse.
 
 ## Updating players and teams (no SQL)

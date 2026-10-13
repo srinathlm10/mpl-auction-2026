@@ -17,18 +17,18 @@ insert into public.sports (id, name, slug, squad_size) overriding system value v
   (3, 'Football', 'football', 8);
 
 insert into public.teams (id, name, sport_id, logo_url, captain, total_purse) overriding system value values
-  (1, 'Strategy Strikers', 1, null, 'Aarav Mehta', 20000000),
-  (2, 'Finance Titans', 1, null, 'Rohan Iyer', 20000000),
-  (3, 'Marketing Mavericks', 1, null, 'Kabir Nair', 20000000),
-  (4, 'Ops Overdrive', 1, null, 'Vihaan Rao', 20000000),
-  (5, 'HR Hawks', 2, null, 'Ananya Sharma', 20000000),
-  (6, 'Consulting Cobras', 2, null, 'Diya Kapoor', 20000000),
-  (7, 'Analytics Avengers', 2, null, 'Ishita Menon', 20000000),
-  (8, 'Venture Vipers', 2, null, 'Saanvi Reddy', 20000000),
-  (9, 'Brand Blazers', 3, null, 'Arjun Malhotra', 20000000),
-  (10, 'Supply Chain Stallions', 3, null, 'Karan Bhatia', 20000000),
-  (11, 'Equity Eagles', 3, null, 'Rahul Joshi', 20000000),
-  (12, 'Growth Gladiators', 3, null, 'Neel Choudhary', 20000000);
+  (1, 'Brand Blasters', 1, '/teams/brand_blasters.jpeg', '', 20000000),
+  (2, 'Process Panther', 1, '/teams/process_panthers.jpeg', '', 20000000),
+  (3, 'Risk Rangers', 1, '/teams/risk_rangers.jpeg', '', 20000000),
+  (4, 'Talent Titan', 1, '/teams/talent_titan.jpeg', '', 20000000),
+  (5, 'Brand Blasters', 2, '/teams/brand_blasters.jpeg', '', 20000000),
+  (6, 'Process Panther', 2, '/teams/process_panthers.jpeg', '', 20000000),
+  (7, 'Risk Rangers', 2, '/teams/risk_rangers.jpeg', '', 20000000),
+  (8, 'Talent Titan', 2, '/teams/talent_titan.jpeg', '', 20000000),
+  (9, 'Brand Blasters', 3, '/teams/brand_blasters.jpeg', '', 20000000),
+  (10, 'Process Panther', 3, '/teams/process_panthers.jpeg', '', 20000000),
+  (11, 'Risk Rangers', 3, '/teams/risk_rangers.jpeg', '', 20000000),
+  (12, 'Talent Titan', 3, '/teams/talent_titan.jpeg', '', 20000000);
 
 -- Teams' remaining_purse is recalculated by trigger when players are inserted.
 insert into public.players (id, name, sport_id, batch, role_or_position, skills, attributes, photo_url, base_price, status, team_id, sold_price) overriding system value values

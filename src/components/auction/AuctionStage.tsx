@@ -160,7 +160,13 @@ export function AuctionStage({ mode }: Props) {
       try {
         const { data, error: rpcError } = await getBrowserClient().rpc(name, args);
         if (rpcError) {
-          setNotice({ kind: "error", text: rpcError.message });
+          const missing = rpcError.code === "PGRST202" || /could not find the function/i.test(rpcError.message);
+          setNotice({
+            kind: "error",
+            text: missing
+              ? "This button needs the latest database update: run supabase/auction.sql once in the Supabase SQL Editor."
+              : rpcError.message,
+          });
           return false;
         }
         const row = Array.isArray(data) ? data[0] : data;
@@ -337,10 +343,11 @@ export function AuctionStage({ mode }: Props) {
           <div
             role={notice.kind === "error" ? "alert" : "status"}
             className={cn(
-              "flex items-start justify-between gap-3 rounded-xl border px-4 py-3 text-base font-medium",
+              // Floating, so it is visible even over the full-screen player pop-up.
+              "fixed inset-x-3 bottom-4 z-[70] mx-auto flex max-w-2xl items-start justify-between gap-3 rounded-xl border px-4 py-3 text-base font-medium shadow-2xl backdrop-blur",
               notice.kind === "error"
-                ? "border-red-500/40 bg-red-500/10 text-red-600 dark:text-red-400"
-                : "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+                ? "border-red-500/60 bg-surface text-red-600 dark:text-red-400"
+                : "border-emerald-500/60 bg-surface text-emerald-700 dark:text-emerald-400",
             )}
           >
             <span>{notice.text}</span>
@@ -597,8 +604,12 @@ export function AuctionStage({ mode }: Props) {
           config={config}
           pool={activePool}
           basePrice={snap.settings.base_price}
+          teams={sportTeams}
+          squadSize={squadSize}
+          boughtCount={boughtCount}
           admin={admin}
           busy={busy}
+          onAssign={(teamId, price) => void run("auction_assign", { p_team_id: teamId, p_price: price })}
           onStartBidding={() => void run("auction_start_bidding")}
           onSkip={() => void run("auction_unsold")}
         />
