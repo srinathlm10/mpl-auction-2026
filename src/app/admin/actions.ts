@@ -1,37 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { validateSlabs } from "@/lib/auction";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { BidSlab } from "@/lib/types";
 
 export type FormState = { error?: string; saved?: boolean } | undefined;
-
-/* --------------------------------------------------------------------- auth */
-
-export async function signIn(_prev: FormState, formData: FormData): Promise<FormState> {
-  if (!isSupabaseConfigured) return { error: "Supabase is not configured." };
-  const email = String(formData.get("email") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
-  if (!email || !password) return { error: "Enter your email and password." };
-
-  const supabase = await createServerSupabase();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { error: error.message };
-  redirect("/admin/auction");
-}
-
-export async function signOut() {
-  if (isSupabaseConfigured) {
-    const supabase = await createServerSupabase();
-    await supabase.auth.signOut();
-  }
-  redirect("/admin/login");
-}
-
-/* ----------------------------------------------------------------- settings */
 
 interface SettingsPayload {
   basePrice: number;
@@ -41,12 +15,8 @@ interface SettingsPayload {
 
 /** Saves base price, bid increment slabs and squad size per sport. */
 export async function saveSettings(_prev: FormState, formData: FormData): Promise<FormState> {
-  if (!isSupabaseConfigured) return { error: "Supabase is not configured." };
-  const supabase = await createServerSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+  const supabase = createPublicClient();
+  if (!supabase) return { error: "Supabase is not configured." };
 
   let payload: SettingsPayload;
   try {
@@ -63,17 +33,13 @@ export async function saveSettings(_prev: FormState, formData: FormData): Promis
     if (!Number.isInteger(size) || size < 1 || size > 50) return { error: `Squad size (sport ${id}) must be a whole number from 1 to 50.` };
   }
 
-  const settings = await supabase.from("auction_settings").update({ base_price: basePrice, increment_slabs: slabs }).eq("id", 1);
-  if (settings.error) return { error: settings.error.message };
-
-  for (const [id, size] of Object.entries(squads)) {
-    const res = await supabase.from("sports").update({ squad_size: size }).eq("id", Number(id));
-    if (res.error) return { error: res.error.message };
-  }
-
-  // The new base price applies to every player who has not been sold yet.
-  const players = await supabase.from("players").update({ base_price: basePrice }).neq("status", "sold");
-  if (players.error) return { error: players.error.message };
+  // One database action: settings, squad sizes, and the new base price for every unsold player.
+  const { error } = await supabase.rpc("auction_save_settings", {
+    p_base_price: basePrice,
+    p_slabs: slabs,
+    p_squads: squads,
+  });
+  if (error) return { error: error.message };
 
   revalidatePath("/", "layout");
   return { saved: true };

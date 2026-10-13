@@ -2,7 +2,7 @@
 
 Mobile-first website for the MPL player auction (Cricket, Volleyball, Football), with a **live auction**: spin wheel, bidding, SOLD alerts, and a projector screen that mirrors the auctioneer in real time.
 
-**Next.js 15 + Tailwind CSS + Supabase** (Postgres, Auth, Realtime).
+**Next.js 15 + Tailwind CSS + Supabase** (Postgres, Realtime). There are no logins.
 
 ## What runs where
 
@@ -24,17 +24,14 @@ npm run dev        # http://localhost:3000
 2. **SQL Editor** → **New query** → paste the whole of `supabase/setup-all.sql` → **Run**. That one file contains everything below, in the right order, and is safe to re-run. (Or run the three files separately, **in this order**:)
    1. `supabase/schema.sql` – tables, security, purse trigger
    2. `supabase/auction.sql` – auction settings, live state, bids log, auction actions, realtime
-   3. `supabase/seed.sql` – sample data: 30 players, 12 teams, all at ₹1 lakh base and ₹2 crore purse
-3. **Authentication → Users → Add user** (email + password) for the auctioneer. Then **Authentication → Providers → Email** → turn off *Allow new users to sign up*.
-4. Allow that user to run the auction:
-   ```sql
-   insert into public.admins (email) values ('auctioneer@example.com');
-   ```
-5. Copy `.env.example` to `.env.local`, fill in `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Project Settings → API), and restart `npm run dev`.
+   3. `supabase/seed.sql` – the players and teams (112 players, 12 teams, ₹1 lakh base, ₹2 crore purse)
+3. Copy `.env.example` to `.env.local`, fill in `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Project Settings → API), and restart `npm run dev`.
+
+> **No logins.** Anyone who opens `/admin/auction` can run the auction, and anyone with the site's public key could call the auction actions directly. The control screen is not linked from the public site – keep its URL to the organisers. The tables themselves are read-only from outside; data only changes through the auction actions in `auction.sql`.
 
 ## Test the live auction with the sample data
 
-1. Open **two windows**: `http://localhost:3000/admin/auction` (sign in) and `http://localhost:3000/auction` (the projector screen – press **Full screen + sound**).
+1. Open **two windows**: `http://localhost:3000/admin/auction` (the control screen) and `http://localhost:3000/auction` (the projector screen – press **Full screen + sound**).
 2. Admin: choose **Cricket**. The projector switches to Cricket by itself.
 3. Press **Spin** (or tap the wheel). Both screens spin and stop on the same player; the player card appears.
 4. **Start Bidding**. Tap team buttons: the bid goes ₹1 L → ₹6 L → ₹11 L … (₹5 L steps below ₹50 L, ₹10 L steps up to ₹1 Cr, ₹25 L steps above). Try:
@@ -53,7 +50,7 @@ npm run dev        # http://localhost:3000
 
 ## Auction rules & settings
 
-Change in **Admin → Settings** (`/admin/auction/settings`):
+Change in **Settings** (`/admin/auction/settings`):
 
 - **Base price** (default ₹1 lakh) – also updates every player who isn't sold yet.
 - **Bid increment slabs** – any number of "while bid is below X, add Y" rows.
@@ -65,15 +62,15 @@ Change in Supabase **Table Editor**:
 - Number of teams: add or remove rows in `teams` (the bid buttons follow).
 - Players: edit `players`, or edit `src/data/*.json` and run `npm run seed:generate` to rebuild `seed.sql` (re-running the seed wipes auction results).
 
-**Rules the database enforces** (in `supabase/auction.sql`, one locked transaction per action): a team can bid only if, after paying, its remaining purse still covers the rest of its squad at base price; full squads can't bid; a team can't outbid itself; a double-tap can't place two bids; selling updates the player and team purse together; only emails in `admins` can run any of it.
+**Rules the database enforces** (in `supabase/auction.sql`, one locked transaction per action): a team can bid only if, after paying, its remaining purse still covers the rest of its squad at base price; full squads can't bid; a team can't outbid itself; a double-tap can't place two bids; selling updates the player and team purse together.
 
 ## Screens
 
 | URL | Who | What |
 |-----|-----|------|
-| `/admin/auction` | Admin | Sport picker, wheel, Spin, Start Bidding, team bid buttons, Undo / Sold / Unsold, bring back unsold |
+| `/admin/auction` | Auctioneer (no login, unlinked) | Sport picker, wheel, Spin, Start Bidding, team bid buttons, Undo / Sold / Unsold, bring back unsold |
 | `/auction` | Anyone | Projector view of the same live state, SOLD alerts, sound, full screen |
-| `/admin/auction/settings` | Admin | Base price, increments, squad sizes |
+| `/admin/auction/settings` | Auctioneer | Base price, increments, squad sizes |
 | `/auction/summary` | Anyone | Sold and unsold lists, totals, CSV download |
 | `/teams/<id>` | Anyone | One team's squad, spent and remaining purse |
 
@@ -90,14 +87,13 @@ supabase/      schema.sql, auction.sql (live auction migration), seed.sql
 scripts/       generate-seed.mjs  (src/data/*.json -> supabase/seed.sql)
 src/
   data/        players.json, teams.json, sports.json (sample data / no-database fallback)
-  middleware.ts  protects /admin
   app/
     (site)/      public pages + auction/summary + teams/[id]
     (display)/auction/   projector screen
-    admin/       login, (control)/auction, (panel) dashboard + settings, actions.ts
+    admin/       (control)/auction, (panel) dashboard + settings, actions.ts
   components/
     auction/     AuctionStage, SpinWheel, BiddingPanel, PlayerReveal, TeamStrip, SoldOverlay, Confetti, SportSelector
-    admin/       AdminGuard, AdminNav, SettingsForm, SetupNotice
+    admin/       AdminNav, SettingsForm, SetupNotice
   lib/
     auction.ts   bid increment + affordability rules (mirrors the SQL)
     use-auction.ts  live snapshot hook (Realtime + fallback polling)

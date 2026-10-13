@@ -215,8 +215,8 @@ create table if not exists public.bids (
 create index if not exists bids_player_idx on public.bids (player_id, id);
 
 -- ---------------------------------------------------------------------------
--- Row Level Security: everyone can read; only admins can change settings.
--- The live state and bids are changed ONLY through the functions below.
+-- Row Level Security: everyone can read. Nothing can be written directly;
+-- settings, live state and bids change ONLY through the functions below.
 -- ---------------------------------------------------------------------------
 
 alter table public.auction_settings enable row level security;
@@ -226,24 +226,17 @@ alter table public.bids             enable row level security;
 drop policy if exists "public read auction_settings" on public.auction_settings;
 drop policy if exists "public read auction_state"    on public.auction_state;
 drop policy if exists "public read bids"             on public.bids;
-drop policy if exists "admin write auction_settings" on public.auction_settings;
+drop policy if exists "admin write auction_settings" on public.auction_settings;  -- from the login version
 create policy "public read auction_settings" on public.auction_settings for select using (true);
 create policy "public read auction_state"    on public.auction_state    for select using (true);
 create policy "public read bids"             on public.bids             for select using (true);
-create policy "admin write auction_settings" on public.auction_settings for all
-  using (public.is_admin()) with check (public.is_admin());
 
 -- ---------------------------------------------------------------------------
 -- Helpers
 -- ---------------------------------------------------------------------------
 
-create or replace function public.auction_require_admin()
-returns void language plpgsql stable as $$
-begin
-  if not public.is_admin() then
-    raise exception 'Not authorised: sign in as an admin.';
-  end if;
-end $$;
+-- No logins: the auction actions are open to anyone who can open the control screen.
+drop function if exists public.auction_require_admin();
 
 create or replace function public.auction_increment(p_current bigint)
 returns bigint language plpgsql stable as $$
@@ -269,7 +262,6 @@ create or replace function public.auction_set_sport(p_sport_id bigint)
 returns public.auction_state language plpgsql security definer set search_path = public as $$
 declare st public.auction_state;
 begin
-  perform public.auction_require_admin();
   select * into st from public.auction_state where id = 1 for update;
   if st.status in ('spinning', 'bidding') then
     raise exception 'Finish the current player before changing the sport.';
@@ -289,7 +281,6 @@ create or replace function public.auction_set_pool(p_pool text)
 returns public.auction_state language plpgsql security definer set search_path = public as $$
 declare st public.auction_state;
 begin
-  perform public.auction_require_admin();
   select * into st from public.auction_state where id = 1 for update;
   if st.status in ('spinning', 'bidding') then
     raise exception 'Finish the current player before switching wheels.';
@@ -307,7 +298,6 @@ create or replace function public.auction_select_player(p_player_id bigint)
 returns public.auction_state language plpgsql security definer set search_path = public as $$
 declare st public.auction_state; pl public.players;
 begin
-  perform public.auction_require_admin();
   select * into st from public.auction_state where id = 1 for update;
   if st.sport_id is null then raise exception 'Choose a sport first.'; end if;
   if st.status in ('spinning', 'bidding') then raise exception 'A player is already on the block.'; end if;
@@ -325,7 +315,6 @@ create or replace function public.auction_start_bidding()
 returns public.auction_state language plpgsql security definer set search_path = public as $$
 declare st public.auction_state;
 begin
-  perform public.auction_require_admin();
   select * into st from public.auction_state where id = 1 for update;
   if st.status <> 'spinning' then raise exception 'Spin the wheel first.'; end if;
   update public.auction_state
@@ -347,7 +336,6 @@ declare
   st public.auction_state; tm public.teams;
   v_squad int; v_bought int; v_amount bigint; v_base bigint; v_reserve bigint;
 begin
-  perform public.auction_require_admin();
   select * into st from public.auction_state where id = 1 for update;
   if st.status <> 'bidding' then raise exception 'Bidding is not open.'; end if;
 
@@ -384,7 +372,6 @@ create or replace function public.auction_undo_bid()
 returns public.auction_state language plpgsql security definer set search_path = public as $$
 declare st public.auction_state; last_bid public.bids; prev_bid public.bids;
 begin
-  perform public.auction_require_admin();
   select * into st from public.auction_state where id = 1 for update;
   if st.status <> 'bidding' then raise exception 'Bidding is not open.'; end if;
 
@@ -408,7 +395,6 @@ create or replace function public.auction_sold()
 returns public.auction_state language plpgsql security definer set search_path = public as $$
 declare st public.auction_state;
 begin
-  perform public.auction_require_admin();
   select * into st from public.auction_state where id = 1 for update;
   if st.status <> 'bidding' then raise exception 'Bidding is not open.'; end if;
   if st.highest_team_id is null then raise exception 'Nobody has bid yet. Use Unsold instead.'; end if;
@@ -427,7 +413,6 @@ create or replace function public.auction_unsold()
 returns public.auction_state language plpgsql security definer set search_path = public as $$
 declare st public.auction_state;
 begin
-  perform public.auction_require_admin();
   select * into st from public.auction_state where id = 1 for update;
   if st.status not in ('spinning', 'bidding') then raise exception 'No player is on the block.'; end if;
   if exists (select 1 from public.bids where player_id = st.current_player_id and voided_at is null) then
@@ -446,7 +431,6 @@ create or replace function public.auction_bring_back_unsold()
 returns int language plpgsql security definer set search_path = public as $$
 declare st public.auction_state; n int;
 begin
-  perform public.auction_require_admin();
   select * into st from public.auction_state where id = 1 for update;
   if st.sport_id is null then raise exception 'Choose a sport first.'; end if;
   update public.players set status = 'available' where sport_id = st.sport_id and status = 'unsold';
@@ -461,7 +445,6 @@ create or replace function public.auction_reset_sport(p_sport_id bigint)
 returns public.auction_state language plpgsql security definer set search_path = public as $$
 declare st public.auction_state;
 begin
-  perform public.auction_require_admin();
   select * into st from public.auction_state where id = 1 for update;
   delete from public.bids where player_id in (select id from public.players where sport_id = p_sport_id);
   update public.players set status = 'available', team_id = null, sold_price = null where sport_id = p_sport_id;
@@ -473,18 +456,34 @@ begin
   return st;
 end $$;
 
--- Only signed-in users may call the actions (each one also checks is_admin()).
+-- Settings page: base price (also applied to unsold players), bid slabs, squad sizes.
+create or replace function public.auction_save_settings(p_base_price bigint, p_slabs jsonb, p_squads jsonb)
+returns void language plpgsql security definer set search_path = public as $$
+declare k text; v jsonb; n int;
+begin
+  if p_base_price is null or p_base_price <= 0 then raise exception 'Base price must be a positive amount.'; end if;
+  if jsonb_typeof(p_slabs) is distinct from 'array' or jsonb_array_length(p_slabs) = 0 then
+    raise exception 'Add at least one bid increment slab.';
+  end if;
+  update public.auction_settings set base_price = p_base_price, increment_slabs = p_slabs where id = 1;
+  for k, v in select key, value from jsonb_each(coalesce(p_squads, '{}'::jsonb)) loop
+    n := (v #>> '{}')::int;
+    if n < 1 or n > 50 then raise exception 'Squad size must be between 1 and 50.'; end if;
+    update public.sports set squad_size = n where id = k::bigint;
+  end loop;
+  update public.players set base_price = p_base_price where status <> 'sold';
+end $$;
+
+-- No logins: anyone with the site (anon key) may call the actions.
 do $$
 declare f text;
 begin
   foreach f in array array[
     'auction_set_sport(bigint)', 'auction_set_pool(text)', 'auction_select_player(bigint)', 'auction_start_bidding()',
     'auction_place_bid(bigint,bigint)', 'auction_undo_bid()', 'auction_sold()', 'auction_unsold()',
-    'auction_bring_back_unsold()', 'auction_reset_sport(bigint)'
+    'auction_bring_back_unsold()', 'auction_reset_sport(bigint)', 'auction_save_settings(bigint,jsonb,jsonb)'
   ] loop
-    execute format('revoke execute on function public.%s from public', f);
-    execute format('revoke execute on function public.%s from anon', f);
-    execute format('grant execute on function public.%s to authenticated', f);
+    execute format('grant execute on function public.%s to anon, authenticated', f);
   end loop;
 end $$;
 

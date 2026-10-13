@@ -1,18 +1,16 @@
-import { AdminGuard } from "@/components/admin/AdminGuard";
 import { AdminNav } from "@/components/admin/AdminNav";
+import { SetupNotice } from "@/components/admin/SetupNotice";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Admin", robots: { index: false, follow: false } };
+export const metadata = { title: "Auction admin", robots: { index: false, follow: false } };
 
 export default function PanelLayout({ children }: { children: React.ReactNode }) {
+  if (!isSupabaseConfigured) return <SetupNotice />;
   return (
-    <AdminGuard>
-      {(user) => (
-        <>
-          <AdminNav email={user.email} />
-          <main className="container-page py-6 sm:py-8">{children}</main>
-        </>
-      )}
-    </AdminGuard>
+    <>
+      <AdminNav />
+      <main className="container-page py-6 sm:py-8">{children}</main>
+    </>
   );
 }

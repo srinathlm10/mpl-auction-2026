@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "@/app/admin/actions";
 import { Logo } from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { cn } from "@/lib/format";
@@ -12,7 +11,7 @@ const LINKS = [
   { href: "/admin/auction/settings", label: "Settings" },
 ];
 
-export function AdminNav({ email }: { email?: string }) {
+export function AdminNav() {
   const pathname = usePathname();
 
   return (
@@ -26,9 +25,6 @@ export function AdminNav({ email }: { email?: string }) {
           <Link href="/admin/auction" className="btn-primary hidden sm:inline-flex">Open auction control</Link>
           <Link href="/" className="btn-outline hidden sm:inline-flex">View site</Link>
           <ThemeToggle />
-          <form action={signOut}>
-            <button type="submit" className="btn-outline" title={email}>Sign out</button>
-          </form>
         </div>
       </div>
       <nav aria-label="Admin" className="container-page -mb-px flex gap-1 overflow-x-auto">

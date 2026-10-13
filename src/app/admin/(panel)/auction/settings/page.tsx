@@ -1,9 +1,10 @@
 import { SettingsForm } from "@/components/admin/SettingsForm";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { AuctionSettings, Sport } from "@/lib/types";
 
 export default async function AuctionSettingsPage() {
-  const supabase = await createServerSupabase();
+  const supabase = createPublicClient();
+  if (!supabase) return null; // the layout already shows the setup notice
   const [settings, sports] = await Promise.all([
     supabase.from("auction_settings").select("*").eq("id", 1).single(),
     supabase.from("sports").select("*").order("id"),
