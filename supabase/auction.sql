@@ -1,6 +1,13 @@
 -- MPL Live Auction – migration
--- Run AFTER schema.sql (and before/after seed.sql, either order works).
--- Safe to re-run, except the squad-size default for volleyball (see below).
+-- Run order in the Supabase SQL editor: 1) schema.sql  2) auction.sql (this file)  3) seed.sql
+-- Safe to re-run.
+
+do $$
+begin
+  if to_regclass('public.sports') is null or to_regclass('public.players') is null or to_regclass('public.teams') is null then
+    raise exception 'Run supabase/schema.sql first, then this file (auction.sql), then seed.sql.';
+  end if;
+end $$;
 
 -- ---------------------------------------------------------------------------
 -- Settings
