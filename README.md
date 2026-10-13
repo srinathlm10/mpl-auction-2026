@@ -52,6 +52,22 @@ npm run dev        # http://localhost:3000
 
 **Mistakes:** *Undo last bid* during bidding, and *Undo sale / Undo unsold* after a result (until the next spin) puts the player back exactly where they were and refunds the purse.
 
+## Updating players and teams (no SQL)
+
+1. Edit `src/data/players.json` / `teams.json` (or send the list to whoever maintains the site).
+2. Run `npm run db:sync -- --dry` to preview, then `npm run db:sync` to update the live database.
+3. Commit and push, so the site files match.
+
+The sync matches players by **sport + name**: new names are added, details (role, playing style, photo, batch) are updated, and names you removed are deleted – **except players already sold, which are never touched**. Bids, results, purses and settings are left alone, so it is safe during the auction. It needs `SUPABASE_SECRET_KEY` in `.env.local` (Supabase → Project Settings → API Keys → secret key). Keep that key private: never commit it and never give it a `NEXT_PUBLIC_` name.
+
+## Sound
+
+Sounds are made in the browser (Web Audio), so there are no audio files – they play through whatever speakers the device uses (laptop → HDMI/projector or a Bluetooth speaker).
+
+- Browsers only allow sound after a click: on `/auction` the first button you press turns it on; on `/auction/screen` press **Full screen + sound**. You hear a short test chime when sound switches on.
+- **🔊 Sound / 🔇 Muted** in the auction bar mutes that screen. If both screens are in the same room, keep sound on only one of them to avoid an echo.
+- What you hear: ticks while the wheel spins, a chime when it stops, a blip for every bid, a fanfare and cheer on SOLD, a low tone on unsold.
+
 ## Auction rules & settings
 
 Change in **Settings** (`/admin/auction/settings`):

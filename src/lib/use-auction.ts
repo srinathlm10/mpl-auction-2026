@@ -5,6 +5,8 @@ import { isMuted, subscribeMuted } from "./sound";
 import { getBrowserClient } from "./supabase/browser";
 import type { AuctionSettings, AuctionSnapshot, AuctionState, Bid, Player, Sport, Team } from "./types";
 
+const isOlder = (a: AuctionState, b: AuctionState) => Date.parse(a.updated_at) < Date.parse(b.updated_at);
+
 export function useMuted() {
   return useSyncExternalStore(subscribeMuted, isMuted, () => false);
 }
@@ -22,6 +24,9 @@ export function useAuctionSnapshot() {
   const [connected, setConnected] = useState(false);
   const loading = useRef(false);
   const again = useRef(false);
+  // Newest live state shown so far. A slow refresh that started before an action
+  // must never put an older state back on screen (it would make the next bid stale).
+  const latest = useRef<AuctionState | null>(null);
 
   const refresh = useCallback(async () => {
     if (loading.current) {
@@ -36,6 +41,7 @@ export function useAuctionSnapshot() {
         const stateRes = await sb.from("auction_state").select("*").eq("id", 1).single();
         if (stateRes.error) throw new Error(stateRes.error.message);
         const state = stateRes.data as AuctionState;
+        if (latest.current && isOlder(state, latest.current)) continue; // stale – a newer refresh follows
 
         const [settings, sports, teams, players, bids] = await Promise.all([
           sb.from("auction_settings").select("*").eq("id", 1).single(),
@@ -51,7 +57,10 @@ export function useAuctionSnapshot() {
         ]);
         const failed = [settings, sports, teams, players, bids].find((r) => r.error);
         if (failed?.error) throw new Error(failed.error.message);
+        // Check again: an action may have finished while the rest was loading.
+        if (latest.current && isOlder(state, latest.current)) continue;
 
+        latest.current = state;
         setSnap({
           state,
           settings: settings.data as AuctionSettings,
@@ -94,6 +103,8 @@ export function useAuctionSnapshot() {
 
   /** Show a state returned by an RPC immediately, before realtime catches up. */
   const applyState = useCallback((state: AuctionState) => {
+    if (latest.current && isOlder(state, latest.current)) return;
+    latest.current = state;
     setSnap((current) => (current ? { ...current, state } : current));
   }, []);
 

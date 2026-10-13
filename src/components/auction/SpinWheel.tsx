@@ -29,7 +29,7 @@ interface Props {
   /** Called when the wheel is at rest on `spinId` (after animating, or on first load). */
   onSettled?: (spinId: number) => void;
   onTick?: () => void;
-  /** Tapping the wheel (admin only). */
+  /** Spin from the button in the centre of the wheel (control screen, when a spin is allowed). */
   onTap?: () => void;
 }
 
@@ -346,13 +346,20 @@ export function SpinWheel(props: Props) {
         aria-hidden
         className="pointer-events-none absolute left-1/2 top-0 z-10 h-0 w-0 -translate-x-1/2 -translate-y-[10%] border-x-[16px] border-t-[34px] border-x-transparent border-t-white drop-shadow-[0_3px_3px_rgba(0,0,0,0.6)]"
       />
-      <canvas
-        ref={canvasRef}
-        role="img"
-        aria-label="Player wheel"
-        onClick={onTap}
-        className={onTap ? "cursor-pointer rounded-full" : "rounded-full"}
-      />
+      <canvas ref={canvasRef} role="img" aria-label="Player wheel" className="rounded-full" />
+      {/* Centre button: the only part of the wheel that spins it (no accidental spins) */}
+      {onTap && (
+        <button
+          type="button"
+          onClick={onTap}
+          aria-label="Spin the wheel"
+          className="absolute left-1/2 top-1/2 z-10 flex aspect-square w-[22%] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-[5px] border-amber-400 bg-slate-900 text-white shadow-[0_0_0_6px_rgba(0,0,0,0.25)] transition hover:scale-105 active:scale-95"
+        >
+          <span aria-hidden className="absolute inset-0 animate-ping rounded-full bg-amber-400/25" />
+          <span aria-hidden className="relative text-[clamp(1rem,3vw,2.2rem)] leading-none">{emoji}</span>
+          <span className="relative font-display text-[clamp(0.9rem,2.2vw,1.8rem)] font-extrabold uppercase tracking-widest">Spin</span>
+        </button>
+      )}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BiddingPanel } from "@/components/auction/BiddingPanel";
 import { Confetti } from "@/components/auction/Confetti";
 import { PlayerReveal } from "@/components/auction/PlayerReveal";
+import { PlayerSpotlight } from "@/components/auction/PlayerSpotlight";
 import { PoolChooser } from "@/components/auction/PoolChooser";
 import { SoldOverlay } from "@/components/auction/SoldOverlay";
 import { SpinWheel } from "@/components/auction/SpinWheel";
@@ -195,6 +196,7 @@ export function AuctionStage({ mode }: Props) {
 
   function toggleFullscreen() {
     unlockAudio();
+    if (!soundOn && !muted) setTimeout(() => sounds.wheelStop(), 150); // test chime the first time
     setSoundOn(true);
     if (document.fullscreenElement) void document.exitFullscreen();
     else void document.documentElement.requestFullscreen?.();
@@ -269,7 +271,7 @@ export function AuctionStage({ mode }: Props) {
   return (
     <div className="min-h-screen" style={config ? accentStyle(config) : undefined}>
       {/* Top bar */}
-      <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
+      <header className="border-b border-border bg-surface/60">
         <div className="mx-auto flex max-w-[1800px] flex-wrap items-center justify-between gap-2 px-3 py-2 sm:px-5">
           <div className="flex items-center gap-3">
             <Logo size={36} />
@@ -298,10 +300,13 @@ export function AuctionStage({ mode }: Props) {
                 unlockAudio();
                 setSoundOn(true);
                 setMuted(!muted);
+                // Turning sound on plays a short chime, so the speakers can be checked before the auction.
+                if (muted) setTimeout(() => sounds.wheelStop(), 150);
               }}
               className="btn-outline min-h-[40px] px-3"
               aria-pressed={muted}
               aria-label={muted ? "Unmute sounds" : "Mute sounds"}
+              title={muted ? "Turn sound on (plays a test chime)" : "Mute this screen (use one screen for sound to avoid an echo)"}
             >
               {muted ? "🔇 Muted" : "🔊 Sound"}
             </button>
@@ -363,8 +368,8 @@ export function AuctionStage({ mode }: Props) {
             {(() => {
               // Four teams -> one in each corner around the wheel. Any other count -> a strip below.
               const cornerLayout = sportTeams.length === 4;
-              const showWheel =
-                (!needsPoolChoice && (status === "idle" || status === "sold" || status === "unsold")) || (status === "spinning" && !reveal);
+              // The wheel stays visible while spinning and behind the player pop-up.
+              const showWheel = (!needsPoolChoice && (status === "idle" || status === "sold" || status === "unsold")) || status === "spinning";
 
               const center = (
                 <div className="space-y-4" aria-live="polite">
@@ -499,28 +504,6 @@ export function AuctionStage({ mode }: Props) {
                     </>
                   )}
 
-                  {/* Wheel stopped: the chosen player */}
-                  {reveal && currentPlayer && (
-                    <>
-                      <PlayerReveal player={currentPlayer} config={config} basePrice={snap.settings.base_price} />
-                      {admin && (
-                        <div className="grid grid-cols-3 gap-3">
-                          <button
-                            type="button"
-                            disabled={busy}
-                            onClick={() => void run("auction_start_bidding")}
-                            className="btn-primary col-span-2 min-h-[64px] text-xl"
-                          >
-                            Start Bidding <Kbd>Space</Kbd>
-                          </button>
-                          <button type="button" disabled={busy} onClick={() => void run("auction_unsold")} className="btn-danger min-h-[64px]">
-                            Skip → Unsold <Kbd>N</Kbd>
-                          </button>
-                        </div>
-                      )}
-                    </>
-                  )}
-
                   {/* Bidding: current bid in the middle, bid buttons on the team corners */}
                   {status === "bidding" && currentPlayer && (
                     <>
@@ -608,6 +591,18 @@ export function AuctionStage({ mode }: Props) {
             />
           ) : null;
         })()}
+      {reveal && currentPlayer && config && !soldView && (
+        <PlayerSpotlight
+          player={currentPlayer}
+          config={config}
+          pool={activePool}
+          basePrice={snap.settings.base_price}
+          admin={admin}
+          busy={busy}
+          onStartBidding={() => void run("auction_start_bidding")}
+          onSkip={() => void run("auction_unsold")}
+        />
+      )}
       {soldView && soldPlayer && soldTeam && (
         <SoldOverlay player={soldPlayer} team={soldTeam} price={soldView.price} onClose={() => setSoldView(null)} />
       )}

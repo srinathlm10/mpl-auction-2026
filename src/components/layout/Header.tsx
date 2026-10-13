@@ -23,7 +23,7 @@ export function Header({ items }: { items: NavItem[] }) {
   const isActive = (href: string) => (href === "/" || href === "/auction" ? pathname === href : pathname.startsWith(href));
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
+    <header className="site-nav sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
       <div className="container-page flex h-16 items-center justify-between gap-3">
         <Link href="/" className="flex items-center gap-2.5" aria-label={`${siteConfig.shortName} home`}>
           <Logo size={36} />

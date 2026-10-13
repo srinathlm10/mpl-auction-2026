@@ -78,6 +78,11 @@
   }
 }
 
+/* Projector full screen: hide the site menu so the auction fills the screen */
+:root:fullscreen .site-nav {
+  display: none;
+}
+
 /* Auction animations */
 @keyframes reveal {
   from {
