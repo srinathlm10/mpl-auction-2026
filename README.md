@@ -47,7 +47,7 @@ npm run dev        # http://localhost:3000
 8. See results at `/auction/summary` (with **Download CSV**) and each squad at `/teams/<id>`.
 9. **Reset Cricket auction (testing)** at the bottom of the control screen restores everything for that sport.
 
-> All three sports use the same 21 players (volleyball and football positions not filled in yet). With 4 teams the squads can't fill up (cricket needs 48), so lower the squad size in Settings to try the "squad full" rule.
+> All three sports use the same 21 real players, topped up with placeholders ("Player 22", "Player 23" …) so every squad can be filled: Cricket 48 (4 × 12), Volleyball 32 (4 × 8), Football 44 (4 × 11). Every player uses the placeholder photo `public/players/placeholder.svg` until a real one is added: put the photo in `public/players/` and change that player's `photo_url`.
 
 **Cricket has two wheels.** Tabs above the wheel switch between **Batsmen** (batsmen, wicketkeepers, fielders) and **Bowlers & all-rounders**; the projector follows. A player whose role is in neither list goes on the Batsmen wheel. The groups are `pools` in `src/lib/sports.ts`.
 

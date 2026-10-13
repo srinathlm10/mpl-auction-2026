@@ -24,7 +24,9 @@ export function PlayerAvatar({ name, src, sizes, priority = false, className }: 
         fill
         sizes={sizes}
         priority={priority}
-        className={cn("object-cover", className)}
+        // SVGs (like the placeholder photo) are already tiny and sharp; serve them as-is.
+        unoptimized={src.endsWith(".svg")}
+        className={cn("object-cover object-top", className)}
       />
     );
   }
