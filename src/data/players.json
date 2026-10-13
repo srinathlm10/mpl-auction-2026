@@ -337,12 +337,14 @@
   },
   {
     "id": 22,
-    "name": "Player 22",
+    "name": "Skand Kumar",
     "sport_id": 1,
     "batch": "",
     "role_or_position": "All-rounder",
     "skills": {},
-    "attributes": {},
+    "attributes": {
+      "bowling_action": "Round arm"
+    },
     "photo_url": "/players/placeholder.svg",
     "base_price": 100000,
     "status": "available",
@@ -351,12 +353,14 @@
   },
   {
     "id": 23,
-    "name": "Player 23",
+    "name": "Gajji Srinath",
     "sport_id": 1,
     "batch": "",
     "role_or_position": "Batsman",
     "skills": {},
-    "attributes": {},
+    "attributes": {
+      "bowling_action": "Round arm"
+    },
     "photo_url": "/players/placeholder.svg",
     "base_price": 100000,
     "status": "available",
@@ -365,12 +369,14 @@
   },
   {
     "id": 24,
-    "name": "Player 24",
+    "name": "Pursottam Periwal",
     "sport_id": 1,
     "batch": "",
     "role_or_position": "All-rounder",
     "skills": {},
-    "attributes": {},
+    "attributes": {
+      "bowling_action": "Round arm"
+    },
     "photo_url": "/players/placeholder.svg",
     "base_price": 100000,
     "status": "available",
@@ -379,12 +385,14 @@
   },
   {
     "id": 25,
-    "name": "Player 25",
+    "name": "Prajwal Kale",
     "sport_id": 1,
     "batch": "",
-    "role_or_position": "Batsman",
+    "role_or_position": "All-rounder",
     "skills": {},
-    "attributes": {},
+    "attributes": {
+      "bowling_action": "Round arm"
+    },
     "photo_url": "/players/placeholder.svg",
     "base_price": 100000,
     "status": "available",
@@ -393,12 +401,14 @@
   },
   {
     "id": 26,
-    "name": "Player 26",
+    "name": "Subroto Das",
     "sport_id": 1,
     "batch": "",
     "role_or_position": "All-rounder",
     "skills": {},
-    "attributes": {},
+    "attributes": {
+      "bowling_action": "Round arm"
+    },
     "photo_url": "/players/placeholder.svg",
     "base_price": 100000,
     "status": "available",
@@ -407,12 +417,14 @@
   },
   {
     "id": 27,
-    "name": "Player 27",
+    "name": "Divy Singh",
     "sport_id": 1,
     "batch": "",
-    "role_or_position": "Batsman",
+    "role_or_position": "All-rounder",
     "skills": {},
-    "attributes": {},
+    "attributes": {
+      "bowling_action": "Non-round arm"
+    },
     "photo_url": "/players/placeholder.svg",
     "base_price": 100000,
     "status": "available",
@@ -421,12 +433,14 @@
   },
   {
     "id": 28,
-    "name": "Player 28",
+    "name": "Ishan Khan",
     "sport_id": 1,
     "batch": "",
     "role_or_position": "All-rounder",
     "skills": {},
-    "attributes": {},
+    "attributes": {
+      "bowling_action": "Round arm"
+    },
     "photo_url": "/players/placeholder.svg",
     "base_price": 100000,
     "status": "available",
@@ -435,12 +449,14 @@
   },
   {
     "id": 29,
-    "name": "Player 29",
+    "name": "Prince Prasoon",
     "sport_id": 1,
     "batch": "",
     "role_or_position": "Batsman",
     "skills": {},
-    "attributes": {},
+    "attributes": {
+      "bowling_action": "Non-round arm"
+    },
     "photo_url": "/players/placeholder.svg",
     "base_price": 100000,
     "status": "available",
@@ -449,12 +465,14 @@
   },
   {
     "id": 30,
-    "name": "Player 30",
+    "name": "Moquit Ur Rahman Bharti",
     "sport_id": 1,
     "batch": "",
     "role_or_position": "All-rounder",
     "skills": {},
-    "attributes": {},
+    "attributes": {
+      "bowling_action": "Round arm"
+    },
     "photo_url": "/players/placeholder.svg",
     "base_price": 100000,
     "status": "available",
@@ -480,7 +498,7 @@
     "name": "Player 32",
     "sport_id": 1,
     "batch": "",
-    "role_or_position": "All-rounder",
+    "role_or_position": "Batsman",
     "skills": {},
     "attributes": {},
     "photo_url": "/players/placeholder.svg",
@@ -508,7 +526,7 @@
     "name": "Player 34",
     "sport_id": 1,
     "batch": "",
-    "role_or_position": "All-rounder",
+    "role_or_position": "Batsman",
     "skills": {},
     "attributes": {},
     "photo_url": "/players/placeholder.svg",
@@ -1009,7 +1027,7 @@
   },
   {
     "id": 70,
-    "name": "Player 22",
+    "name": "Skand Kumar",
     "sport_id": 2,
     "batch": "",
     "role_or_position": "",
@@ -1023,7 +1041,7 @@
   },
   {
     "id": 71,
-    "name": "Player 23",
+    "name": "Gajji Srinath",
     "sport_id": 2,
     "batch": "",
     "role_or_position": "",
@@ -1037,7 +1055,7 @@
   },
   {
     "id": 72,
-    "name": "Player 24",
+    "name": "Pursottam Periwal",
     "sport_id": 2,
     "batch": "",
     "role_or_position": "",
@@ -1051,7 +1069,7 @@
   },
   {
     "id": 73,
-    "name": "Player 25",
+    "name": "Prajwal Kale",
     "sport_id": 2,
     "batch": "",
     "role_or_position": "",
@@ -1065,7 +1083,7 @@
   },
   {
     "id": 74,
-    "name": "Player 26",
+    "name": "Subroto Das",
     "sport_id": 2,
     "batch": "",
     "role_or_position": "",
@@ -1079,7 +1097,7 @@
   },
   {
     "id": 75,
-    "name": "Player 27",
+    "name": "Divy Singh",
     "sport_id": 2,
     "batch": "",
     "role_or_position": "",
@@ -1093,7 +1111,7 @@
   },
   {
     "id": 76,
-    "name": "Player 28",
+    "name": "Ishan Khan",
     "sport_id": 2,
     "batch": "",
     "role_or_position": "",
@@ -1107,7 +1125,7 @@
   },
   {
     "id": 77,
-    "name": "Player 29",
+    "name": "Prince Prasoon",
     "sport_id": 2,
     "batch": "",
     "role_or_position": "",
@@ -1121,7 +1139,7 @@
   },
   {
     "id": 78,
-    "name": "Player 30",
+    "name": "Moquit Ur Rahman Bharti",
     "sport_id": 2,
     "batch": "",
     "role_or_position": "",
@@ -1457,7 +1475,7 @@
   },
   {
     "id": 102,
-    "name": "Player 22",
+    "name": "Skand Kumar",
     "sport_id": 3,
     "batch": "",
     "role_or_position": "",
@@ -1471,7 +1489,7 @@
   },
   {
     "id": 103,
-    "name": "Player 23",
+    "name": "Gajji Srinath",
     "sport_id": 3,
     "batch": "",
     "role_or_position": "",
@@ -1485,7 +1503,7 @@
   },
   {
     "id": 104,
-    "name": "Player 24",
+    "name": "Pursottam Periwal",
     "sport_id": 3,
     "batch": "",
     "role_or_position": "",
@@ -1499,7 +1517,7 @@
   },
   {
     "id": 105,
-    "name": "Player 25",
+    "name": "Prajwal Kale",
     "sport_id": 3,
     "batch": "",
     "role_or_position": "",
@@ -1513,7 +1531,7 @@
   },
   {
     "id": 106,
-    "name": "Player 26",
+    "name": "Subroto Das",
     "sport_id": 3,
     "batch": "",
     "role_or_position": "",
@@ -1527,7 +1545,7 @@
   },
   {
     "id": 107,
-    "name": "Player 27",
+    "name": "Divy Singh",
     "sport_id": 3,
     "batch": "",
     "role_or_position": "",
@@ -1541,7 +1559,7 @@
   },
   {
     "id": 108,
-    "name": "Player 28",
+    "name": "Ishan Khan",
     "sport_id": 3,
     "batch": "",
     "role_or_position": "",
@@ -1555,7 +1573,7 @@
   },
   {
     "id": 109,
-    "name": "Player 29",
+    "name": "Prince Prasoon",
     "sport_id": 3,
     "batch": "",
     "role_or_position": "",
@@ -1569,7 +1587,7 @@
   },
   {
     "id": 110,
-    "name": "Player 30",
+    "name": "Moquit Ur Rahman Bharti",
     "sport_id": 3,
     "batch": "",
     "role_or_position": "",

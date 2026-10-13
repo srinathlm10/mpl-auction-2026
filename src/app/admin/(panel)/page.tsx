@@ -41,8 +41,8 @@ export default async function AdminDashboard() {
       </section>
 
       <section className="flex flex-wrap gap-3">
-        <Link href="/admin/auction" className="btn-primary">Open auction control</Link>
-        <Link href="/auction" target="_blank" className="btn-outline">Projector screen ↗</Link>
+        <Link href="/auction" className="btn-primary">Open the auction</Link>
+        <Link href="/auction/screen" target="_blank" className="btn-outline">Projector screen ↗</Link>
         <Link href="/admin/auction/settings" className="btn-outline">Auction settings</Link>
         <Link href="/auction/summary" className="btn-outline">Results &amp; CSV</Link>
       </section>

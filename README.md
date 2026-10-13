@@ -9,7 +9,7 @@ Mobile-first website for the MPL player auction (Cricket, Volleyball, Football),
 | Part | Needs Supabase? |
 |------|-----------------|
 | Public pages (home, sports, players, teams, rules, results) | No – falls back to the JSON files in `src/data` |
-| Live auction: `/admin/auction` (control) and `/auction` (projector) | **Yes** |
+| Live auction: `/auction` (run it) and `/auction/screen` (projector) | **Yes** |
 
 ## Run locally
 
@@ -27,11 +27,11 @@ npm run dev        # http://localhost:3000
    3. `supabase/seed.sql` – the players and teams (112 players, 12 teams, ₹1 lakh base, ₹2 crore purse)
 3. Copy `.env.example` to `.env.local`, fill in `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Project Settings → API Keys; older projects can use `NEXT_PUBLIC_SUPABASE_ANON_KEY`), and restart `npm run dev`.
 
-> **No logins.** Anyone who opens `/admin/auction` can run the auction, and anyone with the site's public key could call the auction actions directly. The control screen is not linked from the public site – keep its URL to the organisers. The tables themselves are read-only from outside; data only changes through the auction actions in `auction.sql`.
+> **No logins.** Anyone who opens `/auction` can run the auction, and anyone with the site's public key could call the auction actions directly. The view-only projector copy is at `/auction/screen`. The tables themselves are read-only from outside; data only changes through the auction actions in `auction.sql`.
 
 ## Test the live auction with the sample data
 
-1. Open **two windows**: `http://localhost:3000/admin/auction` (the control screen) and `http://localhost:3000/auction` (the projector screen – press **Full screen + sound**).
+1. Open **two windows**: `http://localhost:3000/auction` (runs the auction) and `http://localhost:3000/auction/screen` (the projector screen – press **Full screen + sound**).
 2. Admin: choose **Cricket**. The projector switches to Cricket by itself.
 3. Press **Spin** (or tap the wheel). Both screens spin and stop on the same player; the player card appears.
 4. **Start Bidding**. Tap team buttons: the bid goes ₹1 L → ₹6 L → ₹11 L … (₹5 L steps below ₹50 L, ₹10 L steps up to ₹1 Cr, ₹25 L steps above). Try:
@@ -44,7 +44,7 @@ npm run dev        # http://localhost:3000
 8. See results at `/auction/summary` (with **Download CSV**) and each squad at `/teams/<id>`.
 9. **Reset Cricket auction (testing)** at the bottom of the control screen restores everything for that sport.
 
-> All three sports use the same 21 real players, topped up with placeholders ("Player 22", "Player 23" …) so every squad can be filled: Cricket 48 (4 × 12), Volleyball 32 (4 × 8), Football 32 (4 × 8). Every player uses the placeholder photo `public/players/placeholder.svg` until a real one is added: put the photo in `public/players/` and change that player's `photo_url`.
+> All three sports use the same 30 real players, topped up with placeholders ("Player 22", "Player 23" …) so every squad can be filled: Cricket 48 (4 × 12), Volleyball 32 (4 × 8), Football 32 (4 × 8). Every player uses the placeholder photo `public/players/placeholder.svg` until a real one is added: put the photo in `public/players/` and change that player's `photo_url`.
 
 **Cricket has two wheels.** Tabs above the wheel switch between **Batsmen** (batsmen, wicketkeepers, fielders) and **Bowlers & all-rounders**; the projector follows. A player whose role is in neither list goes on the Batsmen wheel. The groups are `pools` in `src/lib/sports.ts`.
 
@@ -68,8 +68,8 @@ Change in Supabase **Table Editor**:
 
 | URL | Who | What |
 |-----|-----|------|
-| `/admin/auction` | Auctioneer (no login, unlinked) | Sport picker, wheel, Spin, Start Bidding, team bid buttons, Undo / Sold / Unsold, bring back unsold |
-| `/auction` | Anyone | Projector view of the same live state, SOLD alerts, sound, full screen |
+| `/auction` | Auctioneer (no login) | Pick a sport, wheel in the middle and the 4 teams in the corners; Spin, Start Bidding, Bid buttons on each team, Undo / Sold / Unsold, bring back unsold |
+| `/auction/screen` | Anyone | View-only copy for a projector or second screen: same live state, SOLD alerts, sound, full screen |
 | `/admin/auction/settings` | Auctioneer | Base price, increments, squad sizes |
 | `/auction/summary` | Anyone | Sold and unsold lists, totals, CSV download |
 | `/teams/<id>` | Anyone | One team's squad, spent and remaining purse |

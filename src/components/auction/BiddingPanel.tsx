@@ -19,6 +19,8 @@ interface Props {
   onUndo?: () => void;
   onSold?: () => void;
   onUnsold?: () => void;
+  /** Show a bid button per team here (off when the teams have their own corner cards). */
+  teamButtons?: boolean;
 }
 
 export function BiddingPanel({
@@ -34,6 +36,7 @@ export function BiddingPanel({
   onUndo,
   onSold,
   onUnsold,
+  teamButtons = true,
 }: Props) {
   const current = state.current_bid ?? settings.base_price;
   const holder = teams.find((t) => t.id === state.highest_team_id);
@@ -69,7 +72,7 @@ export function BiddingPanel({
       </div>
 
       {/* Team bid buttons (admin only) */}
-      {mode === "admin" && (
+      {mode === "admin" && teamButtons && (
         <div className="grid gap-3 sm:grid-cols-2">
           {teams.map((team) => {
             const check = checkTeamBid({

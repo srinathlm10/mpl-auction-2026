@@ -8,12 +8,13 @@ import { PlayerReveal } from "@/components/auction/PlayerReveal";
 import { SoldOverlay } from "@/components/auction/SoldOverlay";
 import { SpinWheel } from "@/components/auction/SpinWheel";
 import { SportSelector } from "@/components/auction/SportSelector";
-import { TeamStrip } from "@/components/auction/TeamStrip";
+import { TeamCorner } from "@/components/auction/TeamCorner";
+import { SquadDialog, TeamStrip } from "@/components/auction/TeamStrip";
 import { Logo } from "@/components/ui/Logo";
-import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { checkTeamBid, nextBidAmount } from "@/lib/auction";
 import { secureRandomInt } from "@/lib/random";
-import { cn, formatCompact, formatPrice } from "@/lib/format";
+import { cn, formatCompact } from "@/lib/format";
 import { setMuted, sounds, unlockAudio } from "@/lib/sound";
 import { accentStyle, getSportConfig, poolOf } from "@/lib/sports";
 import { getBrowserClient } from "@/lib/supabase/browser";
@@ -29,6 +30,14 @@ type Notice = { kind: "error" | "info"; text: string };
 
 const CAN_SPIN_FROM: AuctionStatus[] = ["idle", "sold", "unsold"];
 
+// Grid positions for the four team cards: top-left, top-right, bottom-left, bottom-right.
+const CORNERS = [
+  "lg:col-start-1 lg:row-start-1 lg:self-start",
+  "lg:col-start-3 lg:row-start-1 lg:self-start",
+  "lg:col-start-1 lg:row-start-2 lg:self-end",
+  "lg:col-start-3 lg:row-start-2 lg:self-end",
+];
+
 export function AuctionStage({ mode }: Props) {
   const admin = mode === "admin";
   const { snap, error, connected, refresh, applyState } = useAuctionSnapshot();
@@ -41,6 +50,7 @@ export function AuctionStage({ mode }: Props) {
   const [confetti, setConfetti] = useState({ n: 0, big: false });
   const [soldView, setSoldView] = useState<{ playerId: number; teamId: number; price: number } | null>(null);
   const [pickSport, setPickSport] = useState(false);
+  const [squadTeamId, setSquadTeamId] = useState<number | null>(null);
   const [soundOn, setSoundOn] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const spunLive = useRef(false);
@@ -251,7 +261,7 @@ export function AuctionStage({ mode }: Props) {
                     Change sport
                   </button>
                 )}
-                <Link href="/auction" target="_blank" className="btn-outline min-h-[40px] px-3">Projector view ↗</Link>
+                <Link href="/auction/screen" target="_blank" className="btn-outline min-h-[40px] px-3">Projector view ↗</Link>
                 <Link href="/admin/auction/settings" className="btn-outline min-h-[40px] px-3">Settings</Link>
                 <Link href="/auction/summary" className="btn-outline hidden min-h-[40px] px-3 sm:inline-flex">Summary</Link>
               </>
@@ -294,187 +304,208 @@ export function AuctionStage({ mode }: Props) {
           </div>
         ) : (
           <>
-            <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] 2xl:gap-8">
-              {/* Wheel */}
-              <section aria-label="Player wheel" className="space-y-4">
-                {pools.length > 1 && (
-                  <div role="tablist" aria-label="Wheels" className="flex flex-wrap justify-center gap-2">
-                    {pools.map((pool) => {
-                      const active = pool.key === activePool?.key;
-                      const cls = cn(
-                        "inline-flex min-h-[48px] items-center gap-2 rounded-full border-2 px-5 font-display text-xl font-bold uppercase tracking-wide transition 2xl:text-3xl",
-                        active ? "border-accent bg-accent text-slate-900" : "border-border bg-surface text-muted",
-                      );
-                      const label = (
-                        <>
-                          {pool.label}
-                          <span className={cn("rounded-full px-2 text-base", active ? "bg-slate-900/15" : "bg-border")}>{poolCount(pool.key)}</span>
-                        </>
-                      );
-                      return admin ? (
-                        <button
-                          key={pool.key}
-                          type="button"
-                          role="tab"
-                          aria-selected={active}
-                          disabled={!active && (busy || animating || status === "spinning" || status === "bidding")}
-                          onClick={() => !active && void run("auction_set_pool", { p_pool: pool.key })}
-                          className={cn(cls, !active && "hover:border-accent hover:text-foreground disabled:opacity-50")}
-                        >
-                          {label}
-                        </button>
-                      ) : (
-                        <span key={pool.key} role="tab" aria-selected={active} className={cls}>
-                          {label}
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
-                <SpinWheel
-                  players={wheelPlayers}
-                  targetId={status === "spinning" || status === "bidding" ? state.current_player_id : null}
-                  spinId={state.spin_id}
-                  animate={status === "spinning"}
-                  ready
-                  highlightId={status === "spinning" || status === "bidding" ? state.current_player_id : null}
-                  emoji={config.emoji}
-                  onSpinStart={onSpinStart}
-                  onSettled={onSettled}
-                  onTick={sounds.tick}
-                  onTap={canSpin ? spin : undefined}
-                />
-                <div className="flex flex-wrap items-center justify-center gap-3">
-                  <p className="text-lg font-semibold text-muted 2xl:text-2xl">
-                    <span className="font-display text-3xl font-extrabold text-foreground 2xl:text-5xl">{wheelPlayers.length}</span> player
-                    {wheelPlayers.length === 1 ? "" : "s"} on the wheel
-                  </p>
-                  {admin && (
+            {(() => {
+              // Four teams -> one in each corner around the wheel. Any other count -> a strip below.
+              const cornerLayout = sportTeams.length === 4;
+              const currentBid = state.current_bid ?? snap.settings.base_price;
+              const nextAmount = nextBidAmount(currentBid, snap.settings.increment_slabs);
+              const showWheel = status === "idle" || status === "sold" || status === "unsold" || (status === "spinning" && !reveal);
+
+              const center = (
+                <div className="space-y-4" aria-live="polite">
+                  {showWheel && (
                     <>
-                      <button
-                        type="button"
-                        disabled={!canSpin}
-                        onClick={spin}
-                        className="btn min-h-[64px] min-w-[10rem] bg-accent px-8 font-display text-3xl font-extrabold uppercase tracking-widest text-slate-900 hover:brightness-110"
-                      >
-                        {animating ? "Spinning…" : "Spin"}
-                      </button>
-                      {unsoldCount > 0 && (
-                        <button type="button" disabled={busy || animating || status === "spinning" || status === "bidding"} onClick={bringBackUnsold} className="btn-outline min-h-[56px]">
-                          ↻ Bring back {unsoldCount} unsold
-                        </button>
+                      {pools.length > 1 && (
+                        <div role="tablist" aria-label="Wheels" className="flex flex-wrap justify-center gap-2">
+                          {pools.map((pool) => {
+                            const active = pool.key === activePool?.key;
+                            const cls = cn(
+                              "inline-flex min-h-[48px] items-center gap-2 rounded-full border-2 px-5 font-display text-xl font-bold uppercase tracking-wide transition 2xl:text-3xl",
+                              active ? "border-accent bg-accent text-slate-900" : "border-border bg-surface text-muted",
+                            );
+                            const label = (
+                              <>
+                                {pool.label}
+                                <span className={cn("rounded-full px-2 text-base", active ? "bg-slate-900/15" : "bg-border")}>{poolCount(pool.key)}</span>
+                              </>
+                            );
+                            return admin ? (
+                              <button
+                                key={pool.key}
+                                type="button"
+                                role="tab"
+                                aria-selected={active}
+                                disabled={!active && (busy || animating || status === "spinning")}
+                                onClick={() => !active && void run("auction_set_pool", { p_pool: pool.key })}
+                                className={cn(cls, !active && "hover:border-accent hover:text-foreground disabled:opacity-50")}
+                              >
+                                {label}
+                              </button>
+                            ) : (
+                              <span key={pool.key} role="tab" aria-selected={active} className={cls}>
+                                {label}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Result of the last player, above the wheel */}
+                      {status === "sold" && currentPlayer && (
+                        <p className="text-center text-lg 2xl:text-2xl">
+                          <span className="font-display font-extrabold uppercase text-accent">Sold:</span>{" "}
+                          <span className="font-semibold">{currentPlayer.name}</span> → {lastTeam?.name ?? "—"} for{" "}
+                          <span className="font-display font-extrabold">{formatCompact(state.current_bid)}</span>
+                        </p>
+                      )}
+                      {status === "unsold" && currentPlayer && (
+                        <p className="text-center text-lg text-muted 2xl:text-2xl">
+                          <span className="font-display font-extrabold uppercase">Unsold:</span> {currentPlayer.name} – back in round two
+                        </p>
+                      )}
+
+                      <SpinWheel
+                        players={wheelPlayers}
+                        targetId={status === "spinning" ? state.current_player_id : null}
+                        spinId={state.spin_id}
+                        animate={status === "spinning"}
+                        ready
+                        highlightId={status === "spinning" ? state.current_player_id : null}
+                        emoji={config.emoji}
+                        onSpinStart={onSpinStart}
+                        onSettled={onSettled}
+                        onTick={sounds.tick}
+                        onTap={canSpin ? spin : undefined}
+                      />
+
+                      <div className="flex flex-wrap items-center justify-center gap-3">
+                        <p className="text-lg font-semibold text-muted 2xl:text-2xl">
+                          <span className="font-display text-3xl font-extrabold text-foreground 2xl:text-5xl">{wheelPlayers.length}</span> player
+                          {wheelPlayers.length === 1 ? "" : "s"} on the wheel
+                        </p>
+                        {admin && (
+                          <>
+                            <button
+                              type="button"
+                              disabled={!canSpin}
+                              onClick={spin}
+                              className="btn min-h-[64px] min-w-[10rem] bg-accent px-8 font-display text-3xl font-extrabold uppercase tracking-widest text-slate-900 hover:brightness-110"
+                            >
+                              {animating ? "Spinning…" : "Spin"}
+                            </button>
+                            {unsoldCount > 0 && (
+                              <button type="button" disabled={busy || animating || status === "spinning"} onClick={bringBackUnsold} className="btn-outline min-h-[56px]">
+                                ↻ Bring back {unsoldCount} unsold
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </div>
+                      {!admin && status === "idle" && <p className="text-center text-lg text-muted">Next player coming up…</p>}
+                      {!admin && unsoldCount > 0 && <p className="text-center text-muted">{unsoldCount} unsold – second round later</p>}
+                      {wheelPlayers.length === 0 && status !== "spinning" && (
+                        <p className="text-center text-lg font-semibold text-accent">
+                          {(() => {
+                            const next = pools.find((p) => p.key !== activePool?.key && poolCount(p.key) > 0);
+                            if (activePool && next) return `${activePool.label} wheel done – switch to the ${next.label} wheel.`;
+                            return unsoldCount > 0 ? "First round complete!" : `Every ${config.name} player has been auctioned!`;
+                          })()}
+                        </p>
                       )}
                     </>
                   )}
+
+                  {/* Wheel stopped: the chosen player */}
+                  {reveal && currentPlayer && (
+                    <>
+                      <PlayerReveal player={currentPlayer} config={config} basePrice={snap.settings.base_price} />
+                      {admin && (
+                        <div className="grid grid-cols-3 gap-3">
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={() => void run("auction_start_bidding")}
+                            className="btn-primary col-span-2 min-h-[64px] text-xl"
+                          >
+                            Start Bidding
+                          </button>
+                          <button type="button" disabled={busy} onClick={() => void run("auction_unsold")} className="btn-danger min-h-[64px]">
+                            Skip → Unsold
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* Bidding: current bid in the middle, bid buttons on the team corners */}
+                  {status === "bidding" && currentPlayer && (
+                    <>
+                      <div className="card p-4 2xl:p-6">
+                        <PlayerReveal player={currentPlayer} config={config} basePrice={snap.settings.base_price} compact />
+                      </div>
+                      <BiddingPanel
+                        mode={mode}
+                        state={state}
+                        settings={snap.settings}
+                        squadSize={squadSize}
+                        teams={sportTeams}
+                        boughtCount={boughtCount}
+                        bids={snap.bids}
+                        busy={busy}
+                        teamButtons={!cornerLayout}
+                        onBid={(teamId, expected) => void run("auction_place_bid", { p_team_id: teamId, p_expected: expected })}
+                        onUndo={() => void run("auction_undo_bid")}
+                        onSold={() => void run("auction_sold")}
+                        onUnsold={() => void run("auction_unsold")}
+                      />
+                    </>
+                  )}
                 </div>
-                {!admin && unsoldCount > 0 && (
-                  <p className="text-center text-muted">{unsoldCount} unsold – second round later</p>
-                )}
-                {wheelPlayers.length === 0 && status !== "spinning" && status !== "bidding" && (
-                  <p className="text-center text-lg font-semibold text-accent">
-                    {(() => {
-                      const next = pools.find((p) => p.key !== activePool?.key && poolCount(p.key) > 0);
-                      if (activePool && next) return `${activePool.label} wheel done – switch to the ${next.label} wheel.`;
-                      return unsoldCount > 0 ? "First round complete!" : `Every ${config.name} player has been auctioned!`;
-                    })()}
-                  </p>
-                )}
-              </section>
+              );
 
-              {/* Right-hand panel */}
-              <section aria-label="Current player" className="space-y-4" aria-live="polite">
-                {status === "idle" && (
-                  <div className="card p-10 text-center 2xl:p-16">
-                    <p className="text-6xl" aria-hidden>{config.emoji}</p>
-                    <h2 className="mt-3 font-display text-4xl font-extrabold uppercase 2xl:text-6xl">
-                      {admin ? "Ready when you are" : "Next player coming up"}
-                    </h2>
-                    <p className="mt-2 text-lg text-muted 2xl:text-2xl">
-                      {admin ? "Press Spin or tap the wheel to pick the next player." : "The wheel is about to spin…"}
-                    </p>
-                  </div>
-                )}
-
-                {status === "spinning" && !reveal && (
-                  <div className="card p-10 text-center 2xl:p-16">
-                    <p className="animate-spin text-6xl" aria-hidden>{config.emoji}</p>
-                    <h2 className="mt-4 font-display text-4xl font-extrabold uppercase 2xl:text-6xl">Spinning…</h2>
-                  </div>
-                )}
-
-                {reveal && currentPlayer && (
+              if (!cornerLayout) {
+                return (
                   <>
-                    <PlayerReveal player={currentPlayer} config={config} basePrice={snap.settings.base_price} />
-                    {admin && (
-                      <div className="grid grid-cols-3 gap-3">
-                        <button
-                          type="button"
-                          disabled={busy}
-                          onClick={() => void run("auction_start_bidding")}
-                          className="btn-primary col-span-2 min-h-[64px] text-xl"
-                        >
-                          Start Bidding
-                        </button>
-                        <button type="button" disabled={busy} onClick={() => void run("auction_unsold")} className="btn-danger min-h-[64px]">
-                          Skip → Unsold
-                        </button>
-                      </div>
-                    )}
+                    <section aria-label="Auction" className="mx-auto max-w-4xl">{center}</section>
+                    <TeamStrip teams={sportTeams} players={snap.players} squadSize={squadSize} highlightTeamId={status === "bidding" ? state.highest_team_id : null} />
                   </>
-                )}
+                );
+              }
 
-                {status === "bidding" && currentPlayer && (
-                  <>
-                    <div className="card p-4 2xl:p-6">
-                      <PlayerReveal player={currentPlayer} config={config} basePrice={snap.settings.base_price} compact />
-                    </div>
-                    <BiddingPanel
-                      mode={mode}
-                      state={state}
-                      settings={snap.settings}
-                      squadSize={squadSize}
-                      teams={sportTeams}
-                      boughtCount={boughtCount}
-                      bids={snap.bids}
-                      busy={busy}
-                      onBid={(teamId, expected) => void run("auction_place_bid", { p_team_id: teamId, p_expected: expected })}
-                      onUndo={() => void run("auction_undo_bid")}
-                      onSold={() => void run("auction_sold")}
-                      onUnsold={() => void run("auction_unsold")}
-                    />
-                  </>
-                )}
-
-                {status === "sold" && currentPlayer && (
-                  <div className="card border-accent/60 p-6 text-center 2xl:p-10">
-                    <p className="font-display text-6xl font-extrabold uppercase text-accent 2xl:text-8xl">Sold!</p>
-                    <div className="mx-auto mt-4 flex max-w-md items-center gap-4 text-left">
-                      <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-2xl bg-border 2xl:h-32 2xl:w-28">
-                        <PlayerAvatar name={currentPlayer.name} src={currentPlayer.photo_url} sizes="112px" className="text-2xl" />
+              return (
+                <div className="grid grid-cols-2 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2.3fr)_minmax(0,1fr)] lg:grid-rows-2 2xl:gap-6">
+                  <section aria-label="Auction" className="col-span-2 lg:col-span-1 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+                    {center}
+                  </section>
+                  {sportTeams.map((team, i) => {
+                    const isHolder = status === "bidding" && team.id === state.highest_team_id;
+                    return (
+                      <div key={team.id} className={CORNERS[i]}>
+                        <TeamCorner
+                          team={team}
+                          bought={boughtCount(team.id)}
+                          squadSize={squadSize}
+                          isHolder={isHolder}
+                          canBid={admin && status === "bidding"}
+                          nextAmount={nextAmount}
+                          check={checkTeamBid({
+                            team,
+                            bought: boughtCount(team.id),
+                            squadSize,
+                            amount: nextAmount,
+                            basePrice: snap.settings.base_price,
+                            isHighest: team.id === state.highest_team_id,
+                          })}
+                          busy={busy}
+                          onBid={() => void run("auction_place_bid", { p_team_id: team.id, p_expected: nextAmount })}
+                          onOpenSquad={() => setSquadTeamId(team.id)}
+                        />
                       </div>
-                      <div>
-                        <p className="font-display text-3xl font-extrabold uppercase 2xl:text-5xl">{currentPlayer.name}</p>
-                        <p className="text-lg text-muted 2xl:text-2xl">to {lastTeam?.name ?? "—"}</p>
-                        <p className="font-display text-4xl font-extrabold 2xl:text-6xl">{formatCompact(state.current_bid)}</p>
-                        <p className="text-sm text-muted">{formatPrice(state.current_bid)}</p>
-                      </div>
-                    </div>
-                    {admin && <p className="mt-4 text-muted">Spin the wheel for the next player.</p>}
-                  </div>
-                )}
-
-                {status === "unsold" && currentPlayer && (
-                  <div className="card p-8 text-center 2xl:p-12">
-                    <p className="font-display text-5xl font-extrabold uppercase text-muted 2xl:text-7xl">Unsold</p>
-                    <p className="mt-2 font-display text-3xl font-bold uppercase 2xl:text-5xl">{currentPlayer.name}</p>
-                    <p className="mt-2 text-muted">Removed from the wheel. They can return in round two.</p>
-                  </div>
-                )}
-              </section>
-            </div>
-
-            {/* Team strip */}
-            <TeamStrip teams={sportTeams} players={snap.players} squadSize={squadSize} highlightTeamId={status === "bidding" ? state.highest_team_id : null} />
+                    );
+                  })}
+                </div>
+              );
+            })()}
 
             {admin && (
               <div className="flex flex-wrap justify-end gap-3 border-t border-border pt-4">
@@ -487,6 +518,18 @@ export function AuctionStage({ mode }: Props) {
         )}
       </main>
 
+      {squadTeamId !== null &&
+        (() => {
+          const team = snap.teams.find((t) => t.id === squadTeamId);
+          return team ? (
+            <SquadDialog
+              team={team}
+              squad={snap.players.filter((p) => p.team_id === team.id && p.status === "sold")}
+              squadSize={squadSize}
+              onClose={() => setSquadTeamId(null)}
+            />
+          ) : null;
+        })()}
       {soldView && soldPlayer && soldTeam && (
         <SoldOverlay player={soldPlayer} team={soldTeam} price={soldView.price} onClose={() => setSoldView(null)} />
       )}

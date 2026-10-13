@@ -72,7 +72,7 @@ export function TeamStrip({ teams, players, squadSize, highlightTeamId }: Props)
   );
 }
 
-function SquadDialog({ team, squad, squadSize, onClose }: { team: Team; squad: Player[]; squadSize: number; onClose: () => void }) {
+export function SquadDialog({ team, squad, squadSize, onClose }: { team: Team; squad: Player[]; squadSize: number; onClose: () => void }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);

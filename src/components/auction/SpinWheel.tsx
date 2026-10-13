@@ -336,7 +336,8 @@ export function SpinWheel(props: Props) {
     <div
       ref={wrapRef}
       className="relative mx-auto aspect-square w-full"
-      style={{ maxWidth: "min(100%, 78vh)" }}
+      // Small enough that the wheel, its tabs and the Spin button fit on one laptop screen.
+      style={{ maxWidth: "min(100%, 62vh)" }}
     >
       {/* Pointer */}
       <div

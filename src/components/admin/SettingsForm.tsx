@@ -137,7 +137,7 @@ export function SettingsForm({ settings, sports }: { settings: AuctionSettings; 
 
       <div className="flex flex-wrap gap-3">
         <button type="submit" disabled={pending} className="btn-primary">{pending ? "Saving…" : "Save settings"}</button>
-        <Link href="/admin/auction" className="btn-outline">Back to auction</Link>
+        <Link href="/auction" className="btn-outline">Back to auction</Link>
       </div>
     </form>
   );

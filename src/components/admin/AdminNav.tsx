@@ -22,7 +22,7 @@ export function AdminNav() {
           <span className="font-display text-xl font-extrabold uppercase tracking-wide">MPL Admin</span>
         </Link>
         <div className="flex items-center gap-2">
-          <Link href="/admin/auction" className="btn-primary hidden sm:inline-flex">Open auction control</Link>
+          <Link href="/auction" className="btn-primary hidden sm:inline-flex">Open the auction</Link>
           <Link href="/" className="btn-outline hidden sm:inline-flex">View site</Link>
           <ThemeToggle />
         </div>
