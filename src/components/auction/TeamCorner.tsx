@@ -1,5 +1,6 @@
 "use client";
 
+import { Kbd } from "@/components/ui/Kbd";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import type { BidCheck } from "@/lib/auction";
 import { cn, formatCompact } from "@/lib/format";
@@ -18,10 +19,12 @@ interface Props {
   busy: boolean;
   onBid: () => void;
   onOpenSquad: () => void;
+  /** Keyboard key that places this team's bid, shown on the button. */
+  shortcut?: string;
 }
 
 /** One of the four team cards in the corners of the auction screen. */
-export function TeamCorner({ team, bought, squadSize, isHolder, canBid, nextAmount, check, busy, onBid, onOpenSquad }: Props) {
+export function TeamCorner({ team, bought, squadSize, isHolder, canBid, nextAmount, check, busy, onBid, onOpenSquad, shortcut }: Props) {
   const spentPct = team.total_purse > 0 ? ((team.total_purse - team.remaining_purse) / team.total_purse) * 100 : 0;
 
   return (
@@ -72,6 +75,7 @@ export function TeamCorner({ team, bought, squadSize, isHolder, canBid, nextAmou
             )}
           >
             Bid {formatCompact(nextAmount)}
+            {shortcut && <Kbd>{shortcut}</Kbd>}
           </button>
           {!check.ok && !isHolder && (
             <p role="status" className="mt-1 text-xs font-medium text-amber-600 dark:text-amber-400 2xl:text-sm">

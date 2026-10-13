@@ -26,7 +26,13 @@ export interface AttributeDef {
 export interface WheelPool {
   key: string;
   label: string;
+  /** One line under the label on the wheel chooser. */
+  description: string;
+  /** Shown in the middle of the wheel and on the chooser. */
+  emoji: string;
   roles: string[];
+  /** Slice colours, so each wheel looks clearly different on the projector. */
+  palette: string[];
 }
 
 export interface SportConfig {
@@ -62,8 +68,22 @@ export const SPORT_CONFIGS: SportConfig[] = [
     ],
     attributes: [{ key: "bowling_action", label: "Bowling action" }],
     pools: [
-      { key: "batsmen", label: "Batsmen", roles: ["Batsman", "Wicketkeeper", "Fielder"] },
-      { key: "bowlers", label: "Bowlers & all-rounders", roles: ["Bowler", "All-rounder"] },
+      {
+        key: "batsmen",
+        label: "Batsmen",
+        description: "Batsmen, wicketkeepers and fielders",
+        emoji: "🏏",
+        roles: ["Batsman", "Wicketkeeper", "Fielder"],
+        palette: ["#dc2626", "#f59e0b", "#ea580c", "#e11d48", "#d97706", "#f97316", "#be123c", "#ca8a04"],
+      },
+      {
+        key: "bowlers",
+        label: "Bowlers",
+        description: "Bowlers and all-rounders",
+        emoji: "🎯",
+        roles: ["Bowler", "All-rounder"],
+        palette: ["#2563eb", "#0891b2", "#7c3aed", "#0d9488", "#4f46e5", "#0284c7", "#9333ea", "#059669"],
+      },
     ],
     defaultBasePrice: 50000,
   },

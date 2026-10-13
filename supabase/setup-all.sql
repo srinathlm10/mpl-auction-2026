@@ -426,6 +426,26 @@ begin
   return st;
 end $$;
 
+-- Undo a mistaken Sold / Unsold for the player just auctioned (only until the next spin).
+-- Sold   -> bidding again at the same price and leader; the team gets its money back.
+-- Unsold -> back to the player card, before bidding.
+create or replace function public.auction_undo_result()
+returns public.auction_state language plpgsql security definer set search_path = public as $$
+declare st public.auction_state;
+begin
+  select * into st from public.auction_state where id = 1 for update;
+  if st.status = 'sold' then
+    update public.players set status = 'available', team_id = null, sold_price = null where id = st.current_player_id;
+    update public.auction_state set status = 'bidding', updated_at = now() where id = 1 returning * into st;
+  elsif st.status = 'unsold' then
+    update public.players set status = 'available' where id = st.current_player_id;
+    update public.auction_state set status = 'spinning', updated_at = now() where id = 1 returning * into st;
+  else
+    raise exception 'There is no result to undo.';
+  end if;
+  return st;
+end $$;
+
 -- Second round: unsold players go back on the wheel. Returns how many.
 create or replace function public.auction_bring_back_unsold()
 returns int language plpgsql security definer set search_path = public as $$
@@ -481,7 +501,8 @@ begin
   foreach f in array array[
     'auction_set_sport(bigint)', 'auction_set_pool(text)', 'auction_select_player(bigint)', 'auction_start_bidding()',
     'auction_place_bid(bigint,bigint)', 'auction_undo_bid()', 'auction_sold()', 'auction_unsold()',
-    'auction_bring_back_unsold()', 'auction_reset_sport(bigint)', 'auction_save_settings(bigint,jsonb,jsonb)'
+    'auction_bring_back_unsold()', 'auction_reset_sport(bigint)', 'auction_save_settings(bigint,jsonb,jsonb)',
+    'auction_undo_result()'
   ] loop
     execute format('grant execute on function public.%s to anon, authenticated', f);
   end loop;

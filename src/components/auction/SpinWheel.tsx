@@ -23,6 +23,8 @@ interface Props {
   /** Slice drawn with a white outline (the player currently on the block). */
   highlightId: number | null;
   emoji: string;
+  /** Slice colours; defaults to a bright rainbow. */
+  palette?: string[];
   onSpinStart?: () => void;
   /** Called when the wheel is at rest on `spinId` (after animating, or on first load). */
   onSettled?: (spinId: number) => void;
@@ -37,10 +39,10 @@ const SPIN_MS = 7000;
 
 const mod = (n: number, m: number) => ((n % m) + m) % m;
 
-function colorFor(i: number, n: number) {
+function colorFor(i: number, n: number, palette: string[]) {
   // Avoid the last slice having the same colour as the first.
-  if (n > 1 && i === n - 1 && i % PALETTE.length === 0) return PALETTE[1];
-  return PALETTE[i % PALETTE.length];
+  if (n > 1 && i === n - 1 && i % palette.length === 0) return palette[1];
+  return palette[i % palette.length];
 }
 
 /** Rotation that puts the middle of slice `index` under the pointer (top). */
@@ -50,7 +52,7 @@ function angleFor(index: number, n: number, offsetInSlice = 0) {
 }
 
 export function SpinWheel(props: Props) {
-  const { players, targetId, spinId, animate, ready, highlightId, emoji, onTap } = props;
+  const { players, targetId, spinId, animate, ready, highlightId, emoji, palette, onTap } = props;
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -71,7 +73,7 @@ export function SpinWheel(props: Props) {
     const c = canvas.getContext("2d");
     if (!c) return;
 
-    const { players: list, highlightId: highlight, emoji: hubEmoji } = live.current;
+    const { players: list, highlightId: highlight, emoji: hubEmoji, palette = PALETTE } = live.current;
     const dpr = window.devicePixelRatio || 1;
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
     c.clearRect(0, 0, size, size);
@@ -109,7 +111,7 @@ export function SpinWheel(props: Props) {
       c.moveTo(cx, cx);
       c.arc(cx, cx, R, start, start + a);
       c.closePath();
-      c.fillStyle = colorFor(i, n);
+      c.fillStyle = colorFor(i, n, palette);
       c.fill();
       c.lineWidth = n > 60 ? 1 : 2;
       c.strokeStyle = "rgba(255,255,255,0.85)";
@@ -235,7 +237,7 @@ export function SpinWheel(props: Props) {
 
   useEffect(() => {
     draw();
-  }, [players, highlightId, emoji, draw]);
+  }, [players, highlightId, emoji, palette, draw]);
 
   const startSpin = useCallback(
     (index: number, id: number) => {

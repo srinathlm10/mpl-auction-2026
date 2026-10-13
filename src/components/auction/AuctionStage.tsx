@@ -5,11 +5,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BiddingPanel } from "@/components/auction/BiddingPanel";
 import { Confetti } from "@/components/auction/Confetti";
 import { PlayerReveal } from "@/components/auction/PlayerReveal";
+import { PoolChooser } from "@/components/auction/PoolChooser";
 import { SoldOverlay } from "@/components/auction/SoldOverlay";
 import { SpinWheel } from "@/components/auction/SpinWheel";
 import { SportSelector } from "@/components/auction/SportSelector";
 import { TeamCorner } from "@/components/auction/TeamCorner";
 import { SquadDialog, TeamStrip } from "@/components/auction/TeamStrip";
+import { Kbd } from "@/components/ui/Kbd";
 import { Logo } from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { checkTeamBid, nextBidAmount } from "@/lib/auction";
@@ -54,6 +56,7 @@ export function AuctionStage({ mode }: Props) {
   const [soundOn, setSoundOn] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const spunLive = useRef(false);
+  const keyActions = useRef<Record<string, () => void>>({});
   const prev = useRef<{ status: AuctionStatus; bid: number | null } | null>(null);
 
   /* ------------------------------------------------------------- derived */
@@ -68,7 +71,7 @@ export function AuctionStage({ mode }: Props) {
   );
   // Sports can have several wheels (cricket: batsmen / bowlers); the admin picks which one is showing.
   const pools = config?.pools ?? [];
-  const activePool = pools.find((p) => p.key === state?.pool) ?? pools[0];
+  const activePool = pools.find((p) => p.key === state?.pool);
   // Same order on every screen (by id) so the wheel looks identical everywhere.
   const availableInSport = useMemo(
     () =>
@@ -108,6 +111,22 @@ export function AuctionStage({ mode }: Props) {
       sounds.bid();
     }
   }, [snap]);
+
+  useEffect(() => {
+    if (!admin) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT" || target.isContentEditable)) return;
+      const action = keyActions.current[e.key === " " ? "space" : e.key.toLowerCase()];
+      if (action) {
+        e.preventDefault();
+        action();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [admin]);
 
   useEffect(() => {
     const onChange = () => setFullscreen(Boolean(document.fullscreenElement));
@@ -205,7 +224,44 @@ export function AuctionStage({ mode }: Props) {
   const status = state.status;
   const showSelector = admin && (!sport || pickSport);
   const reveal = status === "spinning" && settledSpin === state.spin_id && currentPlayer;
-  const canSpin = admin && !!sport && CAN_SPIN_FROM.includes(status) && wheelPlayers.length > 0 && !busy && !animating;
+  // Sports with several wheels (cricket) first ask which wheel to run.
+  const needsPoolChoice = pools.length > 1 && !activePool && CAN_SPIN_FROM.includes(status);
+  const nextPool = pools.find((p) => p.key !== activePool?.key && poolCount(p.key) > 0);
+  const canSpin =
+    admin && !!sport && !needsPoolChoice && CAN_SPIN_FROM.includes(status) && wheelPlayers.length > 0 && !busy && !animating;
+  const currentBid = state.current_bid ?? snap.settings.base_price;
+  const nextAmount = nextBidAmount(currentBid, snap.settings.increment_slabs);
+  const teamCheck = (team: (typeof sportTeams)[number]) =>
+    checkTeamBid({
+      team,
+      bought: boughtCount(team.id),
+      squadSize,
+      amount: nextAmount,
+      basePrice: snap.settings.base_price,
+      isHighest: team.id === state.highest_team_id,
+    });
+
+  // Keyboard: Space spin / start bidding · 1–4 bid · U undo · S sold · N unsold
+  const actions: Record<string, () => void> = {};
+  if (admin && sport && !busy) {
+    if (soldView) {
+      actions.space = () => setSoldView(null);
+    } else {
+      if (canSpin) actions.space = () => void spin();
+      else if (reveal) actions.space = () => void run("auction_start_bidding");
+      if (reveal) actions.n = () => void run("auction_unsold");
+      if (status === "bidding") {
+        sportTeams.slice(0, 9).forEach((team, i) => {
+          if (teamCheck(team).ok) actions[String(i + 1)] = () => void run("auction_place_bid", { p_team_id: team.id, p_expected: nextAmount });
+        });
+        if (snap.bids.length > 0) actions.u = () => void run("auction_undo_bid");
+        if (state.highest_team_id) actions.s = () => void run("auction_sold");
+        if (snap.bids.length === 0) actions.n = () => void run("auction_unsold");
+      }
+      if (status === "sold" || status === "unsold") actions.u = () => void run("auction_undo_result");
+    }
+  }
+  keyActions.current = actions;
   const soldTeam = soldView ? snap.teams.find((t) => t.id === soldView.teamId) : undefined;
   const soldPlayer = soldView ? snap.players.find((p) => p.id === soldView.playerId) : undefined;
   const lastTeam = snap.teams.find((t) => t.id === state.highest_team_id);
@@ -307,61 +363,66 @@ export function AuctionStage({ mode }: Props) {
             {(() => {
               // Four teams -> one in each corner around the wheel. Any other count -> a strip below.
               const cornerLayout = sportTeams.length === 4;
-              const currentBid = state.current_bid ?? snap.settings.base_price;
-              const nextAmount = nextBidAmount(currentBid, snap.settings.increment_slabs);
-              const showWheel = status === "idle" || status === "sold" || status === "unsold" || (status === "spinning" && !reveal);
+              const showWheel =
+                (!needsPoolChoice && (status === "idle" || status === "sold" || status === "unsold")) || (status === "spinning" && !reveal);
 
               const center = (
                 <div className="space-y-4" aria-live="polite">
+                  {needsPoolChoice && (
+                    <PoolChooser
+                      pools={pools}
+                      counts={Object.fromEntries(pools.map((p) => [p.key, poolCount(p.key)]))}
+                      admin={admin}
+                      busy={busy}
+                      onChoose={(key) => void run("auction_set_pool", { p_pool: key })}
+                    />
+                  )}
                   {showWheel && (
                     <>
-                      {pools.length > 1 && (
-                        <div role="tablist" aria-label="Wheels" className="flex flex-wrap justify-center gap-2">
-                          {pools.map((pool) => {
-                            const active = pool.key === activePool?.key;
-                            const cls = cn(
-                              "inline-flex min-h-[48px] items-center gap-2 rounded-full border-2 px-5 font-display text-xl font-bold uppercase tracking-wide transition 2xl:text-3xl",
-                              active ? "border-accent bg-accent text-slate-900" : "border-border bg-surface text-muted",
-                            );
-                            const label = (
-                              <>
-                                {pool.label}
-                                <span className={cn("rounded-full px-2 text-base", active ? "bg-slate-900/15" : "bg-border")}>{poolCount(pool.key)}</span>
-                              </>
-                            );
-                            return admin ? (
-                              <button
-                                key={pool.key}
-                                type="button"
-                                role="tab"
-                                aria-selected={active}
-                                disabled={!active && (busy || animating || status === "spinning")}
-                                onClick={() => !active && void run("auction_set_pool", { p_pool: pool.key })}
-                                className={cn(cls, !active && "hover:border-accent hover:text-foreground disabled:opacity-50")}
-                              >
-                                {label}
-                              </button>
-                            ) : (
-                              <span key={pool.key} role="tab" aria-selected={active} className={cls}>
-                                {label}
-                              </span>
-                            );
-                          })}
+                      {activePool && (
+                        <div className="flex flex-wrap items-center justify-center gap-3">
+                          <h2 className="font-display text-3xl font-extrabold uppercase tracking-wide 2xl:text-5xl">
+                            <span aria-hidden>{activePool.emoji}</span> {activePool.label} wheel
+                          </h2>
+                          {admin && (
+                            <button
+                              type="button"
+                              disabled={busy || animating || status === "spinning"}
+                              onClick={() => void run("auction_set_pool", { p_pool: "" })}
+                              className="btn-outline min-h-[40px] px-3"
+                            >
+                              ⇄ Switch wheel
+                            </button>
+                          )}
                         </div>
                       )}
 
                       {/* Result of the last player, above the wheel */}
-                      {status === "sold" && currentPlayer && (
-                        <p className="text-center text-lg 2xl:text-2xl">
-                          <span className="font-display font-extrabold uppercase text-accent">Sold:</span>{" "}
-                          <span className="font-semibold">{currentPlayer.name}</span> → {lastTeam?.name ?? "—"} for{" "}
-                          <span className="font-display font-extrabold">{formatCompact(state.current_bid)}</span>
-                        </p>
-                      )}
-                      {status === "unsold" && currentPlayer && (
-                        <p className="text-center text-lg text-muted 2xl:text-2xl">
-                          <span className="font-display font-extrabold uppercase">Unsold:</span> {currentPlayer.name} – back in round two
-                        </p>
+                      {(status === "sold" || status === "unsold") && currentPlayer && (
+                        <div className="flex flex-wrap items-center justify-center gap-3 rounded-2xl border border-border bg-surface/70 px-4 py-2 text-center text-lg 2xl:text-2xl">
+                          {status === "sold" ? (
+                            <p>
+                              <span className="font-display font-extrabold uppercase text-accent">Sold:</span>{" "}
+                              <span className="font-semibold">{currentPlayer.name}</span> → {lastTeam?.name ?? "—"} for{" "}
+                              <span className="font-display font-extrabold">{formatCompact(state.current_bid)}</span>
+                            </p>
+                          ) : (
+                            <p className="text-muted">
+                              <span className="font-display font-extrabold uppercase">Unsold:</span> {currentPlayer.name} – back in round two
+                            </p>
+                          )}
+                          {admin && (
+                            <button
+                              type="button"
+                              disabled={busy || animating}
+                              onClick={() => void run("auction_undo_result")}
+                              className="btn-outline min-h-[36px] px-3 py-1 text-sm"
+                              title="Made a mistake? Put this player back"
+                            >
+                              ↶ Undo {status === "sold" ? "sale" : "unsold"} <Kbd>U</Kbd>
+                            </button>
+                          )}
+                        </div>
                       )}
 
                       <SpinWheel
@@ -371,7 +432,8 @@ export function AuctionStage({ mode }: Props) {
                         animate={status === "spinning"}
                         ready
                         highlightId={status === "spinning" ? state.current_player_id : null}
-                        emoji={config.emoji}
+                        emoji={activePool?.emoji ?? config.emoji}
+                        palette={activePool?.palette}
                         onSpinStart={onSpinStart}
                         onSettled={onSettled}
                         onTick={sounds.tick}
@@ -391,7 +453,11 @@ export function AuctionStage({ mode }: Props) {
                               onClick={spin}
                               className="btn min-h-[64px] min-w-[10rem] bg-accent px-8 font-display text-3xl font-extrabold uppercase tracking-widest text-slate-900 hover:brightness-110"
                             >
-                              {animating ? "Spinning…" : "Spin"}
+                              {animating ? "Spinning…" : (
+                                <>
+                                  Spin <Kbd className="text-base">Space</Kbd>
+                                </>
+                              )}
                             </button>
                             {unsoldCount > 0 && (
                               <button type="button" disabled={busy || animating || status === "spinning"} onClick={bringBackUnsold} className="btn-outline min-h-[56px]">
@@ -401,16 +467,34 @@ export function AuctionStage({ mode }: Props) {
                           </>
                         )}
                       </div>
+                      {admin && (
+                        <p className="hidden text-center text-xs text-muted lg:block">
+                          Shortcuts: <Kbd>Space</Kbd> spin / start bidding · <Kbd>1</Kbd>–<Kbd>4</Kbd> bid for that team · <Kbd>U</Kbd> undo ·{" "}
+                          <Kbd>S</Kbd> sold · <Kbd>N</Kbd> unsold
+                        </p>
+                      )}
                       {!admin && status === "idle" && <p className="text-center text-lg text-muted">Next player coming up…</p>}
                       {!admin && unsoldCount > 0 && <p className="text-center text-muted">{unsoldCount} unsold – second round later</p>}
                       {wheelPlayers.length === 0 && status !== "spinning" && (
-                        <p className="text-center text-lg font-semibold text-accent">
-                          {(() => {
-                            const next = pools.find((p) => p.key !== activePool?.key && poolCount(p.key) > 0);
-                            if (activePool && next) return `${activePool.label} wheel done – switch to the ${next.label} wheel.`;
-                            return unsoldCount > 0 ? "First round complete!" : `Every ${config.name} player has been auctioned!`;
-                          })()}
-                        </p>
+                        <div className="flex flex-wrap items-center justify-center gap-3 text-center text-lg font-semibold text-accent">
+                          <p>
+                            {activePool && nextPool
+                              ? `${activePool.label} wheel done!`
+                              : unsoldCount > 0
+                                ? "First round complete!"
+                                : `Every ${config.name} player has been auctioned!`}
+                          </p>
+                          {admin && activePool && nextPool && (
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => void run("auction_set_pool", { p_pool: nextPool.key })}
+                              className="btn-primary min-h-[44px]"
+                            >
+                              {nextPool.emoji} Go to the {nextPool.label} wheel
+                            </button>
+                          )}
+                        </div>
                       )}
                     </>
                   )}
@@ -427,10 +511,10 @@ export function AuctionStage({ mode }: Props) {
                             onClick={() => void run("auction_start_bidding")}
                             className="btn-primary col-span-2 min-h-[64px] text-xl"
                           >
-                            Start Bidding
+                            Start Bidding <Kbd>Space</Kbd>
                           </button>
                           <button type="button" disabled={busy} onClick={() => void run("auction_unsold")} className="btn-danger min-h-[64px]">
-                            Skip → Unsold
+                            Skip → Unsold <Kbd>N</Kbd>
                           </button>
                         </div>
                       )}
@@ -488,14 +572,8 @@ export function AuctionStage({ mode }: Props) {
                           isHolder={isHolder}
                           canBid={admin && status === "bidding"}
                           nextAmount={nextAmount}
-                          check={checkTeamBid({
-                            team,
-                            bought: boughtCount(team.id),
-                            squadSize,
-                            amount: nextAmount,
-                            basePrice: snap.settings.base_price,
-                            isHighest: team.id === state.highest_team_id,
-                          })}
+                          check={teamCheck(team)}
+                          shortcut={admin ? String(i + 1) : undefined}
                           busy={busy}
                           onBid={() => void run("auction_place_bid", { p_team_id: team.id, p_expected: nextAmount })}
                           onOpenSquad={() => setSquadTeamId(team.id)}

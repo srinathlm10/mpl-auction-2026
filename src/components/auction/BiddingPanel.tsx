@@ -1,5 +1,6 @@
 "use client";
 
+import { Kbd } from "@/components/ui/Kbd";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { checkTeamBid, nextBidAmount } from "@/lib/auction";
 import { cn, formatCompact, formatPrice } from "@/lib/format";
@@ -128,7 +129,7 @@ export function BiddingPanel({
       {mode === "admin" && (
         <div className="grid grid-cols-3 gap-3">
           <button type="button" disabled={busy || bids.length === 0} onClick={onUndo} className="btn-outline min-h-[56px] text-base">
-            ↶ Undo last bid
+            ↶ Undo last bid <Kbd>U</Kbd>
           </button>
           <button
             type="button"
@@ -136,7 +137,7 @@ export function BiddingPanel({
             onClick={onSold}
             className="btn min-h-[56px] bg-emerald-600 text-lg text-white hover:bg-emerald-500"
           >
-            ✔ Sold
+            ✔ Sold <Kbd>S</Kbd>
           </button>
           <button
             type="button"
@@ -145,7 +146,7 @@ export function BiddingPanel({
             className="btn-danger min-h-[56px] text-base"
             title={bids.length > 0 ? "Undo the bids first, or sell the player" : "Nobody bid – remove from the wheel"}
           >
-            ✕ Unsold
+            ✕ Unsold <Kbd>N</Kbd>
           </button>
         </div>
       )}
