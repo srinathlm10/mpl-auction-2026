@@ -2,17 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { SportCard } from "@/components/SportCard";
 import { Logo } from "@/components/ui/Logo";
-import { StatCard } from "@/components/ui/StatCard";
-import { getPlayers, getSiteStats, getSports, getTeams } from "@/lib/data";
-import { formatDate } from "@/lib/format";
+import { HomeStats } from "@/components/views/HomeStats";
+import { basePlayers as players, baseSports as sports, baseTeams as teams } from "@/lib/data";
 import { siteConfig } from "@/lib/site";
 import { getSportConfig } from "@/lib/sports";
 
-export const revalidate = 30;
-
-export default async function HomePage() {
-  const [sports, players, teams, stats] = await Promise.all([getSports(), getPlayers(), getTeams(), getSiteStats()]);
-
+export default function HomePage() {
   return (
     <div className="space-y-12 sm:space-y-16">
       {/* Hero */}
@@ -60,12 +55,7 @@ export default async function HomePage() {
       {/* Highlights */}
       <section aria-labelledby="highlights-heading">
         <h2 id="highlights-heading" className="section-title mb-5">Highlights</h2>
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          <StatCard label="Total players" value={stats.players} hint={`${stats.sold} sold so far`} />
-          <StatCard label="Total teams" value={stats.teams} hint={`${sports.length} sports`} />
-          <StatCard label="Players available" value={stats.available} />
-          <StatCard label="Auction date" value={formatDate(siteConfig.auctionDate)} />
-        </div>
+        <HomeStats />
       </section>
     </div>
   );

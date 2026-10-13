@@ -2,9 +2,9 @@ import { formatCompact } from "./format";
 import type { BidSlab, Team } from "./types";
 
 /*
- * Pure auction rules. The database functions in supabase/auction.sql enforce
- * the same rules; these copies drive what the screens show (next bid amount,
- * disabled buttons and the explanation for them).
+ * Pure auction rules. lib/local-auction.ts enforces them when an action runs;
+ * the screens use them to show the next bid amount, disabled buttons and the
+ * explanation for them.
  */
 
 export const DEFAULT_SLABS: BidSlab[] = [
@@ -33,7 +33,7 @@ export function suggestedBid(current: number, basePrice: number, hasBids: boolea
   return hasBids ? current + BID_STEP : basePrice;
 }
 
-/** Lowest bid the database accepts: the base price to open, then anything above the current bid. */
+/** Lowest bid the auction accepts: the base price to open, then anything above the current bid. */
 export function minBid(current: number, basePrice: number, hasBids: boolean): number {
   return hasBids ? current + 1 : basePrice;
 }

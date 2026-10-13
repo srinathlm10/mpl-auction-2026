@@ -20,9 +20,9 @@ import { BID_STEP, bidAmountError, checkTeamBid, minBid, suggestedBid, type BidC
 import { secureRandomInt } from "@/lib/random";
 import { cn, formatCompact } from "@/lib/format";
 import { setMuted, sounds, unlockAudio } from "@/lib/sound";
+import { runAction } from "@/lib/local-auction";
 import { accentStyle, getSportConfig, poolOf } from "@/lib/sports";
-import { getBrowserClient } from "@/lib/supabase/browser";
-import type { AuctionState, AuctionStatus } from "@/lib/types";
+import type { AuctionStatus } from "@/lib/types";
 import { useAuctionSnapshot, useMuted } from "@/lib/use-auction";
 
 interface Props {
@@ -44,12 +44,12 @@ const CORNERS = [
 
 export function AuctionStage({ mode }: Props) {
   const admin = mode === "admin";
-  const { snap, error, connected, refresh, applyState } = useAuctionSnapshot();
+  const snap = useAuctionSnapshot();
   const muted = useMuted();
 
   const [settledSpin, setSettledSpin] = useState<number | null>(null);
   const [animating, setAnimating] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const busy = false; // actions run instantly in this browser
   const [notice, setNotice] = useState<Notice | null>(null);
   const [confetti, setConfetti] = useState({ n: 0, big: false });
   const [soldView, setSoldView] = useState<{ playerId: number; teamId: number; price: number } | null>(null);
@@ -156,33 +156,18 @@ export function AuctionStage({ mode }: Props) {
 
   /* --------------------------------------------------------------- actions */
 
-  const run = useCallback(
-    async (name: string, args?: Record<string, unknown>): Promise<boolean> => {
-      unlockAudio();
-      setBusy(true);
-      setNotice(null);
-      try {
-        const { data, error: rpcError } = await getBrowserClient().rpc(name, args);
-        if (rpcError) {
-          const missing = rpcError.code === "PGRST202" || /could not find the function/i.test(rpcError.message);
-          setNotice({
-            kind: "error",
-            text: missing
-              ? "This button needs the latest database update: run supabase/auction.sql once in the Supabase SQL Editor."
-              : rpcError.message,
-          });
-          return false;
-        }
-        const row = Array.isArray(data) ? data[0] : data;
-        if (row && typeof row === "object" && "status" in row) applyState(row as AuctionState);
-        return true;
-      } finally {
-        setBusy(false);
-        void refresh();
-      }
-    },
-    [applyState, refresh],
-  );
+  const run = useCallback(async (name: string, args?: Record<string, unknown>): Promise<boolean> => {
+    unlockAudio();
+    setNotice(null);
+    try {
+      const message = runAction(name, args);
+      if (message) setNotice({ kind: "info", text: message });
+      return true;
+    } catch (e) {
+      setNotice({ kind: "error", text: e instanceof Error ? e.message : "Something went wrong." });
+      return false;
+    }
+  }, []);
 
   async function spin() {
     if (wheelPlayers.length === 0) return;
@@ -192,10 +177,7 @@ export function AuctionStage({ mode }: Props) {
   }
 
   async function bringBackUnsold() {
-    const before = unsoldCount;
-    if (await run("auction_bring_back_unsold")) {
-      setNotice({ kind: "info", text: `${before} unsold player${before === 1 ? "" : "s"} back on the wheel for round two.` });
-    }
+    await run("auction_bring_back_unsold");
   }
 
   async function resetSport() {
@@ -217,18 +199,7 @@ export function AuctionStage({ mode }: Props) {
   if (!snap || !state) {
     return (
       <div className="flex min-h-screen items-center justify-center p-6 text-center">
-        {error ? (
-          <div className="card max-w-md p-6">
-            <h1 className="font-display text-3xl font-bold uppercase">Can&apos;t load the auction</h1>
-            <p className="mt-2 text-muted">{error}</p>
-            <p className="mt-2 text-sm text-muted">
-              Check that <code>supabase/auction.sql</code> has been run in your Supabase project.
-            </p>
-            <button type="button" onClick={() => void refresh()} className="btn-primary mt-4">Try again</button>
-          </div>
-        ) : (
-          <p className="animate-pulse font-display text-3xl font-bold uppercase text-muted">Loading auction…</p>
-        )}
+        <p className="animate-pulse font-display text-3xl font-bold uppercase text-muted">Loading auction…</p>
       </div>
     );
   }
@@ -314,13 +285,6 @@ export function AuctionStage({ mode }: Props) {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span
-              className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold", connected ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-amber-500/15 text-amber-600 dark:text-amber-400")}
-              title={connected ? "Live updates connected" : "Reconnecting – refreshing every few seconds"}
-            >
-              <span className={cn("h-2 w-2 rounded-full", connected ? "bg-emerald-500" : "animate-pulse bg-amber-500")} />
-              {connected ? "Live" : "Reconnecting"}
-            </span>
             <button
               type="button"
               onClick={() => {
