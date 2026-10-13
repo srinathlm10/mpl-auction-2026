@@ -32,6 +32,7 @@ export default async function AuctionSummaryPage({ searchParams }: Props) {
     player: p.name,
     batch: p.batch,
     role: p.role_or_position,
+    details: Object.values(p.attributes ?? {}).filter(Boolean).join(", "),
     status: p.status === "sold" ? "Sold" : "Unsold",
     team: teamName(p.team_id),
     basePrice: p.base_price,

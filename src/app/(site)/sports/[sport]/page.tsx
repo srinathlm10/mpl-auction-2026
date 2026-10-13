@@ -47,7 +47,7 @@ export default async function SportPage({ params }: Props) {
         <StatCard label="Unsold" value={count("unsold")} />
       </div>
 
-      <PlayerExplorer players={players} teamNames={teamNames} roleLabel={config.roleLabel} />
+      <PlayerExplorer players={players} teamNames={teamNames} roleLabel={config.roleLabel} attributes={config.attributes} />
     </div>
   );
 }

@@ -1,15 +1,13 @@
 [
   {
     "id": 1,
-    "name": "Aditya Verma",
+    "name": "Abhishek Chauhan",
     "sport_id": 1,
-    "batch": "2024-26",
+    "batch": "",
     "role_or_position": "Batsman",
-    "skills": {
-      "batting": 5,
-      "bowling": 8,
-      "fielding": 5,
-      "fitness": 8
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Non-round arm"
     },
     "photo_url": null,
     "base_price": 100000,
@@ -19,15 +17,13 @@
   },
   {
     "id": 2,
-    "name": "Siddharth Jain",
+    "name": "Sujeet Sharma",
     "sport_id": 1,
-    "batch": "2025-27",
-    "role_or_position": "Bowler",
-    "skills": {
-      "batting": 6,
-      "bowling": 4,
-      "fielding": 8,
-      "fitness": 6
+    "batch": "",
+    "role_or_position": "All-rounder",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Round arm"
     },
     "photo_url": null,
     "base_price": 100000,
@@ -37,15 +33,13 @@
   },
   {
     "id": 3,
-    "name": "Manav Gupta",
+    "name": "Saktiprasad Samantaray",
     "sport_id": 1,
-    "batch": "2024-26",
+    "batch": "",
     "role_or_position": "All-rounder",
-    "skills": {
-      "batting": 7,
-      "bowling": 6,
-      "fielding": 5,
-      "fitness": 4
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Non-round arm"
     },
     "photo_url": null,
     "base_price": 100000,
@@ -55,15 +49,13 @@
   },
   {
     "id": 4,
-    "name": "Pranav Desai",
+    "name": "Atul Kumar Singh",
     "sport_id": 1,
-    "batch": "2025-27",
-    "role_or_position": "Wicketkeeper",
-    "skills": {
-      "batting": 8,
-      "bowling": 8,
-      "fielding": 8,
-      "fitness": 8
+    "batch": "",
+    "role_or_position": "Batsman",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Round arm"
     },
     "photo_url": null,
     "base_price": 100000,
@@ -73,15 +65,13 @@
   },
   {
     "id": 5,
-    "name": "Yash Agarwal",
+    "name": "Satyajit Sahoo",
     "sport_id": 1,
-    "batch": "2024-26",
-    "role_or_position": "Batsman",
-    "skills": {
-      "batting": 9,
-      "bowling": 4,
-      "fielding": 5,
-      "fitness": 6
+    "batch": "",
+    "role_or_position": "All-rounder",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Round arm"
     },
     "photo_url": null,
     "base_price": 100000,
@@ -91,15 +81,13 @@
   },
   {
     "id": 6,
-    "name": "Nikhil Pillai",
+    "name": "Aman Singh",
     "sport_id": 1,
-    "batch": "2025-27",
-    "role_or_position": "Bowler",
-    "skills": {
-      "batting": 4,
-      "bowling": 6,
-      "fielding": 8,
-      "fitness": 4
+    "batch": "",
+    "role_or_position": "All-rounder",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Round arm"
     },
     "photo_url": null,
     "base_price": 100000,
@@ -109,15 +97,13 @@
   },
   {
     "id": 7,
-    "name": "Harsh Vardhan",
+    "name": "Venkatesh B",
     "sport_id": 1,
-    "batch": "2024-26",
-    "role_or_position": "All-rounder",
-    "skills": {
-      "batting": 5,
-      "bowling": 8,
-      "fielding": 5,
-      "fitness": 8
+    "batch": "",
+    "role_or_position": "Batsman",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Round arm"
     },
     "photo_url": null,
     "base_price": 100000,
@@ -127,15 +113,13 @@
   },
   {
     "id": 8,
-    "name": "Tanmay Kulkarni",
+    "name": "Ritik Raushan Singh",
     "sport_id": 1,
-    "batch": "2025-27",
-    "role_or_position": "Wicketkeeper",
-    "skills": {
-      "batting": 6,
-      "bowling": 4,
-      "fielding": 8,
-      "fitness": 6
+    "batch": "",
+    "role_or_position": "Batsman",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Round arm"
     },
     "photo_url": null,
     "base_price": 100000,
@@ -145,15 +129,13 @@
   },
   {
     "id": 9,
-    "name": "Dev Patel",
+    "name": "Om Prakash Sahoo",
     "sport_id": 1,
-    "batch": "2024-26",
-    "role_or_position": "Batsman",
-    "skills": {
-      "batting": 7,
-      "bowling": 6,
-      "fielding": 5,
-      "fitness": 4
+    "batch": "",
+    "role_or_position": "All-rounder",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Non-round arm"
     },
     "photo_url": null,
     "base_price": 100000,
@@ -163,15 +145,13 @@
   },
   {
     "id": 10,
-    "name": "Ritvik Sinha",
+    "name": "Sritam Nayak",
     "sport_id": 1,
-    "batch": "2025-27",
-    "role_or_position": "Bowler",
-    "skills": {
-      "batting": 8,
-      "bowling": 8,
-      "fielding": 8,
-      "fitness": 8
+    "batch": "",
+    "role_or_position": "Batsman",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Non-round arm"
     },
     "photo_url": null,
     "base_price": 100000,
@@ -181,6 +161,182 @@
   },
   {
     "id": 11,
+    "name": "Mansa Sahu",
+    "sport_id": 1,
+    "batch": "",
+    "role_or_position": "Fielder",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Round arm"
+    },
+    "photo_url": null,
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
+    "id": 12,
+    "name": "Aparna Raj",
+    "sport_id": 1,
+    "batch": "",
+    "role_or_position": "Batsman",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Round arm"
+    },
+    "photo_url": null,
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
+    "id": 13,
+    "name": "Devendra Kumar",
+    "sport_id": 1,
+    "batch": "",
+    "role_or_position": "Batsman",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Round arm"
+    },
+    "photo_url": null,
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
+    "id": 14,
+    "name": "Apurv Upadhyay",
+    "sport_id": 1,
+    "batch": "",
+    "role_or_position": "Batsman",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Non-round arm"
+    },
+    "photo_url": null,
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
+    "id": 15,
+    "name": "Nalin Kumar Sinha",
+    "sport_id": 1,
+    "batch": "",
+    "role_or_position": "All-rounder",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Round arm"
+    },
+    "photo_url": null,
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
+    "id": 16,
+    "name": "Suneet Ranjan Khuntia",
+    "sport_id": 1,
+    "batch": "",
+    "role_or_position": "All-rounder",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Non-round arm"
+    },
+    "photo_url": null,
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
+    "id": 17,
+    "name": "Subham Sekhar Sahu",
+    "sport_id": 1,
+    "batch": "",
+    "role_or_position": "All-rounder",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Non-round arm"
+    },
+    "photo_url": null,
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
+    "id": 18,
+    "name": "Tania Nirmal",
+    "sport_id": 1,
+    "batch": "",
+    "role_or_position": "Batsman",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Round arm"
+    },
+    "photo_url": null,
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
+    "id": 19,
+    "name": "Binayak Dang",
+    "sport_id": 1,
+    "batch": "",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Non-round arm"
+    },
+    "photo_url": null,
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
+    "id": 20,
+    "name": "Harsh Pande",
+    "sport_id": 1,
+    "batch": "",
+    "role_or_position": "All-rounder",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Non-round arm"
+    },
+    "photo_url": null,
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
+    "id": 21,
+    "name": "Ankita Mohapatra",
+    "sport_id": 1,
+    "batch": "",
+    "role_or_position": "All-rounder",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Non-round arm"
+    },
+    "photo_url": null,
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
+    "id": 22,
     "name": "Meera Bansal",
     "sport_id": 2,
     "batch": "2024-26",
@@ -191,6 +347,7 @@
       "serve": 6,
       "defense": 9
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -198,7 +355,7 @@
     "sold_price": null
   },
   {
-    "id": 12,
+    "id": 23,
     "name": "Aisha Khan",
     "sport_id": 2,
     "batch": "2025-27",
@@ -209,6 +366,7 @@
       "serve": 9,
       "defense": 7
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -216,7 +374,7 @@
     "sold_price": null
   },
   {
-    "id": 13,
+    "id": 24,
     "name": "Rhea Fernandes",
     "sport_id": 2,
     "batch": "2024-26",
@@ -227,6 +385,7 @@
       "serve": 6,
       "defense": 5
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -234,7 +393,7 @@
     "sold_price": null
   },
   {
-    "id": 14,
+    "id": 25,
     "name": "Tara Banerjee",
     "sport_id": 2,
     "batch": "2025-27",
@@ -245,6 +404,7 @@
       "serve": 9,
       "defense": 9
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -252,7 +412,7 @@
     "sold_price": null
   },
   {
-    "id": 15,
+    "id": 26,
     "name": "Kavya Nambiar",
     "sport_id": 2,
     "batch": "2024-26",
@@ -263,6 +423,7 @@
       "serve": 6,
       "defense": 7
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -270,7 +431,7 @@
     "sold_price": null
   },
   {
-    "id": 16,
+    "id": 27,
     "name": "Ira Chatterjee",
     "sport_id": 2,
     "batch": "2025-27",
@@ -281,6 +442,7 @@
       "serve": 9,
       "defense": 5
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -288,7 +450,7 @@
     "sold_price": null
   },
   {
-    "id": 17,
+    "id": 28,
     "name": "Sneha Pawar",
     "sport_id": 2,
     "batch": "2024-26",
@@ -299,6 +461,7 @@
       "serve": 6,
       "defense": 9
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -306,7 +469,7 @@
     "sold_price": null
   },
   {
-    "id": 18,
+    "id": 29,
     "name": "Naina Saxena",
     "sport_id": 2,
     "batch": "2025-27",
@@ -317,6 +480,7 @@
       "serve": 9,
       "defense": 7
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -324,7 +488,7 @@
     "sold_price": null
   },
   {
-    "id": 19,
+    "id": 30,
     "name": "Pooja Hegde",
     "sport_id": 2,
     "batch": "2024-26",
@@ -335,6 +499,7 @@
       "serve": 6,
       "defense": 5
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -342,7 +507,7 @@
     "sold_price": null
   },
   {
-    "id": 20,
+    "id": 31,
     "name": "Zoya Ansari",
     "sport_id": 2,
     "batch": "2025-27",
@@ -353,6 +518,7 @@
       "serve": 9,
       "defense": 9
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -360,7 +526,7 @@
     "sold_price": null
   },
   {
-    "id": 21,
+    "id": 32,
     "name": "Aryan Singh",
     "sport_id": 3,
     "batch": "2024-26",
@@ -371,6 +537,7 @@
       "passing": 7,
       "defending": 4
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -378,7 +545,7 @@
     "sold_price": null
   },
   {
-    "id": 22,
+    "id": 33,
     "name": "Rishi Kohli",
     "sport_id": 3,
     "batch": "2025-27",
@@ -389,6 +556,7 @@
       "passing": 4,
       "defending": 8
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -396,7 +564,7 @@
     "sold_price": null
   },
   {
-    "id": 23,
+    "id": 34,
     "name": "Mohit Thakur",
     "sport_id": 3,
     "batch": "2024-26",
@@ -407,6 +575,7 @@
       "passing": 7,
       "defending": 6
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -414,7 +583,7 @@
     "sold_price": null
   },
   {
-    "id": 24,
+    "id": 35,
     "name": "Samar Qureshi",
     "sport_id": 3,
     "batch": "2025-27",
@@ -425,6 +594,7 @@
       "passing": 4,
       "defending": 4
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -432,7 +602,7 @@
     "sold_price": null
   },
   {
-    "id": 25,
+    "id": 36,
     "name": "Vedant Shah",
     "sport_id": 3,
     "batch": "2024-26",
@@ -443,6 +613,7 @@
       "passing": 7,
       "defending": 8
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -450,7 +621,7 @@
     "sold_price": null
   },
   {
-    "id": 26,
+    "id": 37,
     "name": "Jayesh Kamath",
     "sport_id": 3,
     "batch": "2025-27",
@@ -461,6 +632,7 @@
       "passing": 4,
       "defending": 6
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -468,7 +640,7 @@
     "sold_price": null
   },
   {
-    "id": 27,
+    "id": 38,
     "name": "Lakshya Bose",
     "sport_id": 3,
     "batch": "2024-26",
@@ -479,6 +651,7 @@
       "passing": 7,
       "defending": 4
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -486,7 +659,7 @@
     "sold_price": null
   },
   {
-    "id": 28,
+    "id": 39,
     "name": "Omkar Patil",
     "sport_id": 3,
     "batch": "2025-27",
@@ -497,6 +670,7 @@
       "passing": 4,
       "defending": 8
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -504,7 +678,7 @@
     "sold_price": null
   },
   {
-    "id": 29,
+    "id": 40,
     "name": "Farhan Sheikh",
     "sport_id": 3,
     "batch": "2024-26",
@@ -515,6 +689,7 @@
       "passing": 7,
       "defending": 6
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",
@@ -522,7 +697,7 @@
     "sold_price": null
   },
   {
-    "id": 30,
+    "id": 41,
     "name": "Dhruv Anand",
     "sport_id": 3,
     "batch": "2025-27",
@@ -533,6 +708,7 @@
       "passing": 4,
       "defending": 4
     },
+    "attributes": {},
     "photo_url": null,
     "base_price": 100000,
     "status": "available",

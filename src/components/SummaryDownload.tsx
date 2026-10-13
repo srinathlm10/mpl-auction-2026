@@ -5,13 +5,15 @@ export interface SummaryRow {
   player: string;
   batch: string;
   role: string;
+  /** Text details such as bowling action. */
+  details: string;
   status: string;
   team: string;
   basePrice: number;
   soldPrice: number | null;
 }
 
-const HEADERS = ["Sport", "Player", "Batch", "Role / Position", "Status", "Team", "Base price", "Sold price"];
+const HEADERS = ["Sport", "Player", "Batch", "Role / Position", "Details", "Status", "Team", "Base price", "Sold price"];
 
 function cell(value: string | number | null): string {
   const text = value === null ? "" : String(value);
@@ -23,10 +25,10 @@ export function SummaryDownload({ rows, filename }: { rows: SummaryRow[]; filena
   function download() {
     const lines = [
       HEADERS.join(","),
-      ...rows.map((r) => [r.sport, r.player, r.batch, r.role, r.status, r.team, r.basePrice, r.soldPrice].map(cell).join(",")),
+      ...rows.map((r) => [r.sport, r.player, r.batch, r.role, r.details, r.status, r.team, r.basePrice, r.soldPrice].map(cell).join(",")),
     ];
     // BOM so Excel reads the file as UTF-8
-    const blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+    const blob = new Blob(["\uFEFF" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

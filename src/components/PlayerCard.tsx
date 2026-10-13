@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { formatPrice } from "@/lib/format";
+import { playerSubtitle } from "@/lib/sports";
 import type { Player } from "@/lib/types";
 
 interface Props {
@@ -31,7 +32,7 @@ export function PlayerCard({ player, teamName }: Props) {
       <div className="flex flex-1 flex-col gap-1 p-3 sm:p-4">
         <h3 className="line-clamp-1 font-display text-xl font-bold leading-tight">{player.name}</h3>
         <p className="line-clamp-1 text-sm text-muted">
-          {[player.role_or_position, player.batch].filter(Boolean).join(" · ")}
+          {playerSubtitle(player)}
         </p>
         <div className="mt-auto pt-2 text-sm">
           {sold ? (

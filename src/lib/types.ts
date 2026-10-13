@@ -29,6 +29,8 @@ export interface Player {
   role_or_position: string;
   /** Sport-specific ratings, e.g. { batting: 8, bowling: 5 } */
   skills: Record<string, number>;
+  /** Sport-specific text details, e.g. { bowling_action: "Round arm" } */
+  attributes: Record<string, string>;
   photo_url: string | null;
   base_price: number;
   status: PlayerStatus;

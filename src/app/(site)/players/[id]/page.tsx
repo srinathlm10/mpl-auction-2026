@@ -71,6 +71,9 @@ export default async function PlayerPage({ params }: Props) {
           <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Fact label="Batch" value={player.batch || "—"} />
             <Fact label={config.roleLabel} value={player.role_or_position || "—"} />
+            {config.attributes.map((attr) => (
+              <Fact key={attr.key} label={attr.label} value={player.attributes?.[attr.key] || "—"} />
+            ))}
             <Fact label="Base price" value={formatPrice(player.base_price)} />
           </dl>
 

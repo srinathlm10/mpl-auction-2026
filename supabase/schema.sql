@@ -31,6 +31,7 @@ create table if not exists public.players (
   batch             text   not null default '',
   role_or_position  text   not null default '',
   skills            jsonb  not null default '{}'::jsonb,   -- differs per sport, e.g. {"batting":8,"bowling":5}
+  attributes        jsonb  not null default '{}'::jsonb,   -- text details, e.g. {"bowling_action":"Round arm"}
   photo_url         text,
   base_price        bigint not null default 0 check (base_price >= 0),
   status            text   not null default 'available' check (status in ('available', 'sold', 'unsold')),
@@ -38,6 +39,9 @@ create table if not exists public.players (
   sold_price        bigint check (sold_price >= 0),
   created_at        timestamptz not null default now()
 );
+
+-- For databases created before the attributes column existed.
+alter table public.players add column if not exists attributes jsonb not null default '{}'::jsonb;
 
 create index if not exists players_sport_idx  on public.players (sport_id);
 create index if not exists players_status_idx on public.players (status);

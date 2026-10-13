@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { formatCompact, formatPrice } from "@/lib/format";
+import { playerSubtitle } from "@/lib/sports";
 import type { Player, Team } from "@/lib/types";
 
 interface Props {
@@ -47,7 +48,7 @@ export function SoldOverlay({ player, team, price, onClose, duration = 9000 }: P
 
         <div className="text-center md:text-left">
           <p className="font-display text-[clamp(2.2rem,6vw,5rem)] font-extrabold uppercase leading-none">{player.name}</p>
-          <p className="mt-1 text-lg text-indigo-200">{[player.role_or_position, player.batch].filter(Boolean).join(" · ")}</p>
+          <p className="mt-1 text-lg text-indigo-200">{playerSubtitle(player)}</p>
 
           <div className="mt-5 flex items-center justify-center gap-4 md:justify-start">
             <div className="relative h-[clamp(4rem,10vh,7rem)] w-[clamp(4rem,10vh,7rem)] shrink-0 overflow-hidden rounded-2xl border-2 border-white/70 bg-white/10">

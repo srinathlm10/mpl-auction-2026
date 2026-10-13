@@ -22,11 +22,11 @@ const lines = [
   data.teams.map((t) => `  (${t.id}, ${q(t.name)}, ${t.sport_id}, ${q(t.logo_url)}, ${q(t.captain)}, ${t.total_purse})`).join(",\n") + ";",
   "",
   "-- Teams' remaining_purse is recalculated by trigger when players are inserted.",
-  "insert into public.players (id, name, sport_id, batch, role_or_position, skills, photo_url, base_price, status, team_id, sold_price) overriding system value values",
+  "insert into public.players (id, name, sport_id, batch, role_or_position, skills, attributes, photo_url, base_price, status, team_id, sold_price) overriding system value values",
   data.players
     .map(
       (p) =>
-        `  (${p.id}, ${q(p.name)}, ${p.sport_id}, ${q(p.batch)}, ${q(p.role_or_position)}, ${q(JSON.stringify(p.skills))}::jsonb, ${q(p.photo_url)}, ${p.base_price}, ${q(p.status)}, ${n(p.team_id)}, ${n(p.sold_price)})`,
+        `  (${p.id}, ${q(p.name)}, ${p.sport_id}, ${q(p.batch)}, ${q(p.role_or_position)}, ${q(JSON.stringify(p.skills))}::jsonb, ${q(JSON.stringify(p.attributes ?? {}))}::jsonb, ${q(p.photo_url)}, ${p.base_price}, ${q(p.status)}, ${n(p.team_id)}, ${n(p.sold_price)})`,
     )
     .join(",\n") + ";",
   "",

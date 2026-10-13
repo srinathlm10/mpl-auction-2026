@@ -13,6 +13,12 @@ export interface SkillDef {
   label: string;
 }
 
+/** A text detail shown on player cards and usable as a filter, e.g. bowling action. */
+export interface AttributeDef {
+  key: string;
+  label: string;
+}
+
 export interface SportConfig {
   slug: string;
   name: string;
@@ -23,6 +29,7 @@ export interface SportConfig {
   roleLabel: string;
   roles: string[];
   skills: SkillDef[];
+  attributes: AttributeDef[];
   defaultBasePrice: number;
 }
 
@@ -34,13 +41,14 @@ export const SPORT_CONFIGS: SportConfig[] = [
     tagline: "Bat, bowl and boundary hunters",
     accent: "16 185 129",
     roleLabel: "Role",
-    roles: ["Batsman", "Bowler", "All-rounder", "Wicketkeeper"],
+    roles: ["Batsman", "Bowler", "All-rounder", "Wicketkeeper", "Fielder"],
     skills: [
       { key: "batting", label: "Batting" },
       { key: "bowling", label: "Bowling" },
       { key: "fielding", label: "Fielding" },
       { key: "fitness", label: "Fitness" },
     ],
+    attributes: [{ key: "bowling_action", label: "Bowling action" }],
     defaultBasePrice: 50000,
   },
   {
@@ -57,6 +65,7 @@ export const SPORT_CONFIGS: SportConfig[] = [
       { key: "serve", label: "Serve" },
       { key: "defense", label: "Defense" },
     ],
+    attributes: [],
     defaultBasePrice: 40000,
   },
   {
@@ -73,6 +82,7 @@ export const SPORT_CONFIGS: SportConfig[] = [
       { key: "passing", label: "Passing" },
       { key: "defending", label: "Defending" },
     ],
+    attributes: [],
     defaultBasePrice: 40000,
   },
 ];
@@ -86,6 +96,7 @@ export const FALLBACK_SPORT: SportConfig = {
   roleLabel: "Role",
   roles: [],
   skills: [],
+  attributes: [],
   defaultBasePrice: 50000,
 };
 
@@ -93,6 +104,15 @@ export function getSportConfig(slug: string, name?: string): SportConfig {
   const found = SPORT_CONFIGS.find((s) => s.slug === slug);
   if (found) return found;
   return { ...FALLBACK_SPORT, slug, name: name ?? slug };
+}
+
+/** "All-rounder · Round arm · 2025-27" – role, text attributes and batch. */
+export function playerSubtitle(
+  player: { role_or_position: string; batch: string; attributes?: Record<string, string> },
+  { batchPrefix = "" } = {},
+): string {
+  const extras = Object.values(player.attributes ?? {}).filter(Boolean);
+  return [player.role_or_position, ...extras, player.batch && `${batchPrefix}${player.batch}`].filter(Boolean).join(" · ");
 }
 
 /** Inline style that re-points the accent colour for everything inside. */

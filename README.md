@@ -47,7 +47,7 @@ npm run dev        # http://localhost:3000
 8. See results at `/auction/summary` (with **Download CSV**) and each squad at `/teams/<id>`.
 9. **Reset Cricket auction (testing)** at the bottom of the control screen restores everything for that sport.
 
-> The sample data has 10 players per sport, so squads can't fill up during a test. Add more players to try the "squad full" rule.
+> Cricket has the 21 real players; Volleyball and Football still have 10 sample players each. With 4 teams and a squad size of 11, squads can't fill up yet, so lower the squad size in Settings to try the "squad full" rule.
 
 ## Auction rules & settings
 
@@ -108,5 +108,5 @@ src/
 ## Adding a new sport
 
 1. `insert into public.sports (name, slug, squad_size) values ('Badminton', 'badminton', 6);` (and add it to `src/data/sports.json` for the no-database fallback).
-2. Add an entry to `SPORT_CONFIGS` in `src/lib/sports.ts` with the same `slug` (emoji, accent colour, roles, skills).
+2. Add an entry to `SPORT_CONFIGS` in `src/lib/sports.ts` with the same `slug` (emoji, accent colour, roles, skill ratings, and text `attributes` such as cricket's *Bowling action*, which show on player cards and get their own filter).
 3. Add its teams and players. The site and the auction pick it up automatically.

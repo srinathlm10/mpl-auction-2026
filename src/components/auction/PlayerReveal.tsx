@@ -1,7 +1,7 @@
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { SkillBar } from "@/components/ui/SkillBar";
 import { formatCompact, formatPrice } from "@/lib/format";
-import type { SportConfig } from "@/lib/sports";
+import { playerSubtitle, type SportConfig } from "@/lib/sports";
 import type { Player } from "@/lib/types";
 
 interface Props {
@@ -25,7 +25,7 @@ export function PlayerReveal({ player, config, basePrice, compact = false }: Pro
         <div className="min-w-0">
           <p className="truncate font-display text-3xl font-extrabold uppercase leading-tight 2xl:text-5xl">{player.name}</p>
           <p className="truncate text-muted 2xl:text-xl">
-            {[player.role_or_position, player.batch].filter(Boolean).join(" · ")}
+            {playerSubtitle(player)}
           </p>
           <p className="text-sm text-muted 2xl:text-lg">
             Base <span className="font-bold text-foreground">{formatPrice(basePrice)}</span>
@@ -48,7 +48,7 @@ export function PlayerReveal({ player, config, basePrice, compact = false }: Pro
             </p>
             <h2 className="mt-1 font-display text-[clamp(2.5rem,5vw,5rem)] font-extrabold uppercase leading-none">{player.name}</h2>
             <p className="mt-2 text-lg text-muted 2xl:text-2xl">
-              {[player.role_or_position, player.batch && `Batch ${player.batch}`].filter(Boolean).join(" · ")}
+              {playerSubtitle(player, { batchPrefix: "Batch " })}
             </p>
           </div>
 
