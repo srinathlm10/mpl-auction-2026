@@ -2,7 +2,6 @@
 
 import { PlayerExplorer } from "@/components/PlayerExplorer";
 import { SportTabs } from "@/components/SportTabs";
-import { StatCard } from "@/components/ui/StatCard";
 import { accentStyle, getSportConfig } from "@/lib/sports";
 import { useAuctionData } from "@/lib/use-auction";
 
@@ -21,22 +20,29 @@ export function SportView({ slug }: { slug: string }) {
     <div style={accentStyle(config)}>
       <SportTabs sports={sports} activeSlug={sport.slug} />
 
-      <header className="mb-6 flex items-center gap-4">
-        <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/20 text-4xl" aria-hidden>
+      <header className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-accent to-accent/60 p-5 text-white shadow-lift sm:p-8">
+        <div aria-hidden className="absolute inset-0 bg-[repeating-linear-gradient(135deg,transparent_0_16px,rgb(255_255_255/0.07)_16px_32px)]" />
+        <span aria-hidden className="absolute -right-4 -top-6 text-[9rem] leading-none opacity-90 drop-shadow-xl sm:-top-8 sm:text-[12rem]">
           {config.emoji}
         </span>
-        <div>
-          <h1 className="font-display text-4xl font-extrabold uppercase tracking-wide sm:text-5xl">{sport.name}</h1>
-          {config.tagline && <p className="text-muted">{config.tagline}</p>}
+        <div className="relative">
+          <h1 className="font-display text-5xl font-extrabold uppercase leading-none drop-shadow sm:text-7xl">{sport.name}</h1>
+          {config.tagline && <p className="mt-1 font-medium text-white/90">{config.tagline}</p>}
+          <dl className="mt-6 grid max-w-xl grid-cols-4 gap-2">
+            {[
+              ["Players", players.length],
+              ["Available", count("available")],
+              ["Sold", count("sold")],
+              ["Unsold", count("unsold")],
+            ].map(([label, value]) => (
+              <div key={label} className="min-w-0 rounded-xl bg-black/15 px-2.5 py-2 backdrop-blur-sm sm:px-3">
+                <dt className="truncate text-[9px] font-bold uppercase tracking-wider text-white/80 sm:text-[11px] sm:tracking-[0.14em]">{label}</dt>
+                <dd className="font-display text-2xl font-bold leading-tight sm:text-3xl">{value}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </header>
-
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard label="Players" value={players.length} />
-        <StatCard label="Available" value={count("available")} />
-        <StatCard label="Sold" value={count("sold")} />
-        <StatCard label="Unsold" value={count("unsold")} />
-      </div>
 
       <PlayerExplorer players={players} teamNames={teamNames} roleLabel={config.roleLabel} attributes={config.attributes} />
     </div>

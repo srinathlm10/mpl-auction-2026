@@ -20,13 +20,18 @@ const config: Config = {
           foreground: withAlpha("--primary-fg"),
         },
         accent: withAlpha("--accent"),
+        gold: withAlpha("--gold"),
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         display: ["var(--font-display)", "var(--font-sans)", "sans-serif"],
       },
       boxShadow: {
-        card: "0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px -12px rgb(0 0 0 / 0.18)",
+        card: "0 1px 2px rgb(15 23 42 / 0.05), 0 10px 30px -14px rgb(15 23 42 / 0.20)",
+        lift: "0 2px 4px rgb(15 23 42 / 0.06), 0 22px 44px -18px rgb(15 23 42 / 0.35)",
+      },
+      letterSpacing: {
+        display: "0.01em",
       },
     },
   },

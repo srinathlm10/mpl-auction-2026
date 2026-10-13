@@ -13,6 +13,7 @@ import { SpinWheel } from "@/components/auction/SpinWheel";
 import { SportSelector } from "@/components/auction/SportSelector";
 import { TeamCorner } from "@/components/auction/TeamCorner";
 import { SquadDialog, TeamStrip } from "@/components/auction/TeamStrip";
+import { Icon } from "@/components/ui/Icon";
 import { Kbd } from "@/components/ui/Kbd";
 import { Logo } from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -299,7 +300,8 @@ export function AuctionStage({ mode }: Props) {
               aria-label={muted ? "Unmute sounds" : "Mute sounds"}
               title={muted ? "Turn sound on (plays a test chime)" : "Mute this screen (use one screen for sound to avoid an echo)"}
             >
-              {muted ? "🔇 Muted" : "🔊 Sound"}
+              <Icon name={muted ? "mute" : "volume"} className="h-4 w-4" />
+              {muted ? "Muted" : "Sound"}
             </button>
             {!admin && (
               <button type="button" onClick={toggleFullscreen} className="btn-primary min-h-[40px] px-3">

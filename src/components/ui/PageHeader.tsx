@@ -2,16 +2,22 @@ export function PageHeader({
   title,
   subtitle,
   eyebrow,
+  children,
 }: {
   title: string;
   subtitle?: string;
   eyebrow?: string;
+  /** Actions shown on the right (buttons, links). */
+  children?: React.ReactNode;
 }) {
   return (
-    <div className="mb-6 sm:mb-8">
-      {eyebrow && <p className="mb-1 text-sm font-semibold uppercase tracking-widest text-accent">{eyebrow}</p>}
-      <h1 className="font-display text-4xl font-extrabold uppercase tracking-wide sm:text-5xl">{title}</h1>
-      {subtitle && <p className="mt-2 max-w-2xl text-muted">{subtitle}</p>}
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-4 sm:mb-10">
+      <div>
+        {eyebrow && <p className="eyebrow mb-2">{eyebrow}</p>}
+        <h1 className="font-display text-5xl font-extrabold uppercase leading-[0.95] sm:text-6xl">{title}</h1>
+        {subtitle && <p className="mt-3 max-w-2xl text-muted sm:text-lg">{subtitle}</p>}
+      </div>
+      {children}
     </div>
   );
 }

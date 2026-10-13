@@ -17,8 +17,11 @@ interface Props {
  * have a size. Images are lazy-loaded and optimised by next/image; without a
  * photo we show initials on the current accent colour.
  */
+/** The stock silhouette counts as "no photo": initials look better than an empty figure. */
+const PLACEHOLDER = "/players/placeholder.svg";
+
 export function PlayerAvatar({ name, src, sizes, priority = false, className, fit = "cover" }: Props) {
-  if (src) {
+  if (src && src !== PLACEHOLDER) {
     return (
       <Image
         src={src}
@@ -37,7 +40,7 @@ export function PlayerAvatar({ name, src, sizes, priority = false, className, fi
       aria-label={name}
       role="img"
       className={cn(
-        "flex h-full w-full items-center justify-center bg-gradient-to-br from-accent/80 to-primary/80 font-display text-5xl font-extrabold text-white",
+        "flex h-full w-full items-center justify-center bg-gradient-to-br from-accent via-accent/80 to-primary font-display text-5xl font-extrabold text-white/95 [text-shadow:0_2px_12px_rgb(0_0_0/0.25)]",
         className,
       )}
     >
