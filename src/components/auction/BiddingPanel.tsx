@@ -2,7 +2,7 @@
 
 import { Kbd } from "@/components/ui/Kbd";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
-import { checkTeamBid, nextBidAmount } from "@/lib/auction";
+import type { BidCheck } from "@/lib/auction";
 import { cn, formatCompact, formatPrice } from "@/lib/format";
 import type { AuctionSettings, AuctionState, Bid, Team } from "@/lib/types";
 
@@ -16,6 +16,12 @@ interface Props {
   boughtCount: (teamId: number) => number;
   bids: Bid[];
   busy: boolean;
+  /** The bid amount the auctioneer has set. */
+  nextAmount: number;
+  /** Whether a team may bid nextAmount right now. */
+  teamCheck: (team: Team) => BidCheck;
+  /** The − / + bid amount control (admin only). */
+  amountControl?: React.ReactNode;
   onBid?: (teamId: number, expectedAmount: number) => void;
   onUndo?: () => void;
   onSold?: () => void;
@@ -33,6 +39,9 @@ export function BiddingPanel({
   boughtCount,
   bids,
   busy,
+  nextAmount,
+  teamCheck,
+  amountControl,
   onBid,
   onUndo,
   onSold,
@@ -41,7 +50,6 @@ export function BiddingPanel({
 }: Props) {
   const current = state.current_bid ?? settings.base_price;
   const holder = teams.find((t) => t.id === state.highest_team_id);
-  const nextAmount = nextBidAmount(current, settings.increment_slabs);
   const teamName = (id: number) => teams.find((t) => t.id === id)?.name ?? "Team";
 
   return (
@@ -72,18 +80,13 @@ export function BiddingPanel({
         </div>
       </div>
 
+      {mode === "admin" && amountControl}
+
       {/* Team bid buttons (admin only) */}
       {mode === "admin" && teamButtons && (
         <div className="grid gap-3 sm:grid-cols-2">
           {teams.map((team) => {
-            const check = checkTeamBid({
-              team,
-              bought: boughtCount(team.id),
-              squadSize,
-              amount: nextAmount,
-              basePrice: settings.base_price,
-              isHighest: team.id === state.highest_team_id,
-            });
+            const check = teamCheck(team);
             const isHolder = team.id === state.highest_team_id;
             return (
               <div key={team.id}>
@@ -114,7 +117,7 @@ export function BiddingPanel({
                     <p className="font-display text-2xl font-extrabold">{formatCompact(nextAmount)}</p>
                   </div>
                 </button>
-                {!check.ok && !isHolder && (
+                {!check.ok && !isHolder && check.reason && (
                   <p role="status" className="mt-1 px-1 text-xs font-medium text-amber-600 dark:text-amber-400">
                     {check.reason}
                   </p>

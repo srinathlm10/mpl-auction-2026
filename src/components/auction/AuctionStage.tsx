@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BidAmountControl } from "@/components/auction/BidAmountControl";
 import { BiddingPanel } from "@/components/auction/BiddingPanel";
 import { Confetti } from "@/components/auction/Confetti";
 import { PlayerReveal } from "@/components/auction/PlayerReveal";
@@ -15,13 +16,13 @@ import { SquadDialog, TeamStrip } from "@/components/auction/TeamStrip";
 import { Kbd } from "@/components/ui/Kbd";
 import { Logo } from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { checkTeamBid, nextBidAmount } from "@/lib/auction";
+import { BID_STEP, bidAmountError, checkTeamBid, minBid, suggestedBid, type BidCheck } from "@/lib/auction";
 import { secureRandomInt } from "@/lib/random";
 import { cn, formatCompact } from "@/lib/format";
 import { setMuted, sounds, unlockAudio } from "@/lib/sound";
+import { runAction } from "@/lib/local-auction";
 import { accentStyle, getSportConfig, poolOf } from "@/lib/sports";
-import { getBrowserClient } from "@/lib/supabase/browser";
-import type { AuctionState, AuctionStatus } from "@/lib/types";
+import type { AuctionStatus } from "@/lib/types";
 import { useAuctionSnapshot, useMuted } from "@/lib/use-auction";
 
 interface Props {
@@ -43,12 +44,12 @@ const CORNERS = [
 
 export function AuctionStage({ mode }: Props) {
   const admin = mode === "admin";
-  const { snap, error, connected, refresh, applyState } = useAuctionSnapshot();
+  const snap = useAuctionSnapshot();
   const muted = useMuted();
 
   const [settledSpin, setSettledSpin] = useState<number | null>(null);
   const [animating, setAnimating] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const busy = false; // actions run instantly in this browser
   const [notice, setNotice] = useState<Notice | null>(null);
   const [confetti, setConfetti] = useState({ n: 0, big: false });
   const [soldView, setSoldView] = useState<{ playerId: number; teamId: number; price: number } | null>(null);
@@ -56,6 +57,9 @@ export function AuctionStage({ mode }: Props) {
   const [squadTeamId, setSquadTeamId] = useState<number | null>(null);
   const [soundOn, setSoundOn] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  // Bid amount typed or stepped by the auctioneer, in lakh. Tied to the bid it was set
+  // against (key), so it falls back to the suggestion once the bid moves on.
+  const [bidDraft, setBidDraft] = useState<{ key: string; lakh: string } | null>(null);
   const spunLive = useRef(false);
   const keyActions = useRef<Record<string, () => void>>({});
   const prev = useRef<{ status: AuctionStatus; bid: number | null } | null>(null);
@@ -152,33 +156,18 @@ export function AuctionStage({ mode }: Props) {
 
   /* --------------------------------------------------------------- actions */
 
-  const run = useCallback(
-    async (name: string, args?: Record<string, unknown>): Promise<boolean> => {
-      unlockAudio();
-      setBusy(true);
-      setNotice(null);
-      try {
-        const { data, error: rpcError } = await getBrowserClient().rpc(name, args);
-        if (rpcError) {
-          const missing = rpcError.code === "PGRST202" || /could not find the function/i.test(rpcError.message);
-          setNotice({
-            kind: "error",
-            text: missing
-              ? "This button needs the latest database update: run supabase/auction.sql once in the Supabase SQL Editor."
-              : rpcError.message,
-          });
-          return false;
-        }
-        const row = Array.isArray(data) ? data[0] : data;
-        if (row && typeof row === "object" && "status" in row) applyState(row as AuctionState);
-        return true;
-      } finally {
-        setBusy(false);
-        void refresh();
-      }
-    },
-    [applyState, refresh],
-  );
+  const run = useCallback(async (name: string, args?: Record<string, unknown>): Promise<boolean> => {
+    unlockAudio();
+    setNotice(null);
+    try {
+      const message = runAction(name, args);
+      if (message) setNotice({ kind: "info", text: message });
+      return true;
+    } catch (e) {
+      setNotice({ kind: "error", text: e instanceof Error ? e.message : "Something went wrong." });
+      return false;
+    }
+  }, []);
 
   async function spin() {
     if (wheelPlayers.length === 0) return;
@@ -188,10 +177,7 @@ export function AuctionStage({ mode }: Props) {
   }
 
   async function bringBackUnsold() {
-    const before = unsoldCount;
-    if (await run("auction_bring_back_unsold")) {
-      setNotice({ kind: "info", text: `${before} unsold player${before === 1 ? "" : "s"} back on the wheel for round two.` });
-    }
+    await run("auction_bring_back_unsold");
   }
 
   async function resetSport() {
@@ -213,18 +199,7 @@ export function AuctionStage({ mode }: Props) {
   if (!snap || !state) {
     return (
       <div className="flex min-h-screen items-center justify-center p-6 text-center">
-        {error ? (
-          <div className="card max-w-md p-6">
-            <h1 className="font-display text-3xl font-bold uppercase">Can&apos;t load the auction</h1>
-            <p className="mt-2 text-muted">{error}</p>
-            <p className="mt-2 text-sm text-muted">
-              Check that <code>supabase/auction.sql</code> has been run in your Supabase project.
-            </p>
-            <button type="button" onClick={() => void refresh()} className="btn-primary mt-4">Try again</button>
-          </div>
-        ) : (
-          <p className="animate-pulse font-display text-3xl font-bold uppercase text-muted">Loading auction…</p>
-        )}
+        <p className="animate-pulse font-display text-3xl font-bold uppercase text-muted">Loading auction…</p>
       </div>
     );
   }
@@ -238,18 +213,33 @@ export function AuctionStage({ mode }: Props) {
   const canSpin =
     admin && !!sport && !needsPoolChoice && CAN_SPIN_FROM.includes(status) && wheelPlayers.length > 0 && !busy && !animating;
   const currentBid = state.current_bid ?? snap.settings.base_price;
-  const nextAmount = nextBidAmount(currentBid, snap.settings.increment_slabs);
-  const teamCheck = (team: (typeof sportTeams)[number]) =>
-    checkTeamBid({
+  const basePrice = snap.settings.base_price;
+  const hasBids = state.highest_team_id !== null;
+  const bidKey = `${state.current_player_id}:${currentBid}:${state.highest_team_id}`;
+  const bidLakh = bidDraft?.key === bidKey ? bidDraft.lakh : String(suggestedBid(currentBid, basePrice, hasBids) / BID_STEP);
+  const nextAmount = bidLakh.trim() === "" ? NaN : Math.round(Number(bidLakh) * BID_STEP);
+  const bidError = bidAmountError(nextAmount, currentBid, basePrice, hasBids);
+  const canDecrease = !bidError && nextAmount - BID_STEP >= minBid(currentBid, basePrice, hasBids);
+  const setBidLakh = (lakh: string) => setBidDraft({ key: bidKey, lakh });
+  const stepBid = (direction: 1 | -1) => {
+    if (direction === -1 && !canDecrease) return;
+    const from = bidError ? suggestedBid(currentBid, basePrice, hasBids) - (direction === 1 ? BID_STEP : 0) : nextAmount;
+    setBidLakh(String((from + direction * BID_STEP) / BID_STEP));
+  };
+  const teamCheck = (team: (typeof sportTeams)[number]): BidCheck => {
+    const check = checkTeamBid({
       team,
       bought: boughtCount(team.id),
       squadSize,
       amount: nextAmount,
-      basePrice: snap.settings.base_price,
+      basePrice,
       isHighest: team.id === state.highest_team_id,
     });
+    // A bad amount is explained once, under the amount box.
+    return check.ok && bidError ? { ok: false, reason: "" } : check;
+  };
 
-  // Keyboard: Space spin / start bidding · 1–4 bid · U undo · S sold · N unsold
+  // Keyboard: Space spin / start bidding · 1–4 bid · + / − bid amount · U undo · S sold · N unsold
   const actions: Record<string, () => void> = {};
   if (admin && sport && !busy) {
     if (soldView) {
@@ -262,6 +252,8 @@ export function AuctionStage({ mode }: Props) {
         sportTeams.slice(0, 9).forEach((team, i) => {
           if (teamCheck(team).ok) actions[String(i + 1)] = () => void run("auction_place_bid", { p_team_id: team.id, p_expected: nextAmount });
         });
+        actions["+"] = actions["="] = () => stepBid(1);
+        actions["-"] = () => stepBid(-1);
         if (snap.bids.length > 0) actions.u = () => void run("auction_undo_bid");
         if (state.highest_team_id) actions.s = () => void run("auction_sold");
         if (snap.bids.length === 0) actions.n = () => void run("auction_unsold");
@@ -293,13 +285,6 @@ export function AuctionStage({ mode }: Props) {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span
-              className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold", connected ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-amber-500/15 text-amber-600 dark:text-amber-400")}
-              title={connected ? "Live updates connected" : "Reconnecting – refreshing every few seconds"}
-            >
-              <span className={cn("h-2 w-2 rounded-full", connected ? "bg-emerald-500" : "animate-pulse bg-amber-500")} />
-              {connected ? "Live" : "Reconnecting"}
-            </span>
             <button
               type="button"
               onClick={() => {
@@ -526,6 +511,19 @@ export function AuctionStage({ mode }: Props) {
                         boughtCount={boughtCount}
                         bids={snap.bids}
                         busy={busy}
+                        nextAmount={nextAmount}
+                        teamCheck={teamCheck}
+                        amountControl={
+                          <BidAmountControl
+                            lakh={bidLakh}
+                            amount={nextAmount}
+                            error={bidError}
+                            canDecrease={canDecrease}
+                            busy={busy}
+                            onChange={setBidLakh}
+                            onStep={stepBid}
+                          />
+                        }
                         teamButtons={!cornerLayout}
                         onBid={(teamId, expected) => void run("auction_place_bid", { p_team_id: teamId, p_expected: expected })}
                         onUndo={() => void run("auction_undo_bid")}

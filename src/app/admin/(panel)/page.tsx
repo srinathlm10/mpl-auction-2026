@@ -1,9 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import { StatCard } from "@/components/ui/StatCard";
-import { getPlayers, getSiteStats, getSports, getTeams } from "@/lib/data";
+import { useAuctionData } from "@/lib/use-auction";
 
-export default async function AdminDashboard() {
-  const [stats, sports, players, teams] = await Promise.all([getSiteStats(), getSports(), getPlayers(), getTeams()]);
+export default function AdminDashboard() {
+  const { sports, players, teams } = useAuctionData();
+  const count = (status: string) => players.filter((p) => p.status === status).length;
+  const stats = { players: players.length, teams: teams.length, sold: count("sold"), available: count("available"), unsold: count("unsold") };
 
   return (
     <div className="space-y-8">

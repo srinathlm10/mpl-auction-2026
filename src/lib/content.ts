@@ -23,7 +23,7 @@ export const auctionRules: string[] = [
   "Every player starts at a fixed base price shown on their profile.",
   "Each team has a fixed purse for its sport. The remaining purse is always visible on the Teams page.",
   "A team can never bid more than its remaining purse.",
-  "Bids go up in fixed increments announced by the auctioneer before the auction starts.",
+  "The opening bid is the base price. After that each bid must be higher than the last; the auctioneer raises it in steps of ₹1 lakh or takes any higher amount a team calls out.",
   "The highest bid when the auctioneer closes bidding wins the player (status: Sold).",
   "A player who receives no bid is marked Unsold and may be brought back in the final round.",
   "Once a player is sold, the sale cannot be reversed except by the organising committee.",
