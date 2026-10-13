@@ -7,7 +7,7 @@ truncate public.players, public.teams, public.sports restart identity cascade;
 insert into public.sports (id, name, slug, squad_size) overriding system value values
   (1, 'Cricket', 'cricket', 12),
   (2, 'Volleyball', 'volleyball', 8),
-  (3, 'Football', 'football', 11);
+  (3, 'Football', 'football', 8);
 
 insert into public.teams (id, name, sport_id, logo_url, captain, total_purse) overriding system value values
   (1, 'Strategy Strikers', 1, null, 'Aarav Mehta', 20000000),
@@ -136,19 +136,7 @@ insert into public.players (id, name, sport_id, batch, role_or_position, skills,
   (109, 'Player 29', 3, '', '', '{}'::jsonb, '{}'::jsonb, '/players/placeholder.svg', 100000, 'available', null, null),
   (110, 'Player 30', 3, '', '', '{}'::jsonb, '{}'::jsonb, '/players/placeholder.svg', 100000, 'available', null, null),
   (111, 'Player 31', 3, '', '', '{}'::jsonb, '{}'::jsonb, '/players/placeholder.svg', 100000, 'available', null, null),
-  (112, 'Player 32', 3, '', '', '{}'::jsonb, '{}'::jsonb, '/players/placeholder.svg', 100000, 'available', null, null),
-  (113, 'Player 33', 3, '', '', '{}'::jsonb, '{}'::jsonb, '/players/placeholder.svg', 100000, 'available', null, null),
-  (114, 'Player 34', 3, '', '', '{}'::jsonb, '{}'::jsonb, '/players/placeholder.svg', 100000, 'available', null, null),
-  (115, 'Player 35', 3, '', '', '{}'::jsonb, '{}'::jsonb, '/players/placeholder.svg', 100000, 'available', null, null),
-  (116, 'Player 36', 3, '', '', '{}'::jsonb, '{}'::jsonb, '/players/placeholder.svg', 100000, 'available', null, null),
-  (117, 'Player 37', 3, '', '', '{}'::jsonb, '{}'::jsonb, '/players/placeholder.svg', 100000, 'available', null, null),
-  (118, 'Player 38', 3, '', '', '{}'::jsonb, '{}'::jsonb, '/players/placeholder.svg', 100000, 'available', null, null),
-  (119, 'Player 39', 3, '', '', '{}'::jsonb, '{}'::jsonb, '/players/placeholder.svg', 100000, 'available', null, null),
-  (120, 'Player 40', 3, '', '', '{}'::jsonb, '{}'::jsonb, '/players/placeholder.svg', 100000, 'available', null, null),
-  (121, 'Player 41', 3, '', '', '{}'::jsonb, '{}'::jsonb, '/players/placeholder.svg', 100000, 'available', null, null),
-  (122, 'Player 42', 3, '', '', '{}'::jsonb, '{}'::jsonb, '/players/placeholder.svg', 100000, 'available', null, null),
-  (123, 'Player 43', 3, '', '', '{}'::jsonb, '{}'::jsonb, '/players/placeholder.svg', 100000, 'available', null, null),
-  (124, 'Player 44', 3, '', '', '{}'::jsonb, '{}'::jsonb, '/players/placeholder.svg', 100000, 'available', null, null);
+  (112, 'Player 32', 3, '', '', '{}'::jsonb, '{}'::jsonb, '/players/placeholder.svg', 100000, 'available', null, null);
 
 -- The truncate above also clears the live auction state (it references sports); recreate it.
 insert into public.auction_state (id) values (1) on conflict (id) do nothing;

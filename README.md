@@ -40,14 +40,14 @@ npm run dev        # http://localhost:3000
 4. **Start Bidding**. Tap team buttons: the bid goes ₹1 L → ₹6 L → ₹11 L … (₹5 L steps below ₹50 L, ₹10 L steps up to ₹1 Cr, ₹25 L steps above). Try:
    - tapping the same team twice (blocked: already highest bidder),
    - **Undo last bid**,
-   - pushing the bid near ₹1.9 Cr – a team with 11 players still to buy must keep ₹10 L back, so its button greys out with the reason.
+   - pushing the bid near ₹1.9 Cr – in cricket (squads of 12) a team buying its first player must keep ₹11 L for the other 11, so its button greys out above ₹1.89 Cr with the reason.
 5. **Sold** → full-screen SOLD alert on both screens, purse and squad update, player leaves the wheel.
 6. Spin again, Start Bidding, and press **Unsold** without bidding → player leaves the wheel. **Bring back N unsold** puts them back for round two.
 7. Refresh either window in the middle of bidding – it comes back exactly where it was.
 8. See results at `/auction/summary` (with **Download CSV**) and each squad at `/teams/<id>`.
 9. **Reset Cricket auction (testing)** at the bottom of the control screen restores everything for that sport.
 
-> All three sports use the same 21 real players, topped up with placeholders ("Player 22", "Player 23" …) so every squad can be filled: Cricket 48 (4 × 12), Volleyball 32 (4 × 8), Football 44 (4 × 11). Every player uses the placeholder photo `public/players/placeholder.svg` until a real one is added: put the photo in `public/players/` and change that player's `photo_url`.
+> All three sports use the same 21 real players, topped up with placeholders ("Player 22", "Player 23" …) so every squad can be filled: Cricket 48 (4 × 12), Volleyball 32 (4 × 8), Football 32 (4 × 8). Every player uses the placeholder photo `public/players/placeholder.svg` until a real one is added: put the photo in `public/players/` and change that player's `photo_url`.
 
 **Cricket has two wheels.** Tabs above the wheel switch between **Batsmen** (batsmen, wicketkeepers, fielders) and **Bowlers & all-rounders**; the projector follows. A player whose role is in neither list goes on the Batsmen wheel. The groups are `pools` in `src/lib/sports.ts`.
 
@@ -57,7 +57,7 @@ Change in **Admin → Settings** (`/admin/auction/settings`):
 
 - **Base price** (default ₹1 lakh) – also updates every player who isn't sold yet.
 - **Bid increment slabs** – any number of "while bid is below X, add Y" rows.
-- **Squad size per sport** – 12 Cricket; temporary defaults 8 Volleyball / 11 Football.
+- **Squad size per sport** – 12 Cricket, 8 Volleyball, 8 Football.
 
 Change in Supabase **Table Editor**:
 

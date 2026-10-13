@@ -7,8 +7,8 @@
 -- ---------------------------------------------------------------------------
 
 alter table public.sports add column if not exists squad_size int not null default 11 check (squad_size > 0);
--- Temporary defaults requested: 11 for cricket / football, 8 for volleyball.
-update public.sports set squad_size = 8 where slug = 'volleyball' and squad_size = 11;
+-- Defaults for an existing database: 8 for volleyball and football (cricket is set to 12 by seed.sql).
+update public.sports set squad_size = 8 where slug in ('volleyball', 'football') and squad_size = 11;
 
 create table if not exists public.auction_settings (
   id               int primary key default 1 check (id = 1),     -- single row
