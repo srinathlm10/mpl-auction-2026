@@ -21,7 +21,7 @@ npm run dev        # http://localhost:3000
 ## Set up Supabase (needed for the live auction)
 
 1. Create a free project at [supabase.com](https://supabase.com).
-2. **SQL Editor** → run these files **in this order**:
+2. **SQL Editor** → **New query** → paste the whole of `supabase/setup-all.sql` → **Run**. That one file contains everything below, in the right order, and is safe to re-run. (Or run the three files separately, **in this order**:)
    1. `supabase/schema.sql` – tables, security, purse trigger
    2. `supabase/auction.sql` – auction settings, live state, bids log, auction actions, realtime
    3. `supabase/seed.sql` – sample data: 30 players, 12 teams, all at ₹1 lakh base and ₹2 crore purse
