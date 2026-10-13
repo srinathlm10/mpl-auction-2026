@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BidAmountControl } from "@/components/auction/BidAmountControl";
 import { BiddingPanel } from "@/components/auction/BiddingPanel";
 import { Confetti } from "@/components/auction/Confetti";
 import { PlayerReveal } from "@/components/auction/PlayerReveal";
@@ -15,7 +16,7 @@ import { SquadDialog, TeamStrip } from "@/components/auction/TeamStrip";
 import { Kbd } from "@/components/ui/Kbd";
 import { Logo } from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { checkTeamBid, nextBidAmount } from "@/lib/auction";
+import { BID_STEP, bidAmountError, checkTeamBid, minBid, suggestedBid, type BidCheck } from "@/lib/auction";
 import { secureRandomInt } from "@/lib/random";
 import { cn, formatCompact } from "@/lib/format";
 import { setMuted, sounds, unlockAudio } from "@/lib/sound";
@@ -56,6 +57,9 @@ export function AuctionStage({ mode }: Props) {
   const [squadTeamId, setSquadTeamId] = useState<number | null>(null);
   const [soundOn, setSoundOn] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  // Bid amount typed or stepped by the auctioneer, in lakh. Tied to the bid it was set
+  // against (key), so it falls back to the suggestion once the bid moves on.
+  const [bidDraft, setBidDraft] = useState<{ key: string; lakh: string } | null>(null);
   const spunLive = useRef(false);
   const keyActions = useRef<Record<string, () => void>>({});
   const prev = useRef<{ status: AuctionStatus; bid: number | null } | null>(null);
@@ -238,18 +242,33 @@ export function AuctionStage({ mode }: Props) {
   const canSpin =
     admin && !!sport && !needsPoolChoice && CAN_SPIN_FROM.includes(status) && wheelPlayers.length > 0 && !busy && !animating;
   const currentBid = state.current_bid ?? snap.settings.base_price;
-  const nextAmount = nextBidAmount(currentBid, snap.settings.increment_slabs);
-  const teamCheck = (team: (typeof sportTeams)[number]) =>
-    checkTeamBid({
+  const basePrice = snap.settings.base_price;
+  const hasBids = state.highest_team_id !== null;
+  const bidKey = `${state.current_player_id}:${currentBid}:${state.highest_team_id}`;
+  const bidLakh = bidDraft?.key === bidKey ? bidDraft.lakh : String(suggestedBid(currentBid, basePrice, hasBids) / BID_STEP);
+  const nextAmount = bidLakh.trim() === "" ? NaN : Math.round(Number(bidLakh) * BID_STEP);
+  const bidError = bidAmountError(nextAmount, currentBid, basePrice, hasBids);
+  const canDecrease = !bidError && nextAmount - BID_STEP >= minBid(currentBid, basePrice, hasBids);
+  const setBidLakh = (lakh: string) => setBidDraft({ key: bidKey, lakh });
+  const stepBid = (direction: 1 | -1) => {
+    if (direction === -1 && !canDecrease) return;
+    const from = bidError ? suggestedBid(currentBid, basePrice, hasBids) - (direction === 1 ? BID_STEP : 0) : nextAmount;
+    setBidLakh(String((from + direction * BID_STEP) / BID_STEP));
+  };
+  const teamCheck = (team: (typeof sportTeams)[number]): BidCheck => {
+    const check = checkTeamBid({
       team,
       bought: boughtCount(team.id),
       squadSize,
       amount: nextAmount,
-      basePrice: snap.settings.base_price,
+      basePrice,
       isHighest: team.id === state.highest_team_id,
     });
+    // A bad amount is explained once, under the amount box.
+    return check.ok && bidError ? { ok: false, reason: "" } : check;
+  };
 
-  // Keyboard: Space spin / start bidding · 1–4 bid · U undo · S sold · N unsold
+  // Keyboard: Space spin / start bidding · 1–4 bid · + / − bid amount · U undo · S sold · N unsold
   const actions: Record<string, () => void> = {};
   if (admin && sport && !busy) {
     if (soldView) {
@@ -262,6 +281,8 @@ export function AuctionStage({ mode }: Props) {
         sportTeams.slice(0, 9).forEach((team, i) => {
           if (teamCheck(team).ok) actions[String(i + 1)] = () => void run("auction_place_bid", { p_team_id: team.id, p_expected: nextAmount });
         });
+        actions["+"] = actions["="] = () => stepBid(1);
+        actions["-"] = () => stepBid(-1);
         if (snap.bids.length > 0) actions.u = () => void run("auction_undo_bid");
         if (state.highest_team_id) actions.s = () => void run("auction_sold");
         if (snap.bids.length === 0) actions.n = () => void run("auction_unsold");
@@ -526,6 +547,19 @@ export function AuctionStage({ mode }: Props) {
                         boughtCount={boughtCount}
                         bids={snap.bids}
                         busy={busy}
+                        nextAmount={nextAmount}
+                        teamCheck={teamCheck}
+                        amountControl={
+                          <BidAmountControl
+                            lakh={bidLakh}
+                            amount={nextAmount}
+                            error={bidError}
+                            canDecrease={canDecrease}
+                            busy={busy}
+                            onChange={setBidLakh}
+                            onStep={stepBid}
+                          />
+                        }
                         teamButtons={!cornerLayout}
                         onBid={(teamId, expected) => void run("auction_place_bid", { p_team_id: teamId, p_expected: expected })}
                         onUndo={() => void run("auction_undo_bid")}

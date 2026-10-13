@@ -25,6 +25,31 @@ export function nextBidAmount(current: number, slabs: BidSlab[]): number {
   return current + incrementFor(current, slabs);
 }
 
+/** The + / − buttons on the bid amount move it by this much. */
+export const BID_STEP = 100_000;
+
+/** Amount the bid box starts at: the base price to open, then 1 lakh above the current bid. */
+export function suggestedBid(current: number, basePrice: number, hasBids: boolean): number {
+  return hasBids ? current + BID_STEP : basePrice;
+}
+
+/** Lowest bid the database accepts: the base price to open, then anything above the current bid. */
+export function minBid(current: number, basePrice: number, hasBids: boolean): number {
+  return hasBids ? current + 1 : basePrice;
+}
+
+/** Checks a typed bid amount. Returns an error message or null. */
+export function bidAmountError(amount: number, current: number, basePrice: number, hasBids: boolean): string | null {
+  if (!Number.isFinite(amount) || amount <= 0) return "Enter the bid amount.";
+  if (!Number.isInteger(amount)) return "Use whole rupees.";
+  if (amount < minBid(current, basePrice, hasBids)) {
+    return hasBids
+      ? `The bid must be higher than ${formatCompact(current)}.`
+      : `The opening bid must be at least the base price (${formatCompact(basePrice)}).`;
+  }
+  return null;
+}
+
 export type BidCheck = { ok: true } | { ok: false; reason: string };
 
 interface CheckInput {

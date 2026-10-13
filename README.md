@@ -77,7 +77,7 @@ Sounds are made in the browser (Web Audio), so there are no audio files – they
 Change in **Settings** (`/admin/auction/settings`):
 
 - **Base price** (default ₹1 lakh) – also updates every player who isn't sold yet.
-- **Bid increment slabs** – any number of "while bid is below X, add Y" rows.
+- **Bid increment slabs** – any number of "while bid is below X, add Y" rows. Only used when a bid is placed without an amount; on the auction screen the auctioneer sets each bid with **−** / **+** (₹1 lakh steps, keys `-` and `+`) or types the full amount.
 - **Squad size per sport** – 12 Cricket, 8 Volleyball, 8 Football.
 
 Change in Supabase **Table Editor**:
@@ -86,7 +86,7 @@ Change in Supabase **Table Editor**:
 - Number of teams: add or remove rows in `teams` (the bid buttons follow).
 - Players: edit `players`, or edit `src/data/*.json` and run `npm run seed:generate` to rebuild `seed.sql` (re-running the seed wipes auction results).
 
-**Rules the database enforces** (in `supabase/auction.sql`, one locked transaction per action): a team can bid only if, after paying, its remaining purse still covers the rest of its squad at base price; full squads can't bid; a team can't outbid itself; a double-tap can't place two bids; selling updates the player and team purse together.
+**Rules the database enforces** (in `supabase/auction.sql`, one locked transaction per action): a team can bid only if, after paying, its remaining purse still covers the rest of its squad at base price; full squads can't bid; a team can't outbid itself; the opening bid is at least the base price and every later bid is higher than the current one; a double-tap can't place two bids; selling updates the player and team purse together.
 
 ## Screens
 

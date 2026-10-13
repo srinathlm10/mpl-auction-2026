@@ -77,7 +77,7 @@ export function TeamCorner({ team, bought, squadSize, isHolder, canBid, nextAmou
             Bid {formatCompact(nextAmount)}
             {shortcut && <Kbd>{shortcut}</Kbd>}
           </button>
-          {!check.ok && !isHolder && (
+          {!check.ok && !isHolder && check.reason && (
             <p role="status" className="mt-1 text-xs font-medium text-amber-600 dark:text-amber-400 2xl:text-sm">
               {check.reason}
             </p>

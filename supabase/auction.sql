@@ -175,8 +175,10 @@ returns bigint language sql stable as $$
   select base_price from public.auction_settings where id = 1
 $$;
 
--- Raise the bid on behalf of a team. p_expected is the amount the screen showed;
--- if the bid has moved on (double tap) the call is rejected instead of bidding twice.
+-- Raise the bid on behalf of a team. p_expected is the bid amount the auctioneer set
+-- (+/- 1 lakh or typed in): at least the base price to open, then above the current bid,
+-- so a double tap is rejected instead of bidding twice. Without it the bid goes up by the
+-- increment slab.
 create or replace function public.auction_place_bid(p_team_id bigint, p_expected bigint default null)
 returns public.auction_state language plpgsql security definer set search_path = public as $$
 declare
@@ -190,9 +192,17 @@ begin
   if not found then raise exception 'That team does not play this sport.'; end if;
   if st.highest_team_id = tm.id then raise exception '% already holds the highest bid.', tm.name; end if;
 
-  v_amount := st.current_bid + public.auction_increment(st.current_bid);
-  if p_expected is not null and p_expected <> v_amount then
-    raise exception 'The bid has changed. Please try again.';
+  if p_expected is null then
+    v_amount := st.current_bid + public.auction_increment(st.current_bid);
+  else
+    v_amount := p_expected;
+    if st.highest_team_id is null then
+      if v_amount < public.auction_settings_base() then
+        raise exception 'The opening bid must be at least the base price.';
+      end if;
+    elsif v_amount <= st.current_bid then
+      raise exception 'The bid has moved on: it must be higher than %. Please try again.', st.current_bid;
+    end if;
   end if;
 
   select squad_size into v_squad from public.sports where id = st.sport_id;
