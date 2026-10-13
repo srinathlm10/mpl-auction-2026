@@ -25,7 +25,7 @@ npm run dev        # http://localhost:3000
    1. `supabase/schema.sql` – tables, security, purse trigger
    2. `supabase/auction.sql` – auction settings, live state, bids log, auction actions, realtime
    3. `supabase/seed.sql` – the players and teams (112 players, 12 teams, ₹1 lakh base, ₹2 crore purse)
-3. Copy `.env.example` to `.env.local`, fill in `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Project Settings → API), and restart `npm run dev`.
+3. Copy `.env.example` to `.env.local`, fill in `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Project Settings → API Keys; older projects can use `NEXT_PUBLIC_SUPABASE_ANON_KEY`), and restart `npm run dev`.
 
 > **No logins.** Anyone who opens `/admin/auction` can run the auction, and anyone with the site's public key could call the auction actions directly. The control screen is not linked from the public site – keep its URL to the organisers. The tables themselves are read-only from outside; data only changes through the auction actions in `auction.sql`.
 
