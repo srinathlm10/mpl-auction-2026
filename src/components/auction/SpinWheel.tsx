@@ -63,6 +63,8 @@ export function SpinWheel(props: Props) {
   const spinning = useRef(false);
   const seenSpin = useRef<number | null>(null);
   const images = useRef(new Map<string, HTMLImageElement>());
+  // Site heading font for the names (falls back to the system font until it has loaded).
+  const font = useRef("system-ui, sans-serif");
   const live = useRef(props);
   live.current = props;
 
@@ -94,7 +96,7 @@ export function SpinWheel(props: Props) {
       c.fillStyle = "#1e293b";
       c.fill();
       c.fillStyle = "#e2e8f0";
-      c.font = `700 ${R * 0.09}px system-ui, sans-serif`;
+      c.font = `700 ${R * 0.09}px ${font.current}`;
       c.textAlign = "center";
       c.textBaseline = "middle";
       c.fillText("No players left", cx, cx);
@@ -135,7 +137,7 @@ export function SpinWheel(props: Props) {
       c.translate(cx, cx);
       c.rotate(mid);
 
-      c.font = `800 ${fontPx}px system-ui, sans-serif`;
+      c.font = `700 ${fontPx}px ${font.current}`;
       c.textAlign = "right";
       c.textBaseline = "middle";
       let label = p.name;
@@ -168,7 +170,7 @@ export function SpinWheel(props: Props) {
           c.restore();
         } else {
           c.fillStyle = "#334155";
-          c.font = `800 ${photoR * 0.95}px system-ui, sans-serif`;
+          c.font = `800 ${photoR * 0.95}px ${font.current}`;
           c.textAlign = "center";
           c.fillText(p.name.trim()[0]?.toUpperCase() ?? "?", px, 1);
         }
@@ -223,6 +225,13 @@ export function SpinWheel(props: Props) {
     const observer = new ResizeObserver(resize);
     observer.observe(wrap);
     return () => observer.disconnect();
+  }, [draw]);
+
+  useEffect(() => {
+    const family = getComputedStyle(document.documentElement).getPropertyValue("--font-display").trim();
+    if (!family) return;
+    font.current = `${family}, system-ui, sans-serif`;
+    document.fonts.load(`700 16px ${family}`).then(draw, () => undefined);
   }, [draw]);
 
   // Load photos once; redraw as they arrive.

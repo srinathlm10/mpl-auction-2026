@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Icon } from "@/components/ui/Icon";
 
 export function ThemeToggle() {
   const [dark, setDark] = useState(false);
@@ -25,9 +26,10 @@ export function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
-      className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-surface text-lg transition hover:border-primary"
+      title={dark ? "Light theme" : "Dark theme"}
+      className="icon-btn"
     >
-      <span aria-hidden>{dark ? "☀️" : "🌙"}</span>
+      <Icon name={dark ? "sun" : "moon"} />
     </button>
   );
 }
