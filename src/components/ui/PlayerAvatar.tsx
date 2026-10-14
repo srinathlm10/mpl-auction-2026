@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 import { cn, initials } from "@/lib/format";
 
 interface Props {
@@ -15,10 +18,15 @@ interface Props {
 /**
  * Photo (or logo) that fills its parent – the parent must be `relative` and
  * have a size. Images are lazy-loaded and optimised by next/image; without a
- * photo we show initials on the current accent colour.
+ * photo, or when the file is not there (yet), we show initials on the current
+ * accent colour.
  */
+/** The stock silhouette counts as "no photo": initials look better than an empty figure. */
+const PLACEHOLDER = "/players/placeholder.svg";
+
 export function PlayerAvatar({ name, src, sizes, priority = false, className, fit = "cover" }: Props) {
-  if (src) {
+  const [failed, setFailed] = useState<string | null>(null);
+  if (src && src !== PLACEHOLDER && failed !== src) {
     return (
       <Image
         src={src}
@@ -28,6 +36,7 @@ export function PlayerAvatar({ name, src, sizes, priority = false, className, fi
         priority={priority}
         // SVGs (like the placeholder photo) are already tiny and sharp; serve them as-is.
         unoptimized={src.endsWith(".svg")}
+        onError={() => setFailed(src)}
         className={cn(fit === "contain" ? "bg-white object-contain p-[4%]" : "object-cover object-top", className)}
       />
     );
@@ -37,7 +46,7 @@ export function PlayerAvatar({ name, src, sizes, priority = false, className, fi
       aria-label={name}
       role="img"
       className={cn(
-        "flex h-full w-full items-center justify-center bg-gradient-to-br from-accent/80 to-primary/80 font-display text-5xl font-extrabold text-white",
+        "flex h-full w-full items-center justify-center bg-gradient-to-br from-accent via-accent/80 to-primary font-display text-5xl font-extrabold text-white/95 [text-shadow:0_2px_12px_rgb(0_0_0/0.25)]",
         className,
       )}
     >

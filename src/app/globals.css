@@ -4,43 +4,65 @@
 
 /*
   Theme tokens (space-separated RGB channels so Tailwind can add opacity).
-  --primary : brand colour, same on every page
+  --primary : brand colour (MPL crest indigo), same on every page
+  --gold    : brand highlight (crest border)
   --accent  : changes per sport (set inline via accentStyle() in lib/sports.ts)
 */
 :root {
-  --background: 244 246 251;
-  --foreground: 15 23 42;
+  --background: 245 246 251;
+  --foreground: 12 18 38;
   --surface: 255 255 255;
-  --muted: 100 116 139;
-  --border: 226 232 240;
-  --primary: 79 70 229;
+  --muted: 92 103 128;
+  --border: 224 228 238;
+  --primary: 67 56 202;
   --primary-fg: 255 255 255;
+  --gold: 245 158 11;
   --accent: 245 158 11;
 }
 
 .dark {
-  --background: 6 10 22;
-  --foreground: 241 245 249;
-  --surface: 15 23 42;
-  --muted: 148 163 184;
-  --border: 36 48 71;
-  --primary: 129 140 248;
-  --primary-fg: 15 23 42;
+  --background: 7 10 23;
+  --foreground: 238 241 250;
+  --surface: 15 20 38;
+  --muted: 150 160 184;
+  --border: 36 44 68;
+  --primary: 135 143 250;
+  --primary-fg: 10 14 30;
+  --gold: 251 191 36;
 }
 
 @layer base {
   html {
     color-scheme: light;
     -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
   }
   html.dark {
     color-scheme: dark;
   }
   body {
-    @apply bg-background font-sans text-foreground antialiased;
+    @apply bg-background font-sans text-[15px] leading-relaxed text-foreground antialiased sm:text-base;
+    font-feature-settings: "ss01", "cv11";
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  ::selection {
+    @apply bg-primary/20;
   }
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-primary;
+  }
+  /* Display font: headings, names and every amount. Lining, equal-width digits so
+     prices and counts line up and don't jump while they change. */
+  .font-display {
+    font-variant-numeric: lining-nums tabular-nums;
+    letter-spacing: 0.01em;
   }
 }
 
@@ -52,29 +74,51 @@
   .card {
     @apply rounded-2xl border border-border bg-surface shadow-card;
   }
+  /* Cards that are links: lift on hover. */
+  .card-link {
+    @apply card transition duration-200 hover:-translate-y-0.5 hover:border-accent/60 hover:shadow-lift;
+  }
 
   .btn {
-    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-[44px] select-none items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition duration-150 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-primary {
-    @apply btn bg-primary text-primary-foreground hover:opacity-90;
+    @apply btn bg-primary text-primary-foreground shadow-sm shadow-primary/30 hover:brightness-110;
+  }
+  .btn-gold {
+    @apply btn bg-gold text-slate-950 shadow-sm shadow-gold/30 hover:brightness-105;
   }
   .btn-outline {
-    @apply btn border border-border bg-surface text-foreground hover:border-primary hover:text-primary;
+    @apply btn border border-border bg-surface text-foreground hover:border-primary/60 hover:text-primary;
   }
   .btn-danger {
     @apply btn border border-red-500/40 bg-red-500/10 text-red-600 hover:bg-red-500/20 dark:text-red-400;
   }
+  .icon-btn {
+    @apply inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-surface text-foreground transition hover:border-primary/60 hover:text-primary;
+  }
 
   .input {
-    @apply min-h-[44px] w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30;
+    @apply min-h-[44px] w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted/80 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15;
+  }
+  select.input {
+    @apply appearance-none bg-no-repeat pr-9;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%237c869f'%3E%3Cpath d='M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4Z'/%3E%3C/svg%3E");
+    background-position: right 0.6rem center;
+    background-size: 1.1rem;
   }
   .label {
-    @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-muted;
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted;
   }
 
+  .eyebrow {
+    @apply text-xs font-bold uppercase tracking-[0.18em] text-accent sm:text-sm;
+  }
   .section-title {
-    @apply font-display text-2xl font-bold uppercase tracking-wide sm:text-3xl;
+    @apply font-display text-3xl font-bold uppercase leading-none sm:text-4xl;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-xs font-semibold text-foreground;
   }
 }
 
@@ -109,5 +153,6 @@
   * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { Icon } from "@/components/ui/Icon";
+
 export interface SummaryRow {
   sport: string;
   player: string;
@@ -38,8 +40,10 @@ export function SummaryDownload({ rows, filename }: { rows: SummaryRow[]; filena
   }
 
   return (
-    <button type="button" onClick={download} disabled={rows.length === 0} className="btn-primary">
-      ⬇ Download CSV ({rows.length})
+    <button type="button" onClick={download} disabled={rows.length === 0} className="btn-outline" title={rows.length === 0 ? "Nothing to download yet" : undefined}>
+      <Icon name="download" className="h-4 w-4" />
+      Download CSV
+      <span className="rounded-md bg-border px-1.5 py-0.5 text-xs font-bold">{rows.length}</span>
     </button>
   );
 }

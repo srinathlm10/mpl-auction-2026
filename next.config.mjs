@@ -1,11 +1,13 @@
+import { matchPhotos } from "./scripts/match-photos.mjs";
+
+// Before every build: leave out hidden players and link the photos in
+// public/players by file name (writes src/data/roster.json). See scripts/match-photos.mjs.
+matchPhotos();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
-    remotePatterns: [
-      // Supabase Storage public bucket (hosted projects)
-      { protocol: "https", hostname: "**.supabase.co", pathname: "/storage/v1/object/public/**" },
-    ],
   },
 };
 

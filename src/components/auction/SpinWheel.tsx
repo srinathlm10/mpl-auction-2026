@@ -35,7 +35,8 @@ interface Props {
 
 const TWO_PI = Math.PI * 2;
 const PALETTE = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899"];
-const SPIN_MS = 7000;
+/** How long a spin lasts. Fixed (not random) so the control screen and the projector stop together. */
+const SPIN_MS = 1000;
 
 const mod = (n: number, m: number) => ((n % m) + m) % m;
 
@@ -63,6 +64,8 @@ export function SpinWheel(props: Props) {
   const spinning = useRef(false);
   const seenSpin = useRef<number | null>(null);
   const images = useRef(new Map<string, HTMLImageElement>());
+  // Site heading font for the names (falls back to the system font until it has loaded).
+  const font = useRef("system-ui, sans-serif");
   const live = useRef(props);
   live.current = props;
 
@@ -94,7 +97,7 @@ export function SpinWheel(props: Props) {
       c.fillStyle = "#1e293b";
       c.fill();
       c.fillStyle = "#e2e8f0";
-      c.font = `700 ${R * 0.09}px system-ui, sans-serif`;
+      c.font = `700 ${R * 0.09}px ${font.current}`;
       c.textAlign = "center";
       c.textBaseline = "middle";
       c.fillText("No players left", cx, cx);
@@ -135,7 +138,7 @@ export function SpinWheel(props: Props) {
       c.translate(cx, cx);
       c.rotate(mid);
 
-      c.font = `800 ${fontPx}px system-ui, sans-serif`;
+      c.font = `700 ${fontPx}px ${font.current}`;
       c.textAlign = "right";
       c.textBaseline = "middle";
       let label = p.name;
@@ -168,7 +171,7 @@ export function SpinWheel(props: Props) {
           c.restore();
         } else {
           c.fillStyle = "#334155";
-          c.font = `800 ${photoR * 0.95}px system-ui, sans-serif`;
+          c.font = `800 ${photoR * 0.95}px ${font.current}`;
           c.textAlign = "center";
           c.fillText(p.name.trim()[0]?.toUpperCase() ?? "?", px, 1);
         }
@@ -225,13 +228,22 @@ export function SpinWheel(props: Props) {
     return () => observer.disconnect();
   }, [draw]);
 
+  useEffect(() => {
+    const family = getComputedStyle(document.documentElement).getPropertyValue("--font-display").trim();
+    if (!family) return;
+    font.current = `${family}, system-ui, sans-serif`;
+    document.fonts.load(`700 16px ${family}`).then(draw, () => undefined);
+  }, [draw]);
+
   // Load photos once; redraw as they arrive.
   useEffect(() => {
     for (const p of players) {
       if (p.photo_url && !images.current.has(p.photo_url)) {
         const img = new Image();
         img.onload = () => draw();
-        img.src = p.photo_url;
+        // A small thumbnail (resized by the site's image service), not the full-size photo:
+        // the wheel draws dozens of them at once.
+        img.src = p.photo_url.endsWith(".svg") ? p.photo_url : `/_next/image?url=${encodeURIComponent(p.photo_url)}&w=256&q=70`;
         images.current.set(p.photo_url, img);
       }
     }
@@ -254,7 +266,8 @@ export function SpinWheel(props: Props) {
       const jitter = (secureRandomUnit() - 0.5) * a * 0.7;
       const from = rotation.current;
       const delta = mod(angleFor(index, n, jitter) - from, TWO_PI);
-      const extraTurns = 6 + Math.floor(secureRandomUnit() * 3);
+      // One or two full turns: a quick spin that still visibly goes round, without turning into a blur.
+      const extraTurns = 1 + Math.floor(secureRandomUnit() * 2);
       const to = from + extraTurns * TWO_PI + delta;
 
       spinning.current = true;
@@ -279,7 +292,7 @@ export function SpinWheel(props: Props) {
       const frame = () => {
         const now = performance.now();
         const p = Math.min(1, (now - t0) / SPIN_MS);
-        const eased = 1 - Math.pow(1 - p, 4); // fast start, long slow-down
+        const eased = 1 - Math.pow(1 - p, 3); // fast start, smooth slow-down
         rotation.current = from + (to - from) * eased;
         draw();
 
