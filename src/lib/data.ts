@@ -1,4 +1,4 @@
-import playersJson from "@/data/players.json";
+import rosterJson from "@/data/roster.json";
 import sportsJson from "@/data/sports.json";
 import teamsJson from "@/data/teams.json";
 import type { Player, Sport, Team } from "./types";
@@ -8,14 +8,17 @@ import type { Player, Sport, Team } from "./types";
  * in public/players and public/teams). Edit those files and redeploy; there is
  * no database. Auction results are kept by the browser running the auction
  * (see lib/local-auction.ts) and laid over this data on screen.
+ *
+ * Players come from roster.json, which the build makes from players.json
+ * (hidden players left out, photos linked by file name: scripts/match-photos.mjs).
  */
 
 type PlayerJson = Partial<Player> & Pick<Player, "id" | "name" | "sport_id">;
 
 export const baseSports: Sport[] = sportsJson as Sport[];
 
-/** Players as written in players.json, with every optional field filled in. */
-export const basePlayers: Player[] = (playersJson as PlayerJson[]).map((p) => ({
+/** The players on the site, with every optional field filled in. */
+export const basePlayers: Player[] = (rosterJson as PlayerJson[]).map((p) => ({
   batch: "",
   role_or_position: "",
   skills: {},

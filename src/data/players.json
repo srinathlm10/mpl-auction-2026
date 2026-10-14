@@ -173,7 +173,8 @@
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 12,
@@ -189,7 +190,8 @@
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 13,
@@ -285,7 +287,8 @@
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 19,
@@ -333,7 +336,8 @@
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 22,
@@ -1033,7 +1037,8 @@
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 60,
@@ -1047,7 +1052,8 @@
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 61,
@@ -1131,7 +1137,8 @@
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 67,
@@ -1173,7 +1180,8 @@
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 70,
@@ -1789,7 +1797,8 @@
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 92,
@@ -1803,7 +1812,8 @@
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 93,
@@ -1887,7 +1897,8 @@
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 99,
@@ -1929,7 +1940,8 @@
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 102,

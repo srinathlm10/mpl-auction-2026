@@ -241,7 +241,9 @@ export function SpinWheel(props: Props) {
       if (p.photo_url && !images.current.has(p.photo_url)) {
         const img = new Image();
         img.onload = () => draw();
-        img.src = p.photo_url;
+        // A small thumbnail (resized by the site's image service), not the full-size photo:
+        // the wheel draws dozens of them at once.
+        img.src = p.photo_url.endsWith(".svg") ? p.photo_url : `/_next/image?url=${encodeURIComponent(p.photo_url)}&w=256&q=70`;
         images.current.set(p.photo_url, img);
       }
     }
