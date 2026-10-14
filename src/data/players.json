@@ -9,7 +9,7 @@
     "attributes": {
       "bowling_action": "Non-round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/abhishek_chauhan.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -850,6 +850,22 @@
     "sold_price": null
   },
   {
+    "id": 182,
+    "name": "Soubhagya",
+    "sport_id": 1,
+    "batch": "MBA 2nd year",
+    "role_or_position": "Batsman",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Round arm"
+    },
+    "photo_url": "/players/soubhagya.jpg",
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
     "id": 49,
     "name": "Abhishek Chauhan",
     "sport_id": 2,
@@ -857,7 +873,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/abhishek_chauhan.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1592,6 +1608,20 @@
     "sold_price": null
   },
   {
+    "id": 183,
+    "name": "Soubhagya",
+    "sport_id": 2,
+    "batch": "MBA 2nd year",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "photo_url": "/players/soubhagya.jpg",
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
     "id": 81,
     "name": "Abhishek Chauhan",
     "sport_id": 3,
@@ -1599,7 +1629,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/abhishek_chauhan.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -2328,6 +2358,20 @@
     "skills": {},
     "attributes": {},
     "photo_url": "/players/placeholder.svg",
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
+    "id": 184,
+    "name": "Soubhagya",
+    "sport_id": 3,
+    "batch": "MBA 2nd year",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "photo_url": "/players/soubhagya.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
