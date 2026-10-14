@@ -500,22 +500,6 @@
     "sold_price": null
   },
   {
-    "id": 114,
-    "name": "Ranjit Kumar Nayak",
-    "sport_id": 1,
-    "batch": "MBA 2nd year",
-    "role_or_position": "Batsman",
-    "skills": {},
-    "attributes": {
-      "bowling_action": "Non-round arm"
-    },
-    "photo_url": "/players/ranjit_kumar_nayak.jpg",
-    "base_price": 100000,
-    "status": "available",
-    "team_id": null,
-    "sold_price": null
-  },
-  {
     "id": 115,
     "name": "Srijan Das",
     "sport_id": 1,
@@ -688,22 +672,6 @@
       "bowling_action": "Non-round arm"
     },
     "photo_url": "/players/priyanshu_kumar.jpg",
-    "base_price": 100000,
-    "status": "available",
-    "team_id": null,
-    "sold_price": null
-  },
-  {
-    "id": 126,
-    "name": "Anmol Yadav",
-    "sport_id": 1,
-    "batch": "MBA 2nd year",
-    "role_or_position": "Batsman",
-    "skills": {},
-    "attributes": {
-      "bowling_action": "Non-round arm"
-    },
-    "photo_url": "/players/anmol_yadav.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1324,20 +1292,6 @@
     "sold_price": null
   },
   {
-    "id": 137,
-    "name": "Ranjit Kumar Nayak",
-    "sport_id": 2,
-    "batch": "MBA 2nd year",
-    "role_or_position": "",
-    "skills": {},
-    "attributes": {},
-    "photo_url": "/players/ranjit_kumar_nayak.jpg",
-    "base_price": 100000,
-    "status": "available",
-    "team_id": null,
-    "sold_price": null
-  },
-  {
     "id": 138,
     "name": "Srijan Das",
     "sport_id": 2,
@@ -1486,20 +1440,6 @@
     "skills": {},
     "attributes": {},
     "photo_url": "/players/priyanshu_kumar.jpg",
-    "base_price": 100000,
-    "status": "available",
-    "team_id": null,
-    "sold_price": null
-  },
-  {
-    "id": 149,
-    "name": "Anmol Yadav",
-    "sport_id": 2,
-    "batch": "MBA 2nd year",
-    "role_or_position": "",
-    "skills": {},
-    "attributes": {},
-    "photo_url": "/players/anmol_yadav.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -2084,20 +2024,6 @@
     "sold_price": null
   },
   {
-    "id": 160,
-    "name": "Ranjit Kumar Nayak",
-    "sport_id": 3,
-    "batch": "MBA 2nd year",
-    "role_or_position": "",
-    "skills": {},
-    "attributes": {},
-    "photo_url": "/players/ranjit_kumar_nayak.jpg",
-    "base_price": 100000,
-    "status": "available",
-    "team_id": null,
-    "sold_price": null
-  },
-  {
     "id": 161,
     "name": "Srijan Das",
     "sport_id": 3,
@@ -2246,20 +2172,6 @@
     "skills": {},
     "attributes": {},
     "photo_url": "/players/priyanshu_kumar.jpg",
-    "base_price": 100000,
-    "status": "available",
-    "team_id": null,
-    "sold_price": null
-  },
-  {
-    "id": 172,
-    "name": "Anmol Yadav",
-    "sport_id": 3,
-    "batch": "MBA 2nd year",
-    "role_or_position": "",
-    "skills": {},
-    "attributes": {},
-    "photo_url": "/players/anmol_yadav.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
