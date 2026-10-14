@@ -42,10 +42,6 @@ export default function HomePage() {
                 <Icon name="calendar" className="h-4 w-4 text-amber-300" />
                 {formatDate(siteConfig.auctionDate)}
               </span>
-              <span className="chip border-white/15 bg-white/10 text-white">
-                <Icon name="pin" className="h-4 w-4 text-amber-300" />
-                {siteConfig.venue}
-              </span>
             </div>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="#sports" className="btn-gold min-h-[48px] px-5 text-base">
