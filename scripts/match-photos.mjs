@@ -13,6 +13,7 @@
 // that match nobody, or more than one player, are listed and left unused.
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const IMAGE = /\.(jpe?g|png|webp|avif|gif)$/i;
 const UNSUPPORTED = /\.(heic|heif|tiff?|bmp)$/i;
@@ -124,6 +125,7 @@ export function matchPhotos(root = process.cwd(), { log = false } = {}) {
   return report;
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname)) {
+// fileURLToPath, not URL.pathname: on Windows the pathname is "/C:/..." with %20 for spaces, so it never matched.
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   matchPhotos(process.cwd(), { log: true });
 }
