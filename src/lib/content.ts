@@ -5,7 +5,7 @@
 export const about = {
   title: "About MPL",
   paragraphs: [
-    "The Management Premiere League (MPL) is the annual inter-batch sports festival for MBA students. Three tournaments – Cricket, Volleyball and Football – are played between teams that are built through a live player auction.",
+    "The Management Premier League (MPL) is the annual inter-batch sports festival for MBA students. Three tournaments – Cricket, Volleyball and Football – are played between teams that are built through a live player auction.",
     "Every registered student is listed with a base price. Team captains use their purse to bid for the players they want, and the squads you see on this site are the result.",
   ],
 };

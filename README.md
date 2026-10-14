@@ -1,4 +1,4 @@
-# MPL: Management Premiere League Auction Site
+# MPL: Management Premier League Auction Site
 
 Mobile-first website for the MPL player auction (Cricket, Volleyball, Football), with a **live auction**: spin wheel, bidding, SOLD alerts, and a projector screen that mirrors the auctioneer.
 
