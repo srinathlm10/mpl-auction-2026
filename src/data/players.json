@@ -9,7 +9,7 @@
     "attributes": {
       "bowling_action": "Non-round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/abhishek_chauhan.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -25,7 +25,7 @@
     "attributes": {
       "bowling_action": "Round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/sujeet_sharma.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -41,7 +41,7 @@
     "attributes": {
       "bowling_action": "Non-round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/saktiprasad_samantaray.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -57,7 +57,7 @@
     "attributes": {
       "bowling_action": "Round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/atul_kumar_singh.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -73,7 +73,7 @@
     "attributes": {
       "bowling_action": "Round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/satyajit_sahoo.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -89,7 +89,7 @@
     "attributes": {
       "bowling_action": "Round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/aman_singh.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -105,7 +105,7 @@
     "attributes": {
       "bowling_action": "Round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/venkatesh_b.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -121,7 +121,7 @@
     "attributes": {
       "bowling_action": "Round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/ritik_raushan_singh.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -137,7 +137,7 @@
     "attributes": {
       "bowling_action": "Non-round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/om_prakash_sahoo.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -153,7 +153,7 @@
     "attributes": {
       "bowling_action": "Non-round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/sritam_nayak.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -169,11 +169,12 @@
     "attributes": {
       "bowling_action": "Round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/mansa_sahu.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 12,
@@ -185,11 +186,12 @@
     "attributes": {
       "bowling_action": "Round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/aparna_raj.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 13,
@@ -217,7 +219,7 @@
     "attributes": {
       "bowling_action": "Non-round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/apurv_upadhyay.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -233,7 +235,7 @@
     "attributes": {
       "bowling_action": "Round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/nalin_kumar_sinha.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -265,7 +267,7 @@
     "attributes": {
       "bowling_action": "Non-round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/subham_sekhar_sahu.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -281,23 +283,24 @@
     "attributes": {
       "bowling_action": "Round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/tania_nirmal.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 19,
     "name": "Binayak Dang",
     "sport_id": 1,
-    "batch": "",
+    "batch": "MBA 2nd year",
     "role_or_position": "Batsman",
     "skills": {},
     "attributes": {
       "bowling_action": "Non-round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/binayak_dang.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -329,11 +332,12 @@
     "attributes": {
       "bowling_action": "Non-round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/ankita_mohapatra.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 22,
@@ -345,7 +349,7 @@
     "attributes": {
       "bowling_action": "Round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/skand_kumar.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -361,7 +365,7 @@
     "attributes": {
       "bowling_action": "Round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/gajji_srinath.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -441,7 +445,7 @@
     "attributes": {
       "bowling_action": "Round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/ishan_khan.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -457,7 +461,7 @@
     "attributes": {
       "bowling_action": "Non-round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/prince_prasoon.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -473,7 +477,7 @@
     "attributes": {
       "bowling_action": "Round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/moquit_ur_rahman_bharti.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -837,13 +841,45 @@
     "id": 135,
     "name": "Mohammed Ov",
     "sport_id": 1,
+    "batch": "MBA 2nd year",
+    "role_or_position": "Batsman",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Non-round arm"
+    },
+    "photo_url": "/players/mohammed_ov.jpg",
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
+    "id": 182,
+    "name": "Soubhagya",
+    "sport_id": 1,
+    "batch": "MBA 2nd year",
+    "role_or_position": "Batsman",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Round arm"
+    },
+    "photo_url": "/players/soubhagya.jpg",
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
+    "id": 185,
+    "name": "Aryaman Panda",
+    "sport_id": 1,
     "batch": "",
     "role_or_position": "Batsman",
     "skills": {},
     "attributes": {
       "bowling_action": "Non-round arm"
     },
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/aryaman_panda.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -857,7 +893,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/abhishek_chauhan.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -871,7 +907,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/sujeet_sharma.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -885,7 +921,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/saktiprasad_samantaray.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -899,7 +935,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/atul_kumar_singh.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -913,7 +949,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/satyajit_sahoo.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -927,7 +963,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/aman_singh.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -941,7 +977,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/venkatesh_b.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -955,7 +991,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/ritik_raushan_singh.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -969,7 +1005,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/om_prakash_sahoo.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -983,7 +1019,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/sritam_nayak.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -997,11 +1033,12 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/mansa_sahu.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 60,
@@ -1011,11 +1048,12 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/aparna_raj.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 61,
@@ -1039,7 +1077,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/apurv_upadhyay.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1053,7 +1091,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/nalin_kumar_sinha.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1081,7 +1119,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/subham_sekhar_sahu.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1095,21 +1133,22 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/tania_nirmal.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 67,
     "name": "Binayak Dang",
     "sport_id": 2,
-    "batch": "",
+    "batch": "MBA 2nd year",
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/binayak_dang.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1137,11 +1176,12 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/ankita_mohapatra.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 70,
@@ -1151,7 +1191,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/skand_kumar.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1165,7 +1205,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/gajji_srinath.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1235,7 +1275,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/ishan_khan.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1249,7 +1289,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/prince_prasoon.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1263,7 +1303,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/moquit_ur_rahman_bharti.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1581,11 +1621,25 @@
     "id": 158,
     "name": "Mohammed Ov",
     "sport_id": 2,
-    "batch": "",
+    "batch": "MBA 2nd year",
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/mohammed_ov.jpg",
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
+    "id": 183,
+    "name": "Soubhagya",
+    "sport_id": 2,
+    "batch": "MBA 2nd year",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "photo_url": "/players/soubhagya.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1599,7 +1653,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/abhishek_chauhan.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1613,7 +1667,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/sujeet_sharma.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1627,7 +1681,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/saktiprasad_samantaray.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1641,7 +1695,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/atul_kumar_singh.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1655,7 +1709,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/satyajit_sahoo.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1669,7 +1723,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/aman_singh.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1683,7 +1737,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/venkatesh_b.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1697,7 +1751,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/ritik_raushan_singh.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1711,7 +1765,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/om_prakash_sahoo.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1725,7 +1779,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/sritam_nayak.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1739,11 +1793,12 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/mansa_sahu.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 92,
@@ -1753,11 +1808,12 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/aparna_raj.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 93,
@@ -1781,7 +1837,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/apurv_upadhyay.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1795,7 +1851,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/nalin_kumar_sinha.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1823,7 +1879,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/subham_sekhar_sahu.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1837,21 +1893,22 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/tania_nirmal.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 99,
     "name": "Binayak Dang",
     "sport_id": 3,
-    "batch": "",
+    "batch": "MBA 2nd year",
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/binayak_dang.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1879,11 +1936,12 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/ankita_mohapatra.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
-    "sold_price": null
+    "sold_price": null,
+    "hidden": true
   },
   {
     "id": 102,
@@ -1893,7 +1951,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/skand_kumar.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1907,7 +1965,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/gajji_srinath.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1977,7 +2035,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/ishan_khan.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -1991,7 +2049,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/prince_prasoon.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -2005,7 +2063,7 @@
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/moquit_ur_rahman_bharti.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,
@@ -2323,11 +2381,25 @@
     "id": 181,
     "name": "Mohammed Ov",
     "sport_id": 3,
-    "batch": "",
+    "batch": "MBA 2nd year",
     "role_or_position": "",
     "skills": {},
     "attributes": {},
-    "photo_url": "/players/placeholder.svg",
+    "photo_url": "/players/mohammed_ov.jpg",
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
+    "id": 184,
+    "name": "Soubhagya",
+    "sport_id": 3,
+    "batch": "MBA 2nd year",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "photo_url": "/players/soubhagya.jpg",
     "base_price": 100000,
     "status": "available",
     "team_id": null,

@@ -38,7 +38,8 @@ One player looks like this (only `id`, `name` and `sport_id` are required):
 - **`id`** must be unique across the whole file (it is also the player page address, `/players/113`).
 - **`sport_id`**: 1 Cricket, 2 Volleyball, 3 Football (see `sports.json`).
 - **`role_or_position`**: for cricket use Batsman, Bowler, All-rounder, Wicketkeeper or Fielder (this decides the wheel, see below). Volleyball and football positions are listed in `src/lib/sports.ts`.
-- **Photos**: put the file in `public/players/` and set `"photo_url": "/players/<file name>"`. The name must match exactly, including capital letters and the extension (`.jpg`, `.jpeg`, `.png`, `.webp`). Leave `photo_url` out (or `null`) to show the player's initials instead. Portrait photos look best; the top of the photo is kept when it is cropped.
+- **Photos**: upload the file to `public/players/` named after the player, in any reasonable form: `Harsh Pande.jpg`, `harsh_pande (1).jpeg`, `IMG-harsh-pande.png`, or just a first name when it is unique (`aryaman.jpg`). Every build matches the files to players by name (`scripts/match-photos.mjs`); run `npm run photos` to see which files matched, which players still have no photo, and which files could not be matched (ambiguous names like `kumar.jpg`, or iPhone `.heic` files, which browsers cannot show: save those as `.jpg`). A `photo_url` in `players.json` still wins when that file exists. Players without a photo show their initials. Portrait photos look best; the top of the photo is kept when it is cropped.
+- **Hiding a player**: add `"hidden": true` to their entries in `players.json`. They stay in the file but are left out of the site and the auction completely. Remove the line to bring them back.
 - **Team logos** go in `public/teams/` the same way.
 
 Then commit and push; the site rebuilds with the new players.
