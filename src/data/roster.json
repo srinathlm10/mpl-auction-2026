@@ -832,6 +832,70 @@
     "photo_url": null
   },
   {
+    "id": 195,
+    "name": "Biswaranjan Samasi",
+    "sport_id": 1,
+    "batch": "",
+    "role_or_position": "All-rounder",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Non-round arm"
+    },
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null,
+    "photo_url": null
+  },
+  {
+    "id": 196,
+    "name": "Ritish Yadav",
+    "sport_id": 1,
+    "batch": "",
+    "role_or_position": "Batsman",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Non-round arm"
+    },
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null,
+    "photo_url": "/players/1791920826289%20-%20Ritish%20Yadav.png"
+  },
+  {
+    "id": 197,
+    "name": "Abhinav",
+    "sport_id": 1,
+    "batch": "",
+    "role_or_position": "Batsman",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Non-round arm"
+    },
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null,
+    "photo_url": null
+  },
+  {
+    "id": 198,
+    "name": "Subhash",
+    "sport_id": 1,
+    "batch": "",
+    "role_or_position": "Batsman",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Non-round arm"
+    },
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null,
+    "photo_url": null
+  },
+  {
     "id": 49,
     "name": "Abhishek Chauhan",
     "sport_id": 2,
@@ -1546,6 +1610,62 @@
     "photo_url": null
   },
   {
+    "id": 199,
+    "name": "Biswaranjan Samasi",
+    "sport_id": 2,
+    "batch": "",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null,
+    "photo_url": null
+  },
+  {
+    "id": 200,
+    "name": "Ritish Yadav",
+    "sport_id": 2,
+    "batch": "",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null,
+    "photo_url": "/players/1791920826289%20-%20Ritish%20Yadav.png"
+  },
+  {
+    "id": 201,
+    "name": "Abhinav",
+    "sport_id": 2,
+    "batch": "",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null,
+    "photo_url": null
+  },
+  {
+    "id": 202,
+    "name": "Subhash",
+    "sport_id": 2,
+    "batch": "",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null,
+    "photo_url": null
+  },
+  {
     "id": 81,
     "name": "Abhishek Chauhan",
     "sport_id": 3,
@@ -2248,6 +2368,62 @@
   {
     "id": 194,
     "name": "Vishal Nayak",
+    "sport_id": 3,
+    "batch": "",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null,
+    "photo_url": null
+  },
+  {
+    "id": 203,
+    "name": "Biswaranjan Samasi",
+    "sport_id": 3,
+    "batch": "",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null,
+    "photo_url": null
+  },
+  {
+    "id": 204,
+    "name": "Ritish Yadav",
+    "sport_id": 3,
+    "batch": "",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null,
+    "photo_url": "/players/1791920826289%20-%20Ritish%20Yadav.png"
+  },
+  {
+    "id": 205,
+    "name": "Abhinav",
+    "sport_id": 3,
+    "batch": "",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null,
+    "photo_url": null
+  },
+  {
+    "id": 206,
+    "name": "Subhash",
     "sport_id": 3,
     "batch": "",
     "role_or_position": "",
