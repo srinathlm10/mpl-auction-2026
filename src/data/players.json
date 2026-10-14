@@ -854,6 +854,51 @@
     "sold_price": null
   },
   {
+    "id": 186,
+    "name": "Priyesh Dixit",
+    "sport_id": 1,
+    "batch": "",
+    "role_or_position": "All-rounder",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Round arm"
+    },
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null,
+    "photo_url": "/players/priyesh_dixit.jpg"
+  },
+  {
+    "id": 187,
+    "name": "Bipul Kumar Singh",
+    "sport_id": 1,
+    "batch": "",
+    "role_or_position": "All-rounder",
+    "skills": {},
+    "attributes": {
+      "bowling_action": "Round arm"
+    },
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null,
+    "photo_url": "/players/bipul_kumar_singh.jpg"
+  },
+  {
+    "id": 188,
+    "name": "Vishal Nayak",
+    "sport_id": 1,
+    "batch": "",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
     "id": 49,
     "name": "Abhishek Chauhan",
     "sport_id": 2,
@@ -1586,6 +1631,47 @@
     "sold_price": null
   },
   {
+    "id": 189,
+    "name": "Priyesh Dixit",
+    "sport_id": 2,
+    "batch": "",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null,
+    "photo_url": "/players/priyesh_dixit.jpg"
+  },
+  {
+    "id": 190,
+    "name": "Bipul Kumar Singh",
+    "sport_id": 2,
+    "batch": "",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null,
+    "photo_url": "/players/bipul_kumar_singh.jpg"
+  },
+  {
+    "id": 191,
+    "name": "Vishal Nayak",
+    "sport_id": 2,
+    "batch": "",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
     "id": 81,
     "name": "Abhishek Chauhan",
     "sport_id": 3,
@@ -2312,6 +2398,47 @@
     "skills": {},
     "attributes": {},
     "photo_url": "/players/soubhagya.jpg",
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
+    "id": 192,
+    "name": "Priyesh Dixit",
+    "sport_id": 3,
+    "batch": "",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null,
+    "photo_url": "/players/priyesh_dixit.jpg"
+  },
+  {
+    "id": 193,
+    "name": "Bipul Kumar Singh",
+    "sport_id": 3,
+    "batch": "",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null,
+    "photo_url": "/players/bipul_kumar_singh.jpg"
+  },
+  {
+    "id": 194,
+    "name": "Vishal Nayak",
+    "sport_id": 3,
+    "batch": "",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
     "base_price": 100000,
     "status": "available",
     "team_id": null,
