@@ -1421,6 +1421,20 @@
     "sold_price": null
   },
   {
+    "id": 209,
+    "name": "Pritam Paul",
+    "sport_id": 2,
+    "batch": "",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "photo_url": "/players/pritam_paul.jpg",
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
     "id": 81,
     "name": "Abhishek Chauhan",
     "sport_id": 3,
