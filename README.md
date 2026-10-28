@@ -87,7 +87,7 @@ Sounds are made in the browser (Web Audio), so there are no audio files – they
 Change in **Settings** (`/admin/auction/settings`), saved in the auction browser:
 
 - **Base price** (default ₹1 lakh): the opening bid for every player.
-- **Squad size per sport**: 12 Cricket, 8 Volleyball, 8 Football.
+- **Squad size per sport**: 12 Cricket, 8 Volleyball, 7 Football.
 - **Bid increment slabs**: only used when a bid is placed without an amount; on the auction screen every bid is set with − / + or typed in.
 
 Change in code (`src/data/teams.json`): team names, captains, logos and purse.
