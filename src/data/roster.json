@@ -1330,6 +1330,20 @@
     "sold_price": null
   },
   {
+    "id": 213,
+    "name": "Rohit Kumar Dey",
+    "sport_id": 2,
+    "batch": "MBA 2nd year",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "photo_url": "/players/rohit_kumar_dey.jpg",
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
+  },
+  {
     "id": 81,
     "name": "Abhishek Chauhan",
     "sport_id": 3,
