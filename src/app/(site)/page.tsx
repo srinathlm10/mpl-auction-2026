@@ -4,6 +4,7 @@ import { SportCard } from "@/components/SportCard";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Logo } from "@/components/ui/Logo";
 import { HomeStats } from "@/components/views/HomeStats";
+import { LiveNowStrip } from "@/components/views/LiveNowStrip";
 import { basePlayers as players, baseSports as sports, baseTeams as teams } from "@/lib/data";
 import { formatDate } from "@/lib/format";
 import { siteConfig } from "@/lib/site";
@@ -64,6 +65,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Matches being played right now (only shows during a match) */}
+      <LiveNowStrip />
 
       {/* Sports */}
       <section id="sports" aria-labelledby="sports-heading" className="scroll-mt-24">

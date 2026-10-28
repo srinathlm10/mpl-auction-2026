@@ -8,6 +8,7 @@ import { cn } from "@/lib/format";
 
 const LINKS = [
   { href: "/admin", label: "Dashboard", exact: true },
+  { href: "/admin/score", label: "Live scoring" },
   { href: "/admin/auction/settings", label: "Settings" },
 ];
 

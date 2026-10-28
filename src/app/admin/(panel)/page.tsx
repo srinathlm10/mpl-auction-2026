@@ -47,6 +47,7 @@ export default function AdminDashboard() {
       <section className="flex flex-wrap gap-3">
         <Link href="/auction" className="btn-primary">Open the auction</Link>
         <Link href="/auction/screen" target="_blank" className="btn-outline">Projector screen ↗</Link>
+        <Link href="/admin/score" className="btn-outline">Live scoring</Link>
         <Link href="/admin/auction/settings" className="btn-outline">Auction settings</Link>
         <Link href="/auction/summary" className="btn-outline">Results &amp; CSV</Link>
       </section>

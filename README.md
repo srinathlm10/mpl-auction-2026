@@ -2,7 +2,7 @@
 
 Mobile-first website for the MPL player auction (Cricket, Volleyball, Football), with a **live auction**: spin wheel, bidding, SOLD alerts, and a projector screen that mirrors the auctioneer.
 
-**Next.js 15 + Tailwind CSS, fully static.** No database, no logins, no environment variables needed. Player and team details are written in code (`src/data/*.json`), photos and logos sit in `public/`. The auction itself runs in the browser.
+**Next.js 15 + Tailwind CSS, fully static.** No logins and no environment variables needed. Player and team details are written in code (`src/data/*.json`), photos and logos sit in `public/`. The auction itself runs in the browser. The only optional extra is **live scores** for football and volleyball, which use a free Supabase project (see "Live scores" below).
 
 ## Run locally
 
@@ -104,10 +104,40 @@ Change in code (`src/data/teams.json`): team names, captains, logos and purse.
 | `/auction/summary` | Anyone | Sold and unsold lists, totals, CSV download |
 | `/teams/<id>` | Anyone | One team's squad, spent and remaining purse |
 
+## Live scores (football and volleyball)
+
+Everyone sees **the same live score on any phone, with no login and no sign-up**. A scorer taps goals and points on their phone; the pages for everyone else update by themselves within a second.
+
+- **`/live`**: every match (Live now, Up next, Results). **`/live/football-1`** (and so on): one match, with a link you can send in WhatsApp.
+- **Football** looks like a score card on Google: team crests, the score, a **running match clock** (`34'`, then `20+2'` in stoppage time, `HT`, `FT`), the goal scorers under each team and a timeline with every goal and card. Halves are 20 minutes: change `halfMinutes` in `src/lib/live.ts`, or add `"half_minutes": 25` to a match in `src/data/fixtures.json`.
+- **Volleyball** shows sets won, the set in play and every finished set. Best of 3 sets, 25 points (15 in a deciding set), win by 2: change `RULES.volleyball` in `src/lib/live.ts`.
+- **Goal animation and sounds**: when a goal arrives, a "GOAL!" banner drops in with the scorer, the minute and the new score, with confetti and a glow on the scoreboard. Sounds (whistles for kick-off, half time and full time, a goal horn with a crowd roar, a card sound, volleyball point and set sounds) are made in the browser and are **off until someone taps the "Sound" button**.
+- The home page shows a **Live scores** strip while a match is being played, and nothing otherwise.
+
+### Setting it up (once, about 5 minutes)
+
+Live scores need a free [Supabase](https://supabase.com) project, because every phone has to read the same scores. Nothing else on the site needs it.
+
+1. In Supabase open **SQL Editor → New query**, paste all of `supabase/live-scores.sql` and **Run**. It is safe to run again.
+2. Put the project's URL and **publishable** key in `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Vercel → Settings → Environment Variables, and `.env.local` to try it on your computer), then **redeploy**. Never use the secret / service-role key. Until these are set, the menu has no "Live Scores" link and the live pages say scores are not switched on yet.
+3. Get the private scoring key: run `select scorer_key from public.live_settings;` in the SQL Editor. The **scoring link** is `https://YOUR-SITE/admin/score#key=THE_KEY`.
+
+### Scoring a match
+
+1. Send the scoring link, privately, to whoever will score. Opening it once on a phone saves the key in that phone and removes it from the address bar; after that `/admin/score` just works there. There is nothing to sign in to. Anyone without the link can open `/admin/score` but cannot change a score: **the database refuses every change that does not carry the key**.
+2. Pick a match and tap **Kick off**: the clock starts for everyone. Tap **Goal** for a team the moment it happens (the minute is taken from the clock), then **pick the scorer from that team's players**. Yellow / red cards work the same way; **OG** is an own goal (it counts for the team you tap it under). ✎ edits a player or minute, ✕ deletes, **Undo last** takes back the last one. **+1 min / −1 min** fixes a clock that was started late or early. Then **Half time**, **Start 2nd half**, **Full time**.
+3. Volleyball: tap **+1** for the team that won the rally. Sets and the match end by themselves; **Undo last point** fixes a mistake.
+4. **Squads**: after the auction, open `/admin/score` (with the scoring link) on the laptop that ran it and tap **Publish squads**. Scorers then choose goal scorers from each team's squad. Before that they choose from all the players of the sport. The clock uses the database's time, so a phone with a wrong clock still shows the right minute.
+5. To switch an old scoring link off, make a new key (the last lines of `supabase/live-scores.sql` show how).
+
+The matches (which teams play, in what order, optional start time) are in `src/data/fixtures.json`: by default every team plays every other team once in each sport. Add `"starts_at": "2026-11-14T16:00:00+05:30"` to show a start time.
+
+Free-plan note: Supabase's free plan allows about 200 phones holding a live connection at the same time. Beyond that, extra phones automatically check for new scores every few seconds instead.
+
 ## Deploy (Vercel)
 
 1. Push to GitHub, then Vercel → **Add New → Project** → import the repo.
-2. Deploy. Every push to `main` redeploys. No environment variables are needed (the optional ones in `.env.example` set the auction date and contact details).
+2. Deploy. Every push to `main` redeploys. No environment variables are needed (the optional ones in `.env.example` set the auction date, contact details and the live-scores database).
 
 ## Structure
 
@@ -116,7 +146,7 @@ public/
   players/     player photos
   teams/       team logos
 src/
-  data/        players.json, teams.json, sports.json  (all the details, edit these)
+  data/        players.json, teams.json, sports.json, fixtures.json  (all the details, edit these)
   app/
     (site)/      public pages + auction/summary + teams/[id]
     (display)/   /auction (control) and /auction/screen (projector)
@@ -124,14 +154,18 @@ src/
   components/
     auction/     AuctionStage, SpinWheel, BiddingPanel, BidAmountControl, PlayerSpotlight, TeamCorner, SoldOverlay, ...
     views/       client views of the public pages (they add the auction results)
-    admin/       AdminNav, SettingsForm
+    admin/       AdminNav, SettingsForm, ScoreConsole (the scorer's page)
+    live/        match cards, goal banner, sound button
   lib/
     data.ts           reads src/data/*.json
     local-auction.ts  the auction: actions, rules, saving in the browser, live sync between windows
     auction.ts        bid amount + affordability rules
     use-auction.ts    hooks for the screens and pages
     random.ts         crypto.getRandomValues helpers for the wheel
-    sound.ts          synthesised sounds + mute
+    sound.ts          synthesised sounds + mute (auction sounds and the live-score whistles / goal horn)
+    live.ts           live scores: rules, match clock, volleyball sets (pure, no network)
+    live-store.ts     the shared connection to Supabase (live push, polling, saving)
+    use-live.ts, use-live-sound.ts, use-scorer.ts, use-now.ts   hooks for the live pages and the scoring page
     sports.ts         per-sport colours, roles, skills, wheels
 ```
 
