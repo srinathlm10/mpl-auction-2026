@@ -1678,5 +1678,19 @@
     "team_id": null,
     "sold_price": null,
     "photo_url": null
+  },
+  {
+    "id": 212,
+    "name": "Rohit Kumar Dey",
+    "sport_id": 3,
+    "batch": "MBA 2nd year",
+    "role_or_position": "",
+    "skills": {},
+    "attributes": {},
+    "photo_url": "/players/rohit_kumar_dey.jpg",
+    "base_price": 100000,
+    "status": "available",
+    "team_id": null,
+    "sold_price": null
   }
 ]
