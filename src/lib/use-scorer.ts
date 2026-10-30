@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { liveConfigured } from "./live-config";
+import { liveConfigured, SCORER_CHANGED_EVENT, SCORER_STORAGE_KEY } from "./live-config";
 import { getClient, type ScorerLogin } from "./live-store";
 
 /*
@@ -13,13 +13,11 @@ import { getClient, type ScorerLogin } from "./live-store";
  * remembers the login (in its own storage) until "Sign out" is pressed.
  */
 
-const STORAGE_KEY = "mpl-scorer-login";
-
 let memoryLogin: ScorerLogin | null = null; // used when the browser will not let us store anything
 
 function readStored(): ScorerLogin | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(SCORER_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<ScorerLogin>;
       if (typeof parsed.user === "string" && typeof parsed.password === "string") return { user: parsed.user, password: parsed.password };
@@ -33,12 +31,13 @@ function readStored(): ScorerLogin | null {
 function store(login: ScorerLogin | null) {
   memoryLogin = login;
   try {
-    if (login) localStorage.setItem(STORAGE_KEY, JSON.stringify(login));
-    else localStorage.removeItem(STORAGE_KEY);
+    if (login) localStorage.setItem(SCORER_STORAGE_KEY, JSON.stringify(login));
+    else localStorage.removeItem(SCORER_STORAGE_KEY);
     localStorage.removeItem("mpl-scorer-key"); // from the first version, which used a secret link
   } catch {
     /* private mode etc.: the in-memory copy still works until the tab is closed */
   }
+  window.dispatchEvent(new Event(SCORER_CHANGED_EVENT));
 }
 
 export type ScorerState =

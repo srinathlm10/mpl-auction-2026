@@ -8,6 +8,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Logo } from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { cn } from "@/lib/format";
+import { SCORER_CHANGED_EVENT, SCORER_STORAGE_KEY } from "@/lib/live-config";
 import { siteConfig } from "@/lib/site";
 
 export interface NavItem {
@@ -16,16 +17,38 @@ export interface NavItem {
 }
 
 const LIVE = "/auction";
+const LOGIN = "/admin/score";
 
 export function Header({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
 
   // Close the mobile menu after navigating.
   useEffect(() => setOpen(false), [pathname]);
 
+  // Once this device is signed in as the scorer, the Login button says "Scoring" instead.
+  useEffect(() => {
+    const check = () => {
+      try {
+        setSignedIn(localStorage.getItem(SCORER_STORAGE_KEY) !== null);
+      } catch {
+        setSignedIn(false);
+      }
+    };
+    check();
+    window.addEventListener(SCORER_CHANGED_EVENT, check);
+    window.addEventListener("storage", check);
+    return () => {
+      window.removeEventListener(SCORER_CHANGED_EVENT, check);
+      window.removeEventListener("storage", check);
+    };
+  }, []);
+
   const isActive = (href: string) => (href === "/" || href === LIVE ? pathname === href : pathname.startsWith(href));
-  const links = items.filter((item) => item.href !== LIVE);
+  const links = items.filter((item) => item.href !== LIVE && item.href !== LOGIN);
+  const hasLogin = items.some((item) => item.href === LOGIN);
+  const loginLabel = signedIn ? "Scoring" : "Login";
 
   return (
     <header className="site-nav sticky top-0 z-40 border-b border-border/80 bg-background/80 backdrop-blur-xl">
@@ -40,14 +63,14 @@ export function Header({ items }: { items: NavItem[] }) {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-0.5 rounded-full border border-border/80 bg-surface/70 p-1 lg:flex" aria-label="Main">
+        <nav className="hidden items-center gap-0.5 rounded-full border border-border/80 bg-surface/70 p-1 xl:flex" aria-label="Main">
           {links.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               aria-current={isActive(item.href) ? "page" : undefined}
               className={cn(
-                "rounded-full px-3.5 py-1.5 text-sm font-semibold transition",
+                "whitespace-nowrap rounded-full px-2.5 py-1.5 text-sm font-semibold transition",
                 isActive(item.href) ? "bg-primary text-primary-foreground shadow-sm" : "text-muted hover:bg-primary/10 hover:text-foreground",
               )}
             >
@@ -59,7 +82,7 @@ export function Header({ items }: { items: NavItem[] }) {
         <div className="flex items-center gap-2">
           <Link
             href={LIVE}
-            className={cn("btn-gold hidden min-h-[40px] px-3.5 sm:inline-flex", isActive(LIVE) && "ring-2 ring-gold/40 ring-offset-2 ring-offset-background")}
+            className={cn("btn-gold hidden min-h-[40px] whitespace-nowrap px-3 sm:inline-flex", isActive(LIVE) && "ring-2 ring-gold/40 ring-offset-2 ring-offset-background")}
           >
             <span className="relative flex h-2 w-2" aria-hidden>
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
@@ -67,10 +90,21 @@ export function Header({ items }: { items: NavItem[] }) {
             </span>
             Live Auction
           </Link>
+          {hasLogin && (
+            <Link
+              href={LOGIN}
+              aria-label={loginLabel}
+              aria-current={isActive(LOGIN) ? "page" : undefined}
+              className={cn("btn-outline min-h-[40px] px-3", isActive(LOGIN) && "border-primary/60 text-primary")}
+            >
+              <Icon name="user" className="h-4 w-4" />
+              <span className="hidden sm:inline">{loginLabel}</span>
+            </Link>
+          )}
           <ThemeToggle />
           <button
             type="button"
-            className="icon-btn lg:hidden"
+            className="icon-btn xl:hidden"
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
@@ -81,7 +115,7 @@ export function Header({ items }: { items: NavItem[] }) {
       </div>
 
       {open && (
-        <nav className="border-t border-border bg-background/95 backdrop-blur-xl lg:hidden" aria-label="Mobile">
+        <nav className="border-t border-border bg-background/95 backdrop-blur-xl xl:hidden" aria-label="Mobile">
           <div className="container-page grid gap-1 py-3">
             {items.map((item) => (
               <Link
@@ -93,7 +127,7 @@ export function Header({ items }: { items: NavItem[] }) {
                   isActive(item.href) ? "bg-primary/10 text-primary" : "text-foreground hover:bg-surface",
                 )}
               >
-                {item.label}
+                {item.href === LOGIN ? loginLabel : item.label}
                 <Icon name="arrowRight" className="h-4 w-4 text-muted" />
               </Link>
             ))}

@@ -12,6 +12,7 @@ export function SiteHeader() {
     { href: "/auction", label: "Live Auction" },
     { href: "/auction/summary", label: "Results" },
     { href: "/about", label: "Rules" },
+    ...(liveConfigured ? [{ href: "/admin/score", label: "Login" }] : []),
   ];
 
   return <Header items={items} />;
