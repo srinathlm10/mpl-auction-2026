@@ -119,7 +119,7 @@ Everyone sees **the same live score on any phone, with no login and no sign-up**
 Live scores need a free [Supabase](https://supabase.com) project, because every phone has to read the same scores. Nothing else on the site needs it.
 
 1. In Supabase open **SQL Editor → New query**, paste all of `supabase/live-scores.sql` and **Run**. It is safe to run again.
-2. Put the project's URL and **publishable** key in `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Vercel → Settings → Environment Variables, and `.env.local` to try it on your computer), then **redeploy**. Never use the secret / service-role key. Until these are set, the menu has no "Live Scores" link and the live pages say scores are not switched on yet.
+2. Put the project's URL and **publishable** key in `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Netlify → Site configuration → Environment variables, and `.env.local` to try it on your computer), then **redeploy**: these values are built into the site, so a new deploy is needed after changing them (Netlify → Deploys → Trigger deploy). Never use the secret / service-role key. Until these are set, the menu has no "Live Scores" link and the live pages say scores are not switched on yet.
 3. Get the private scoring key: run `select scorer_key from public.live_settings;` in the SQL Editor. The **scoring link** is `https://YOUR-SITE/admin/score#key=THE_KEY`.
 
 ### Scoring a match
@@ -134,10 +134,12 @@ The matches (which teams play, in what order, optional start time) are in `src/d
 
 Free-plan note: Supabase's free plan allows about 200 phones holding a live connection at the same time. Beyond that, extra phones automatically check for new scores every few seconds instead.
 
-## Deploy (Vercel)
+## Deploy (Netlify)
 
-1. Push to GitHub, then Vercel → **Add New → Project** → import the repo.
-2. Deploy. Every push to `main` redeploys. No environment variables are needed (the optional ones in `.env.example` set the auction date, contact details and the live-scores database).
+The site is deployed on Netlify from the `main` branch of the GitHub repo.
+
+1. Push to GitHub. Every push to `main` redeploys by itself (and each pull request gets a preview). To set it up from scratch: Netlify → **Add new site → Import an existing project** → pick the repo; Netlify detects Next.js, so the defaults are fine.
+2. No environment variables are needed (the optional ones in `.env.example` set the auction date, contact details and the live-scores database). They are read when the site is built, so after adding or changing one, trigger a new deploy.
 
 ## Structure
 

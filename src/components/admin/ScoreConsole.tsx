@@ -584,7 +584,7 @@ export function ScoreConsole() {
         <p className="text-muted">It needs a free Supabase project (no accounts or sign-ups for anyone). Steps (also in the README, “Live scores”):</p>
         <ol className="list-decimal space-y-1 pl-5 text-muted">
           <li>In Supabase, open <b>SQL Editor</b>, paste the file <code>supabase/live-scores.sql</code> and run it.</li>
-          <li>Set <code>NEXT_PUBLIC_SUPABASE_URL</code> and <code>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code> (Vercel → Settings → Environment Variables, or <code>.env.local</code>) and redeploy.</li>
+          <li>Set <code>NEXT_PUBLIC_SUPABASE_URL</code> and <code>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code> (Netlify → Site configuration → Environment variables, or <code>.env.local</code>) and redeploy.</li>
           <li>Run <code>select scorer_key from public.live_settings;</code> in the SQL Editor and open <code>/admin/score#key=THE_KEY</code> once on the scorer&apos;s phone.</li>
         </ol>
       </div>

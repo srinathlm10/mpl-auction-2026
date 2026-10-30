@@ -41,12 +41,6 @@ create policy "Anyone can read live scores"
   on public.live_matches for select
   using (true);
 
--- Clean up the first version of this setup (accounts and a scorers list), if it was ever run.
-drop policy if exists "Scorers can add matches" on public.live_matches;
-drop policy if exists "Scorers can change matches" on public.live_matches;
-drop function if exists public.is_scorer();
-drop table if exists public.scorers;
-
 create or replace function public.touch_live_match()
 returns trigger
 language plpgsql
