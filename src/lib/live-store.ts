@@ -13,6 +13,12 @@ import { normalizeRow, normalizeSquads, type LiveRow, type LiveSport, type LiveS
  * - It starts with the first component that needs it and stops shortly after the last one goes away.
  */
 
+/** The scorer's ID and password, sent with every change; the database refuses a wrong one. */
+export interface ScorerLogin {
+  user: string;
+  password: string;
+}
+
 export type ConnectionStatus = "off" | "connecting" | "live" | "polling";
 
 export interface LiveSnapshot {
@@ -256,17 +262,18 @@ export function applyLocal(id: string, state: LiveState) {
 let writeChain: Promise<unknown> = Promise.resolve();
 
 /**
- * Saves a match's state with the private scoring key (the database refuses a wrong key). Saves go
+ * Saves a match's state with the scorer's login (the database refuses a wrong one). Saves go
  * one after another, in the order they were made, so quick taps can never arrive out of order.
  * Returns an error message, or null when it worked.
  */
-export function saveMatch(id: string, state: LiveState, scorerKey: string): Promise<string | null> {
+export function saveMatch(id: string, state: LiveState, login: ScorerLogin): Promise<string | null> {
   saving.set(id, (saving.get(id) ?? 0) + 1);
   const job = writeChain.then(async () => {
     try {
       const client = await getClient();
       const { error } = await client.rpc("live_save", {
-        p_key: scorerKey,
+        p_user: login.user,
+        p_password: login.password,
         p_id: id,
         p_status: state.status,
         p_period: state.period,
@@ -288,10 +295,10 @@ export function saveMatch(id: string, state: LiveState, scorerKey: string): Prom
 }
 
 /** Makes a sport's squads (team id -> player names) available to every scorer. Returns an error message, or null. */
-export async function publishSquads(sport: LiveSport, squads: Squads, scorerKey: string): Promise<string | null> {
+export async function publishSquads(sport: LiveSport, squads: Squads, login: ScorerLogin): Promise<string | null> {
   try {
     const client = await getClient();
-    const { error } = await client.rpc("live_save_squads", { p_key: scorerKey, p_sport: sport, p_squads: squads });
+    const { error } = await client.rpc("live_save_squads", { p_user: login.user, p_password: login.password, p_sport: sport, p_squads: squads });
     if (error) return error.message;
     await refresh(generation);
     return null;

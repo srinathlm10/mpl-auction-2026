@@ -1,13 +1,15 @@
 -- MPL live scores (football and volleyball) -----------------------------------
 -- Run this ONCE: Supabase dashboard -> SQL Editor -> New query -> paste -> Run.
 -- It is safe to run again (nothing is lost if the tables already exist, and the
--- scoring key is NOT changed).
+-- scorer's ID and password are NOT changed).
 --
--- No accounts, no sign-up, no login:
---   * EVERYONE sees exactly the same scores, live, with nothing to sign in to.
---   * The scores can only be CHANGED by someone who has the private scoring key
---     (it is inside the private scoring link you give to the scorers).
---     The check happens here in the database, so hiding the page is not what protects the scores.
+-- Who can do what:
+--   * EVERYONE sees exactly the same scores, live. Nothing to sign in to, no sign-up.
+--   * Only the scorer can CHANGE a score: there is ONE login (an ID and a password), and this
+--     database checks it on every change. No accounts can be created. Hiding the scoring page
+--     is not what protects the scores; this check is.
+
+create extension if not exists pgcrypto with schema extensions;
 
 -- 1. The scores. One row per match; the id is the one in src/data/fixtures.json.
 --    Only a log is stored (events / points); the score itself is worked out from it.
@@ -17,24 +19,34 @@ create table if not exists public.live_matches (
   period            text check (period in ('1H', '2H')),
   period_started_at timestamptz,
   events            jsonb not null default '[]'::jsonb check (case when jsonb_typeof(events) = 'array' then jsonb_array_length(events) <= 300 else false end), -- football: goals and cards
-  points            text not null default '' check (points ~ '^[ab]*$' and char_length(points) <= 600),                          -- volleyball: one letter per rally
+  points            text not null default '' check (points ~ '^[ab]*$' and char_length(points) <= 600),                                                        -- volleyball: one letter per rally
   updated_at        timestamptz not null default now()
 );
 
--- 2. The private scoring key (one row). Created once, at random; nobody can read it through the website.
+-- 2. The scorer login (one row). The password is stored only as a hash; nobody can read this table
+--    through the website.
 create table if not exists public.live_settings (
-  id         int primary key default 1 check (id = 1),
-  scorer_key text not null check (char_length(scorer_key) >= 24)
+  id int primary key default 1 check (id = 1)
 );
+alter table public.live_settings add column if not exists scorer_user text;
+alter table public.live_settings add column if not exists scorer_hash text;
+-- The first version of this setup used a secret link instead of a login; drop its column if it was ever created.
+alter table public.live_settings drop column if exists scorer_key;
 
-insert into public.live_settings (id, scorer_key)
-values (1, replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', ''))
-on conflict (id) do nothing;
+-- The sample login: ID "mplscorer". Its password was given to the organiser separately; change it (see the end of this file).
+insert into public.live_settings (id, scorer_user, scorer_hash)
+values (1, 'mplscorer', '$2a$10$6mM4FuYdiuOHN/kyIsnd6usjC2yOwGa7TWhjXEbXlJEjfDnQcuQdO')
+on conflict (id) do update set
+  scorer_user = coalesce(public.live_settings.scorer_user, excluded.scorer_user),
+  scorer_hash = coalesce(public.live_settings.scorer_hash, excluded.scorer_hash);
+
+alter table public.live_settings alter column scorer_user set not null;
+alter table public.live_settings alter column scorer_hash set not null;
 
 -- 3. Access rules. Everyone may READ the scores. Nobody may write to the tables directly;
---    changes go through live_save() below, which needs the key.
+--    changes go through live_save() below, which needs the login.
 alter table public.live_matches enable row level security;
-alter table public.live_settings enable row level security;   -- no policy on purpose: the key can never be read through the API
+alter table public.live_settings enable row level security;   -- no policy on purpose: the login can never be read through the API
 
 drop policy if exists "Anyone can read live scores" on public.live_matches;
 create policy "Anyone can read live scores"
@@ -56,21 +68,33 @@ create trigger live_matches_touch
   before insert or update on public.live_matches
   for each row execute function public.touch_live_match();
 
--- 4. The two things the scoring page may do.
---    live_check_key: "is this key right?" (so the page can say so)
---    live_save:      write a match's state, only with the right key
-create or replace function public.live_check_key(p_key text)
+-- 4. The things the scoring page may do. (The first version used a key instead of a login; those
+--    functions are replaced.)
+drop function if exists public.live_check_key(text);
+drop function if exists public.live_save(text, text, text, text, timestamptz, jsonb, text);
+drop function if exists public.live_save_squads(text, text, jsonb);
+
+--    live_check_login: "is this ID and password right?" (so the page can say so)
+create or replace function public.live_check_login(p_user text, p_password text)
 returns boolean
 language sql
 stable
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
-  select exists (select 1 from public.live_settings where id = 1 and scorer_key = p_key);
+  select exists (
+    select 1
+    from public.live_settings
+    where id = 1
+      and lower(scorer_user) = lower(coalesce(p_user, ''))
+      and scorer_hash = crypt(coalesce(p_password, ''), scorer_hash)
+  );
 $$;
 
+--    live_save: write a match's state, only with the right login
 create or replace function public.live_save(
-  p_key text,
+  p_user text,
+  p_password text,
   p_id text,
   p_status text,
   p_period text,
@@ -81,11 +105,11 @@ create or replace function public.live_save(
 returns void
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 begin
-  if not public.live_check_key(p_key) then
-    raise exception 'wrong scoring key' using errcode = '42501';
+  if not public.live_check_login(p_user, p_password) then
+    raise exception 'wrong login' using errcode = '42501';
   end if;
 
   insert into public.live_matches (id, status, period, period_started_at, events, points)
@@ -114,15 +138,15 @@ create policy "Anyone can read squads"
   on public.live_squads for select
   using (true);
 
-create or replace function public.live_save_squads(p_key text, p_sport text, p_squads jsonb)
+create or replace function public.live_save_squads(p_user text, p_password text, p_sport text, p_squads jsonb)
 returns void
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 begin
-  if not public.live_check_key(p_key) then
-    raise exception 'wrong scoring key' using errcode = '42501';
+  if not public.live_check_login(p_user, p_password) then
+    raise exception 'wrong login' using errcode = '42501';
   end if;
 
   insert into public.live_squads (sport, squads, updated_at)
@@ -151,11 +175,10 @@ exception when duplicate_object then
   null; -- already added
 end $$;
 
--- 8. Get the private scoring key (run this line on its own, whenever you need it):
+-- 8. Changing the scorer's ID or password (run this line on its own, with your own values).
+--    Use a LONG password: this is a public website.
 --
---    select scorer_key from public.live_settings;
---
---    The scoring link is:  https://YOUR-SITE/admin/score#key=THE_KEY
---    Send it only to the people who will score. To switch the old link off, make a new key:
---
---    update public.live_settings set scorer_key = replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', '') where id = 1;
+--    set search_path to public, extensions;
+--    update public.live_settings
+--       set scorer_user = 'newid', scorer_hash = crypt('a-long-new-password', gen_salt('bf'))
+--     where id = 1;

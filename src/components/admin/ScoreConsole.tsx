@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { ConnectionNote, SoundToggle, StatusPill, TeamLogo } from "@/components/live/parts";
 import { Icon } from "@/components/ui/Icon";
 import { basePlayers, baseSports } from "@/lib/data";
@@ -38,7 +38,7 @@ import {
   type Squads,
 } from "@/lib/live";
 import { sportInfo, teamOf } from "@/lib/live-data";
-import { applyLocal, publishSquads, reloadScores, saveMatch, serverNow } from "@/lib/live-store";
+import { applyLocal, publishSquads, reloadScores, saveMatch, serverNow, type ScorerLogin } from "@/lib/live-store";
 import { accentStyle } from "@/lib/sports";
 import { useAuctionData } from "@/lib/use-auction";
 import { useLive } from "@/lib/use-live";
@@ -56,7 +56,7 @@ const byName = (a: string, b: string) => a.localeCompare(b);
 const minuteBox = (m: MatchMinute | null) => (m ? formatMinute(m.minute, m.added).replace(/'/g, "") : "");
 
 function friendly(message: string): string {
-  if (/wrong scoring key|permission denied|row-level security/i.test(message)) return "Not saved: this scoring link is no longer valid. Ask the organiser for the new link.";
+  if (/wrong login|permission denied|row-level security/i.test(message)) return "Not saved: the scorer ID or password is no longer valid. Sign out and sign in again.";
   if (/does not exist|schema cache|could not find the function/i.test(message)) return "Not saved: the database is not set up. Run supabase/live-scores.sql first.";
   if (/fetch|network/i.test(message)) return "Not saved: no connection. Check the internet and try again.";
   return `Not saved: ${message}`;
@@ -456,13 +456,13 @@ function VolleyballPanel({ match, commit }: { match: Match; commit: (next: LiveS
 
 /* -------------------------------------------------------------- one match */
 
-function MatchPanel({ match, squads, scorerKey, onBack }: { match: Match; squads: Squads; scorerKey: string; onBack: () => void }) {
+function MatchPanel({ match, squads, login, onBack }: { match: Match; squads: Squads; login: ScorerLogin; onBack: () => void }) {
   const { config } = sportInfo(match.sport);
   const [message, setMessage] = useState<string | null>(null);
 
   async function commit(next: LiveState) {
     applyLocal(match.id, next); // show it straight away
-    const error = await saveMatch(match.id, next, scorerKey);
+    const error = await saveMatch(match.id, next, login);
     if (error) {
       setMessage(friendly(error));
       await reloadScores(); // put the screen back to what is really saved
@@ -504,10 +504,52 @@ function MatchPanel({ match, squads, scorerKey, onBack }: { match: Match; squads
   );
 }
 
+/* ------------------------------------------------------------------ sign in */
+
+/** The scorer's sign-in: one ID and password (no sign-up). Everyone else just watches, with no login. */
+function SignInForm({ onSignIn, notice }: { onSignIn: (user: string, password: string) => Promise<string | null>; notice?: string }) {
+  const [user, setUser] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    const message = await onSignIn(user, password);
+    setBusy(false);
+    if (message) setError(message);
+  }
+
+  return (
+    <form onSubmit={submit} className="card mx-auto max-w-md space-y-4 p-5 sm:p-6">
+      <div>
+        <h2 className="font-display text-2xl font-bold uppercase">Scorer sign-in</h2>
+        <p className="mt-1 text-sm text-muted">
+          Only the person who updates the scores signs in. To just follow the matches,{" "}
+          <Link href="/live" className="font-semibold text-primary hover:underline">open the live scores</Link>: no login needed.
+        </p>
+      </div>
+      {notice && <p role="status" className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-200">{notice}</p>}
+      <div>
+        <label className="label" htmlFor="scorer-id">ID</label>
+        <input id="scorer-id" className="input" autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} required value={user} onChange={(e) => setUser(e.target.value)} />
+      </div>
+      <div>
+        <label className="label" htmlFor="scorer-password">Password</label>
+        <input id="scorer-password" className="input" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+      </div>
+      {error && <p role="alert" className="text-sm font-semibold text-red-600 dark:text-red-400">{error}</p>}
+      <button type="submit" className="btn-primary w-full" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
+    </form>
+  );
+}
+
 /* ------------------------------------------------------------------ squads */
 
 /** Copies the teams' players from this browser's auction results, so every scorer can pick from them. */
-function SquadsCard({ squads, scorerKey }: { squads: Squads; scorerKey: string }) {
+function SquadsCard({ squads, login }: { squads: Squads; login: ScorerLogin }) {
   const auction = useAuctionData();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
@@ -532,7 +574,7 @@ function SquadsCard({ squads, scorerKey }: { squads: Squads; scorerKey: string }
     setMessage(null);
     for (const s of fromAuction) {
       if (s.players === 0) continue; // never replace published squads with nothing
-      const error = await publishSquads(s.sport, s.map, scorerKey);
+      const error = await publishSquads(s.sport, s.map, login);
       if (error) {
         setBusy(false);
         return setMessage({ ok: false, text: friendly(error) });
@@ -573,7 +615,7 @@ function SquadsCard({ squads, scorerKey }: { squads: Squads; scorerKey: string }
 
 export function ScoreConsole() {
   const { matches, squads, status, loaded, error, configured } = useLive();
-  const { state: scorer, retry, forget } = useScorer();
+  const { state: scorer, signIn, signOut, retry } = useScorer();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   useLiveSounds(matches, loaded);
 
@@ -581,40 +623,28 @@ export function ScoreConsole() {
     return (
       <div className="card max-w-2xl space-y-3 p-5 text-sm sm:p-6">
         <h2 className="font-display text-2xl font-bold uppercase">Live scoring is not set up yet</h2>
-        <p className="text-muted">It needs a free Supabase project (no accounts or sign-ups for anyone). Steps (also in the README, “Live scores”):</p>
+        <p className="text-muted">It needs a free Supabase project (no sign-ups for anyone). Steps (also in the README, “Live scores”):</p>
         <ol className="list-decimal space-y-1 pl-5 text-muted">
-          <li>In Supabase, open <b>SQL Editor</b>, paste the file <code>supabase/live-scores.sql</code> and run it.</li>
+          <li>In Supabase, open <b>SQL Editor</b>, paste the file <code>supabase/live-scores.sql</code> and run it. It creates the scorer login.</li>
           <li>Set <code>NEXT_PUBLIC_SUPABASE_URL</code> and <code>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code> (Netlify → Site configuration → Environment variables, or <code>.env.local</code>) and redeploy.</li>
-          <li>Run <code>select scorer_key from public.live_settings;</code> in the SQL Editor and open <code>/admin/score#key=THE_KEY</code> once on the scorer&apos;s phone.</li>
+          <li>Come back to this page and sign in with the scorer ID and password.</li>
         </ol>
       </div>
     );
   }
 
-  if (scorer.phase === "loading") return <p className="text-muted">Checking the scoring link…</p>;
-
-  if (scorer.phase === "no-key" || scorer.phase === "invalid") {
-    return (
-      <div className="card mx-auto max-w-xl space-y-2 p-5 text-sm sm:p-6">
-        <h2 className="font-display text-2xl font-bold uppercase">{scorer.phase === "invalid" ? "This scoring link is no longer valid" : "Scoring needs the private link"}</h2>
-        <p className="text-muted">
-          {scorer.phase === "invalid"
-            ? "It has been switched off or was copied wrongly. Ask the organiser for the current scoring link and open it on this device."
-            : "Only the scorers can change a score, using a private link from the organiser. Open that link on this device once and this page will be ready; there is nothing to sign in to."}
-        </p>
-        <p className="text-muted">
-          Just want to follow the matches? <Link href="/live" className="font-semibold text-primary hover:underline">Open the live scores</Link>; no link or login needed.
-        </p>
-      </div>
-    );
-  }
+  if (scorer.phase === "loading") return <p className="text-muted">Checking the sign-in…</p>;
+  if (scorer.phase === "signed-out") return <SignInForm onSignIn={signIn} notice={scorer.notice} />;
 
   if (scorer.phase === "error") {
     return (
       <div className="card mx-auto max-w-xl space-y-3 p-5 text-sm sm:p-6">
         <h2 className="font-display text-2xl font-bold uppercase">Can&apos;t reach the scores</h2>
         <p className="text-muted">Check the internet connection and try again. ({scorer.message})</p>
-        <button type="button" className="btn-primary" onClick={retry}>Try again</button>
+        <div className="flex gap-2">
+          <button type="button" className="btn-primary" onClick={retry}>Try again</button>
+          <button type="button" className="btn-outline" onClick={signOut}>Sign out</button>
+        </div>
       </div>
     );
   }
@@ -624,15 +654,15 @@ export function ScoreConsole() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-        <p className="text-muted">Scoring is on for this device.</p>
+        <p className="text-muted">Signed in as <span className="font-semibold text-foreground">{scorer.login.user}</span></p>
         <div className="flex flex-wrap gap-2">
           <SoundToggle />
-          <ConfirmButton label="Stop scoring here" confirmLabel="Stop scoring on this device?" className="!min-h-[40px]" onConfirm={forget} />
+          <ConfirmButton label="Sign out" confirmLabel="Sign out on this device?" className="!min-h-[40px]" onConfirm={signOut} />
         </div>
       </div>
 
       {selected ? (
-        <MatchPanel match={selected} squads={squads} scorerKey={scorer.key} onBack={() => setSelectedId(null)} />
+        <MatchPanel match={selected} squads={squads} login={scorer.login} onBack={() => setSelectedId(null)} />
       ) : (
         <div className="space-y-6">
           {LIVE_SPORTS.map((sport) => {
@@ -658,7 +688,7 @@ export function ScoreConsole() {
               </section>
             );
           })}
-          <SquadsCard squads={squads} scorerKey={scorer.key} />
+          <SquadsCard squads={squads} login={scorer.login} />
           <ConnectionNote status={status} error={error} loaded={loaded} />
         </div>
       )}

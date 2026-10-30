@@ -2,34 +2,40 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { liveConfigured } from "./live-config";
-import { getClient } from "./live-store";
+import { getClient, type ScorerLogin } from "./live-store";
 
 /*
- * Who may change a score? Not an account: there is no sign-up and no login. The scorers get a
- * private link, https://<site>/admin/score#key=<secret>. Opening it saves the secret in that
- * browser (and removes it from the address bar); from then on the page just works there.
- * The database checks the secret on every save (see supabase/live-scores.sql), so a visitor
- * without it can look at the scoring page but cannot change anything.
+ * Who may change a score? One scorer login: an ID and a password. There is no sign-up and nobody
+ * else can create an account. Viewers never need to sign in.
+ *
+ * The login is checked by the database on every change (see supabase/live-scores.sql), so a visitor
+ * who opens the scoring page can look but cannot change anything. After signing in, this device
+ * remembers the login (in its own storage) until "Sign out" is pressed.
  */
 
-const STORAGE_KEY = "mpl-scorer-key";
-const KEY_IN_LINK = /[#&]key=([A-Za-z0-9_-]{16,128})/;
+const STORAGE_KEY = "mpl-scorer-login";
 
-let memoryKey: string | null = null; // used when the browser will not let us store anything
+let memoryLogin: ScorerLogin | null = null; // used when the browser will not let us store anything
 
-function readStored(): string | null {
+function readStored(): ScorerLogin | null {
   try {
-    return localStorage.getItem(STORAGE_KEY) ?? memoryKey;
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<ScorerLogin>;
+      if (typeof parsed.user === "string" && typeof parsed.password === "string") return { user: parsed.user, password: parsed.password };
+    }
   } catch {
-    return memoryKey;
+    /* fall through to the in-memory copy */
   }
+  return memoryLogin;
 }
 
-function store(key: string | null) {
-  memoryKey = key;
+function store(login: ScorerLogin | null) {
+  memoryLogin = login;
   try {
-    if (key) localStorage.setItem(STORAGE_KEY, key);
+    if (login) localStorage.setItem(STORAGE_KEY, JSON.stringify(login));
     else localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem("mpl-scorer-key"); // from the first version, which used a secret link
   } catch {
     /* private mode etc.: the in-memory copy still works until the tab is closed */
   }
@@ -37,68 +43,70 @@ function store(key: string | null) {
 
 export type ScorerState =
   | { phase: "loading" }
-  /** Nobody has opened the private scoring link in this browser. */
-  | { phase: "no-key" }
-  /** The saved link is wrong or has been switched off. */
-  | { phase: "invalid" }
-  /** The database could not be reached to check the key. */
+  /** Show the sign-in form. `notice` explains why when a remembered login stopped working. */
+  | { phase: "signed-out"; notice?: string }
+  /** The database could not be reached to check the login. */
   | { phase: "error"; message: string }
-  | { phase: "ready"; key: string };
+  | { phase: "ready"; login: ScorerLogin };
+
+/** Asks the database whether this ID and password are right. Returns true / false, or an error message. */
+async function checkLogin(login: ScorerLogin): Promise<boolean | string> {
+  try {
+    const client = await getClient();
+    const { data, error } = await client.rpc("live_check_login", { p_user: login.user, p_password: login.password });
+    if (error) return error.message;
+    return data === true;
+  } catch (e) {
+    return e instanceof Error ? e.message : "Could not reach the scores.";
+  }
+}
 
 export function useScorer() {
   const [state, setState] = useState<ScorerState>({ phase: "loading" });
   const [attempt, setAttempt] = useState(0);
 
-  // A new link pasted into this same tab only changes the part after "#", so the page is not reloaded.
-  useEffect(() => {
-    const onHash = () => setAttempt((n) => n + 1);
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
-  }, []);
-
   useEffect(() => {
     if (!liveConfigured) return;
     let active = true;
-
-    const fromLink = KEY_IN_LINK.exec(window.location.hash)?.[1];
-    if (fromLink) {
-      store(fromLink);
-      // Do not leave the secret sitting in the address bar.
-      window.history.replaceState(null, "", window.location.pathname + window.location.search);
-    }
-    const key = fromLink ?? readStored();
-    if (!key) {
-      setState({ phase: "no-key" });
+    const saved = readStored();
+    if (!saved) {
+      setState({ phase: "signed-out" });
       return;
     }
-
     setState({ phase: "loading" });
-    (async () => {
-      try {
-        const client = await getClient();
-        const { data, error } = await client.rpc("live_check_key", { p_key: key });
-        if (!active) return;
-        if (error) return setState({ phase: "error", message: error.message });
-        if (data === true) return setState({ phase: "ready", key });
+    checkLogin(saved).then((result) => {
+      if (!active) return;
+      if (result === true) setState({ phase: "ready", login: saved });
+      else if (result === false) {
         store(null);
-        setState({ phase: "invalid" });
-      } catch (e) {
-        if (active) setState({ phase: "error", message: e instanceof Error ? e.message : "Could not reach the scores." });
-      }
-    })();
-
+        setState({ phase: "signed-out", notice: "The saved sign-in no longer works (the ID or password was changed). Please sign in again." });
+      } else setState({ phase: "error", message: result });
+    });
     return () => {
       active = false;
     };
   }, [attempt]);
 
-  const retry = useCallback(() => setAttempt((n) => n + 1), []);
-
-  /** Stops scoring on this device (the link still works if it is opened again). */
-  const forget = useCallback(() => {
-    store(null);
-    setState({ phase: "no-key" });
+  /** Returns an error message to show, or null when signed in. */
+  const signIn = useCallback(async (user: string, password: string): Promise<string | null> => {
+    const login = { user: user.trim(), password };
+    if (!login.user || !login.password) return "Enter the ID and the password.";
+    const result = await checkLogin(login);
+    if (result === true) {
+      store(login);
+      setState({ phase: "ready", login });
+      return null;
+    }
+    return result === false ? "Wrong ID or password." : `Could not check the sign-in: ${result}`;
   }, []);
 
-  return { state, retry, forget };
+  const retry = useCallback(() => setAttempt((n) => n + 1), []);
+
+  /** Forgets the login on this device. */
+  const signOut = useCallback(() => {
+    store(null);
+    setState({ phase: "signed-out" });
+  }, []);
+
+  return { state, signIn, signOut, retry };
 }

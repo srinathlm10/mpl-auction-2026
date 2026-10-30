@@ -106,7 +106,7 @@ Change in code (`src/data/teams.json`): team names, captains, logos and purse.
 
 ## Live scores (football and volleyball)
 
-Everyone sees **the same live score on any phone, with no login and no sign-up**. A scorer taps goals and points on their phone; the pages for everyone else update by themselves within a second.
+Everyone sees **the same live score on any phone, with no login and no sign-up**. One scorer signs in with an ID and a password and taps goals and points on their phone; the pages for everyone else update by themselves within a second.
 
 - **`/live`**: every match (Live now, Up next, Results). **`/live/football-1`** (and so on): one match, with a link you can send in WhatsApp.
 - **Football** looks like a score card on Google: team crests, the score, a **running match clock** (`34'`, then `20+2'` in stoppage time, `HT`, `FT`), the goal scorers under each team and a timeline with every goal and card. Halves are 20 minutes: change `halfMinutes` in `src/lib/live.ts`, or add `"half_minutes": 25` to a match in `src/data/fixtures.json`.
@@ -120,15 +120,15 @@ Live scores need a free [Supabase](https://supabase.com) project, because every 
 
 1. In Supabase open **SQL Editor → New query**, paste all of `supabase/live-scores.sql` and **Run**. It is safe to run again.
 2. Put the project's URL and **publishable** key in `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Netlify → Site configuration → Environment variables, and `.env.local` to try it on your computer), then **redeploy**: these values are built into the site, so a new deploy is needed after changing them (Netlify → Deploys → Trigger deploy). Never use the secret / service-role key. Until these are set, the menu has no "Live Scores" link and the live pages say scores are not switched on yet.
-3. Get the private scoring key: run `select scorer_key from public.live_settings;` in the SQL Editor. The **scoring link** is `https://YOUR-SITE/admin/score#key=THE_KEY`.
+3. The scorer login is created by that SQL file: ID **`mplscorer`** and a generated password (given to the organiser separately; it is stored only as a hash, so it is not in this repository). To change the ID or password, run the statement at the end of `supabase/live-scores.sql`. Use a long password: the site is public.
 
 ### Scoring a match
 
-1. Send the scoring link, privately, to whoever will score. Opening it once on a phone saves the key in that phone and removes it from the address bar; after that `/admin/score` just works there. There is nothing to sign in to. Anyone without the link can open `/admin/score` but cannot change a score: **the database refuses every change that does not carry the key**.
+1. Open `/admin/score` and sign in with the scorer ID and password. The phone remembers the login until **Sign out** is pressed. There is no sign-up and no other account. Anyone can open `/admin/score` but cannot change a score: **the database checks the ID and password on every change and refuses anything else**.
 2. Pick a match and tap **Kick off**: the clock starts for everyone. Tap **Goal** for a team the moment it happens (the minute is taken from the clock), then **pick the scorer from that team's players**. Yellow / red cards work the same way; **OG** is an own goal (it counts for the team you tap it under). ✎ edits a player or minute, ✕ deletes, **Undo last** takes back the last one. **+1 min / −1 min** fixes a clock that was started late or early. Then **Half time**, **Start 2nd half**, **Full time**.
 3. Volleyball: tap **+1** for the team that won the rally. Sets and the match end by themselves; **Undo last point** fixes a mistake.
-4. **Squads**: after the auction, open `/admin/score` (with the scoring link) on the laptop that ran it and tap **Publish squads**. Scorers then choose goal scorers from each team's squad. Before that they choose from all the players of the sport. The clock uses the database's time, so a phone with a wrong clock still shows the right minute.
-5. To switch an old scoring link off, make a new key (the last lines of `supabase/live-scores.sql` show how).
+4. **Squads**: after the auction, open `/admin/score` (signed in) on the laptop that ran it and tap **Publish squads**. Scorers then choose goal scorers from each team's squad. Before that they choose from all the players of the sport. The clock uses the database's time, so a phone with a wrong clock still shows the right minute.
+5. To lock someone out (for example after sharing the password too widely), change the password with the statement at the end of `supabase/live-scores.sql`: every phone that had the old one is signed out the next time it opens the page.
 
 The matches (which teams play, in what order, optional start time) are in `src/data/fixtures.json`: by default every team plays every other team once in each sport. Add `"starts_at": "2026-11-14T16:00:00+05:30"` to show a start time.
 
