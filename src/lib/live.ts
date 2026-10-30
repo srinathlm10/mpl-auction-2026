@@ -280,6 +280,45 @@ export function removeEvent(state: LiveState, id: string): LiveState {
   return { ...state, events: state.events.filter((e) => e.id !== id) };
 }
 
+/* ------------------------------------------------------------- football undo */
+
+/** The part of a match that is about time: Undo puts this back without touching goals or cards. */
+export type ClockState = Pick<LiveState, "status" | "period" | "period_started_at">;
+
+export const clockOf = ({ status, period, period_started_at }: LiveState): ClockState => ({ status, period, period_started_at });
+
+/** One thing the scorer did, newest last: a change to the clock, or a goal or card. */
+export type UndoEntry = { kind: "clock"; label: string; clock: ClockState } | { kind: "event"; eventId: string };
+
+/** "Goal · Abhinav", "Yellow card" */
+export function eventSummary(e: MatchEvent): string {
+  const name = { goal: "Goal", own_goal: "Own goal", yellow: "Yellow card", red: "Red card" }[e.kind];
+  return e.player ? `${name} · ${e.player}` : name;
+}
+
+export interface UndoStep {
+  label: string;
+  next: LiveState;
+  /** The history left after this undo. */
+  history: UndoEntry[];
+}
+
+/**
+ * The next thing Undo would take back: the newest entry in `history`. Goals and cards already deleted by hand
+ * are skipped. When the history has run out (it is kept per device), the last goal or card can still be undone.
+ */
+export function undoStep(state: LiveState, history: UndoEntry[]): UndoStep | null {
+  const rest = [...history];
+  while (rest.length > 0) {
+    const entry = rest.pop() as UndoEntry;
+    if (entry.kind === "clock") return { label: entry.label, next: { ...state, ...entry.clock }, history: rest };
+    const event = state.events.find((e) => e.id === entry.eventId);
+    if (event) return { label: eventSummary(event), next: removeEvent(state, event.id), history: rest };
+  }
+  const last = state.events[state.events.length - 1];
+  return last ? { label: eventSummary(last), next: removeEvent(state, last.id), history: [] } : null;
+}
+
 /** Volleyball: a rally won by `side`. Ignored once the match is over. */
 export function addPoint(state: LiveState, side: Side, rules: VolleyballRules = RULES.volleyball): LiveState {
   if (volleyballScore(state.points, rules).finished) return state;

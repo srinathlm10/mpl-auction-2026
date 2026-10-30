@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type Dispatch, type FormEvent, type SetStateAction } from "react";
 import { ConnectionNote, SoundToggle, StatusPill, TeamLogo } from "@/components/live/parts";
 import { Icon } from "@/components/ui/Icon";
 import { basePlayers, baseSports } from "@/lib/data";
@@ -9,6 +9,7 @@ import { cn } from "@/lib/format";
 import {
   addEvent,
   addPoint,
+  clockOf,
   editEvent,
   emptyState,
   formatMinute,
@@ -28,6 +29,7 @@ import {
   shiftClock,
   startMatch,
   undo,
+  undoStep,
   type EventKind,
   type LiveSport,
   type LiveState,
@@ -36,6 +38,7 @@ import {
   type MatchMinute,
   type Side,
   type Squads,
+  type UndoEntry,
 } from "@/lib/live";
 import { sportInfo, teamOf } from "@/lib/live-data";
 import { applyLocal, publishSquads, reloadScores, saveMatch, serverNow, type ScorerLogin } from "@/lib/live-store";
@@ -73,6 +76,29 @@ function namesFor(squads: Squads, teamId: number, sport: LiveSport): { names: st
   const squad = squads[teamId];
   if (squad && squad.length > 0) return { names: [...squad].sort(byName), published: true };
   return { names: playerPool(sport), published: false };
+}
+
+const MAX_UNDO = 50;
+
+/** What the scorer did on a match, for Undo. Kept for this browser tab, so a reload does not lose it. */
+function useUndoHistory(matchId: string) {
+  const key = `mpl-undo-${matchId}`;
+  const [history, setHistory] = useState<UndoEntry[]>(() => {
+    try {
+      const saved: unknown = JSON.parse(sessionStorage.getItem(key) ?? "[]");
+      return Array.isArray(saved) ? (saved as UndoEntry[]) : [];
+    } catch {
+      return [];
+    }
+  });
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(key, JSON.stringify(history));
+    } catch {
+      /* private mode etc.: Undo still works until the page is closed */
+    }
+  }, [key, history]);
+  return [history, setHistory] as const;
 }
 
 /** A button that needs a second tap within 3 seconds, so a slip cannot delete or reset anything. */
@@ -264,7 +290,19 @@ function EventRow({ match, event, squads, onChange }: { match: Match; event: Mat
   );
 }
 
-function FootballPanel({ match, squads, commit }: { match: Match; squads: Squads; commit: (next: LiveState) => void }) {
+function FootballPanel({
+  match,
+  squads,
+  commit,
+  history,
+  setHistory,
+}: {
+  match: Match;
+  squads: Squads;
+  commit: (next: LiveState) => void;
+  history: UndoEntry[];
+  setHistory: Dispatch<SetStateAction<UndoEntry[]>>;
+}) {
   const state = stateOf(match);
   const now = useNow(1000);
   const clock = matchClock(match, now);
@@ -279,20 +317,37 @@ function FootballPanel({ match, squads, commit }: { match: Match; squads: Squads
 
   function record(player: string, minute: MatchMinute) {
     if (!picker) return;
-    commit(addEvent(state, { kind: picker.kind, side: picker.side, minute: minute.minute, added: minute.added, player }));
+    const next = addEvent(state, { kind: picker.kind, side: picker.side, minute: minute.minute, added: minute.added, player });
+    const eventId = next.events[next.events.length - 1].id;
+    setHistory((h) => [...h, { kind: "event" as const, eventId }].slice(-MAX_UNDO));
+    commit(next);
     setPicker(null);
+  }
+
+  /** Changes the clock or the stage of the match, remembering how it was so Undo can put it back. */
+  function moveClock(label: string, next: LiveState) {
+    setHistory((h) => [...h, { kind: "clock" as const, label, clock: clockOf(state) }].slice(-MAX_UNDO));
+    commit(next);
+  }
+
+  const undoable = undoStep(state, history);
+
+  function takeBack() {
+    if (!undoable) return;
+    setHistory(undoable.history);
+    commit(undoable.next);
   }
 
   const step =
     match.status === "upcoming"
-      ? { label: "Kick off (1st half)", run: () => commit(startMatch("football", state, serverNow())) }
+      ? { label: "Kick off (1st half)", run: () => moveClock("Kick off", startMatch("football", state, serverNow())) }
       : match.status === "live" && match.period !== "2H"
-        ? { label: "Half time", run: () => commit(halfTime(state)) }
+        ? { label: "Half time", run: () => moveClock("Half time", halfTime(state)) }
         : match.status === "break"
-          ? { label: "Start 2nd half", run: () => commit(secondHalf(state, serverNow())) }
+          ? { label: "Start 2nd half", run: () => moveClock("Start 2nd half", secondHalf(state, serverNow())) }
           : match.status === "live"
-            ? { label: "Full time", run: () => commit(fullTime(state)) }
-            : { label: "Reopen match", run: () => commit(reopen(state, serverNow(), half)) };
+            ? { label: "Full time", run: () => moveClock("Full time", fullTime(state)) }
+            : { label: "Reopen match", run: () => moveClock("Reopen match", reopen(state, serverNow(), half)) };
 
   const pickerTeamId = picker ? (picker.kind === "own_goal" ? (picker.side === "a" ? match.team_b : match.team_a) : picker.side === "a" ? match.team_a : match.team_b) : null;
   const pickerNames = pickerTeamId !== null ? namesFor(squads, pickerTeamId, "football") : null;
@@ -309,8 +364,8 @@ function FootballPanel({ match, squads, commit }: { match: Match; squads: Squads
         </div>
         {match.status === "live" && (
           <div className="flex flex-col gap-2">
-            <button type="button" className="btn-outline !min-h-[40px]" onClick={() => commit(shiftClock(state, 1))} aria-label="Move the clock forward one minute">+1 min</button>
-            <button type="button" className="btn-outline !min-h-[40px]" onClick={() => commit(shiftClock(state, -1))} aria-label="Move the clock back one minute">−1 min</button>
+            <button type="button" className="btn-outline !min-h-[40px]" onClick={() => moveClock("+1 min", shiftClock(state, 1))} aria-label="Move the clock forward one minute">+1 min</button>
+            <button type="button" className="btn-outline !min-h-[40px]" onClick={() => moveClock("−1 min", shiftClock(state, -1))} aria-label="Move the clock back one minute">−1 min</button>
           </div>
         )}
       </div>
@@ -318,9 +373,13 @@ function FootballPanel({ match, squads, commit }: { match: Match; squads: Squads
       <div className="flex flex-wrap gap-2">
         <button type="button" className="btn-primary flex-1 !min-h-[52px] text-base" onClick={step.run}>{step.label}</button>
         {match.status === "live" && match.period !== "2H" && (
-          <ConfirmButton label="End match" confirmLabel="End match now?" className="!min-h-[52px]" onConfirm={() => commit(fullTime(state))} />
+          <ConfirmButton label="End match" confirmLabel="End match now?" className="!min-h-[52px]" onConfirm={() => moveClock("End match", fullTime(state))} />
         )}
       </div>
+
+      <button type="button" className="btn-outline w-full" disabled={!undoable} onClick={takeBack}>
+        <span className="truncate">↩ {undoable ? `Undo: ${undoable.label}` : "Nothing to undo"}</span>
+      </button>
 
       <div className="card space-y-3 p-4">
         <div className="grid grid-cols-2 gap-3">
@@ -342,10 +401,7 @@ function FootballPanel({ match, squads, commit }: { match: Match; squads: Squads
       </div>
 
       <div>
-        <div className="mb-2 flex items-center justify-between">
-          <h3 className="font-display text-xl font-bold uppercase">Goals &amp; cards</h3>
-          <button type="button" className="btn-outline !min-h-[40px]" disabled={match.events.length === 0} onClick={() => commit(undo("football", state))}>↩ Undo last</button>
-        </div>
+        <h3 className="mb-2 font-display text-xl font-bold uppercase">Goals &amp; cards</h3>
         {match.events.length === 0 ? (
           <p className="card p-4 text-sm text-muted">Nothing recorded yet.</p>
         ) : (
@@ -459,6 +515,7 @@ function VolleyballPanel({ match, commit }: { match: Match; commit: (next: LiveS
 function MatchPanel({ match, squads, login, onBack }: { match: Match; squads: Squads; login: ScorerLogin; onBack: () => void }) {
   const { config } = sportInfo(match.sport);
   const [message, setMessage] = useState<string | null>(null);
+  const [history, setHistory] = useUndoHistory(match.id);
 
   async function commit(next: LiveState) {
     applyLocal(match.id, next); // show it straight away
@@ -495,10 +552,10 @@ function MatchPanel({ match, squads, login, onBack }: { match: Match; squads: Sq
 
       {message && <p role="alert" className="rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-sm font-semibold text-red-700 dark:text-red-300">{message}</p>}
 
-      {match.sport === "football" ? <FootballPanel match={match} squads={squads} commit={commit} /> : <VolleyballPanel match={match} commit={commit} />}
+      {match.sport === "football" ? <FootballPanel match={match} squads={squads} commit={commit} history={history} setHistory={setHistory} /> : <VolleyballPanel match={match} commit={commit} />}
 
       <div className="border-t border-border pt-4">
-        <ConfirmButton label="Reset this match (clear everything)" confirmLabel="Clear all scores for this match?" className="w-full" disabled={!started} onConfirm={() => commit(emptyState())} />
+        <ConfirmButton label="Reset this match (clear everything)" confirmLabel="Clear all scores for this match?" className="w-full" disabled={!started} onConfirm={() => { setHistory([]); void commit(emptyState()); }} />
       </div>
     </div>
   );
