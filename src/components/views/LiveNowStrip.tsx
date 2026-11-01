@@ -8,8 +8,7 @@ import { useLive } from "@/lib/use-live";
 
 /** On the home page: the matches being played right now, or the next three when nothing is on. */
 export function LiveNowStrip() {
-  // No live connection here (every visitor would hold one); it checks every 20 seconds.
-  const { matches, configured } = useLive({ realtime: false });
+  const { matches, configured } = useLive();
   const live = matches.filter(isLive);
   const happening = live.length > 0;
   const shown = happening ? live : matches.filter((m) => m.status === "upcoming").slice(0, 3);

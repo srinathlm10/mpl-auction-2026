@@ -6,8 +6,8 @@ import { normalizeRow, normalizeSquads, type LiveRow, type LiveSport, type LiveS
  * One shared connection to the live scores for the whole page.
  *
  * - Every score is read once, then kept up to date by Supabase Realtime (pushed within a second).
- *   Only the pages where people WATCH a match open that live connection (each one counts towards
- *   the Supabase plan's limit); the home page just asks again every 20 seconds.
+ *   Every page that shows scores opens that live connection, with no login. Each visitor counts
+ *   towards the Supabase plan's limit on connections.
  * - If the live connection is not working (or the limit is reached) the page quietly asks every few
  *   seconds instead, and also whenever the tab comes back to the front, so a score is never stuck.
  * - It starts with the first component that needs it and stops shortly after the last one goes away.
@@ -38,12 +38,10 @@ const TABLE = "live_matches";
 const SQUADS_TABLE = "live_squads";
 const POLL_WHILE_PUSHED_MS = 60_000; // safety net while Realtime is working
 const POLL_FALLBACK_MS = 8_000; // main way of updating when Realtime is not working
-const POLL_LIGHT_MS = 20_000; // pages that only glance at the scores (home page)
 const CLOCK_RESYNC_MS = 5 * 60_000;
 
 let snapshot: LiveSnapshot = EMPTY;
 const listeners = new Set<() => void>();
-let realtimeCount = 0;
 let channel: RealtimeChannel | null = null;
 let pollTimer: ReturnType<typeof setTimeout> | null = null;
 let stopTimer: ReturnType<typeof setTimeout> | null = null;
@@ -139,7 +137,7 @@ async function refresh(gen: number) {
 
 function schedulePoll(gen: number) {
   if (gen !== generation) return;
-  const base = snapshot.status === "live" ? POLL_WHILE_PUSHED_MS : realtimeCount > 0 ? POLL_FALLBACK_MS : POLL_LIGHT_MS;
+  const base = snapshot.status === "live" ? POLL_WHILE_PUSHED_MS : POLL_FALLBACK_MS;
   const delay = base + Math.random() * 1500; // spread visitors out so they do not all ask at the same moment
   pollTimer = setTimeout(async () => {
     await refresh(gen);
@@ -151,10 +149,10 @@ function onVisible() {
   if (document.visibilityState === "visible" && running) void refresh(generation);
 }
 
-/** Opens or closes the live (pushed) connection depending on whether any watching page needs it. */
+/** Opens or closes the live (pushed) connection depending on whether any page needs it. */
 async function syncChannel(gen: number) {
   if (gen !== generation) return;
-  if (realtimeCount === 0) {
+  if (listeners.size === 0) {
     if (channel) {
       const old = channel;
       channel = null;
@@ -167,7 +165,7 @@ async function syncChannel(gen: number) {
   if (channel) return;
 
   const client = await getClient();
-  if (gen !== generation || channel || realtimeCount === 0) return;
+  if (gen !== generation || channel || listeners.size === 0) return;
   set({ status: "connecting" });
   channel = client
     .channel("live-matches-feed")
@@ -200,7 +198,7 @@ async function start() {
   if (running || !liveConfigured) return;
   running = true;
   const gen = ++generation;
-  set({ status: realtimeCount > 0 ? "connecting" : "polling" });
+  set({ status: "connecting" });
 
   document.addEventListener("visibilitychange", onVisible);
   await refresh(gen);
@@ -222,33 +220,25 @@ function stop() {
   set({ status: "off" });
 }
 
-function makeSubscribe(realtime: boolean) {
-  return (listener: () => void) => {
-    listeners.add(listener);
-    if (realtime) realtimeCount += 1;
-    if (stopTimer) {
-      clearTimeout(stopTimer);
-      stopTimer = null;
-    }
-    if (running) void syncChannel(generation);
-    else void start();
+/** For every page that shows scores: they are pushed the moment they change. */
+export function subscribeRealtime(listener: () => void) {
+  listeners.add(listener);
+  if (stopTimer) {
+    clearTimeout(stopTimer);
+    stopTimer = null;
+  }
+  if (running) void syncChannel(generation);
+  else void start();
 
-    return () => {
-      listeners.delete(listener);
-      if (realtime) realtimeCount -= 1;
-      if (running) void syncChannel(generation);
-      if (listeners.size === 0) {
-        // Wait a moment: moving between pages unsubscribes and resubscribes straight away.
-        stopTimer = setTimeout(stop, 1500);
-      }
-    };
+  return () => {
+    listeners.delete(listener);
+    if (running) void syncChannel(generation);
+    if (listeners.size === 0) {
+      // Wait a moment: moving between pages unsubscribes and resubscribes straight away.
+      stopTimer = setTimeout(stop, 1500);
+    }
   };
 }
-
-/** For pages where people watch a match: scores are pushed the moment they change. */
-export const subscribeRealtime = makeSubscribe(true);
-/** For pages that only glance at the scores (home page): checks every 20 seconds, no live connection. */
-export const subscribePolling = makeSubscribe(false);
 
 /* ------------------------------------------------------------------ writing */
 
