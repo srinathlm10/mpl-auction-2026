@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { SkillBar } from "@/components/ui/SkillBar";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { StatusBadge, teamLabel } from "@/components/ui/StatusBadge";
 import { cn, formatCompact, formatPrice } from "@/lib/format";
 import { accentStyle, getSportConfig } from "@/lib/sports";
 import { useAuctionData } from "@/lib/use-auction";
@@ -31,7 +31,7 @@ export function PlayerView({ playerId }: { playerId: number }) {
     ...config.attributes.map((attr) => ({ label: attr.label, value: player.attributes?.[attr.key] ?? "" })),
     { label: "Batch", value: player.batch },
   ].filter((f) => f.value);
-  const sold = player.status === "sold";
+  const onTeam = teamLabel(player.status);
 
   return (
     <div style={accentStyle(config)}>
@@ -75,22 +75,26 @@ export function PlayerView({ playerId }: { playerId: number }) {
 
           <div
             className={
-              sold
+              onTeam
                 ? "bg-banner mt-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl p-5 text-white shadow-lift"
                 : "mt-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-surface p-5 shadow-card"
             }
           >
-            {sold ? (
+            {onTeam ? (
               <>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/85">Sold to</p>
-                  <p className="font-display text-3xl font-bold uppercase leading-tight">{team?.name ?? "Team"}</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/85">{onTeam}</p>
+                  <p className="font-display text-3xl font-bold uppercase leading-tight">
+                    {team ? <Link href={`/teams/${team.id}`} className="hover:underline">{team.name}</Link> : "Team"}
+                  </p>
                 </div>
-                <div className="text-right">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/85">For</p>
-                  <p className="font-display text-4xl font-extrabold leading-none">{formatCompact(player.sold_price)}</p>
-                  <p className="text-xs text-white/80">{formatPrice(player.sold_price)}</p>
-                </div>
+                {player.status === "sold" && (
+                  <div className="text-right">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/85">For</p>
+                    <p className="font-display text-4xl font-extrabold leading-none">{formatCompact(player.sold_price)}</p>
+                    <p className="text-xs text-white/80">{formatPrice(player.sold_price)}</p>
+                  </div>
+                )}
               </>
             ) : (
               <>
@@ -99,9 +103,7 @@ export function PlayerView({ playerId }: { playerId: number }) {
                   <p className="font-display text-4xl font-extrabold leading-none">{formatCompact(player.base_price)}</p>
                   <p className="text-xs text-muted">{formatPrice(player.base_price)}</p>
                 </div>
-                <p className="max-w-[16rem] text-sm text-muted">
-                  {player.status === "unsold" ? "Went unsold in the first round. May return in the second round." : "Bidding opens at the base price on auction day."}
-                </p>
+                <p className="max-w-[16rem] text-sm text-muted">Not sold in the auction.</p>
               </>
             )}
           </div>

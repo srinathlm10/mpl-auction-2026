@@ -86,7 +86,11 @@ export function LiveView() {
           </p>
         )}
         <Section title="Live now" matches={liveNow} />
-        {filter !== "volleyball" && <LeagueTable matches={matches} />}
+        <div className="grid gap-8 lg:grid-cols-2">
+          {LIVE_SPORTS.filter((sport) => filter === "all" || filter === sport).map((sport) => (
+            <LeagueTable key={sport} matches={matches} sport={sport} />
+          ))}
+        </div>
         <Section title="Up next" matches={upcoming} />
         <Section title="Results" matches={results} />
         {shown.length === 0 && <p className="text-muted">No matches.</p>}

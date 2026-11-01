@@ -27,7 +27,7 @@ export function Header({ items }: { items: NavItem[] }) {
   // Close the mobile menu after navigating.
   useEffect(() => setOpen(false), [pathname]);
 
-  // Once this device is signed in as the scorer, the Login button says "Scoring" instead.
+  // Once this device is signed in as the admin, the Login button says "Admin" and the auction appears.
   useEffect(() => {
     const check = () => {
       try {
@@ -49,7 +49,8 @@ export function Header({ items }: { items: NavItem[] }) {
   // The logo already goes home, and Live Auction and Login have their own buttons.
   const links = items.filter((item) => item.href !== "/" && item.href !== LIVE && item.href !== LOGIN);
   const hasLogin = items.some((item) => item.href === LOGIN);
-  const loginLabel = signedIn ? "Scoring" : "Login";
+  const loginLabel = signedIn ? "Admin" : "Login";
+  const menuItems = items.filter((item) => signedIn || item.href !== LIVE);
 
   return (
     <header className="site-nav sticky top-0 z-40 border-b border-border/80 bg-background/80 backdrop-blur-xl">
@@ -81,13 +82,15 @@ export function Header({ items }: { items: NavItem[] }) {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link
-            href={LIVE}
-            className={cn("btn-gold hidden min-h-[40px] whitespace-nowrap px-3 sm:inline-flex", isActive(LIVE) && "ring-2 ring-gold/40 ring-offset-2 ring-offset-background")}
-          >
-            <Icon name="gavel" className="h-4 w-4" />
-            Live Auction
-          </Link>
+          {signedIn && (
+            <Link
+              href={LIVE}
+              className={cn("btn-gold hidden min-h-[40px] whitespace-nowrap px-3 sm:inline-flex", isActive(LIVE) && "ring-2 ring-gold/40 ring-offset-2 ring-offset-background")}
+            >
+              <Icon name="gavel" className="h-4 w-4" />
+              Live Auction
+            </Link>
+          )}
           {hasLogin && (
             <Link
               href={LOGIN}
@@ -115,7 +118,7 @@ export function Header({ items }: { items: NavItem[] }) {
       {open && (
         <nav className="border-t border-border bg-background/95 backdrop-blur-xl xl:hidden" aria-label="Mobile">
           <div className="container-page grid gap-1 py-3">
-            {items.map((item) => (
+            {menuItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}

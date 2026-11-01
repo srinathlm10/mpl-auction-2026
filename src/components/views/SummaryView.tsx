@@ -8,9 +8,31 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { StatCard } from "@/components/ui/StatCard";
+import { statusLabel } from "@/components/ui/StatusBadge";
 import { formatCompact, formatPrice } from "@/lib/format";
 import { accentStyle, getSportConfig } from "@/lib/sports";
+import type { Player } from "@/lib/types";
 import { useAuctionData } from "@/lib/use-auction";
+
+function PlayerList({ players, detail }: { players: Player[]; detail: (player: Player) => string }) {
+  return (
+    <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {players.map((p) => (
+        <li key={p.id}>
+          <Link href={`/players/${p.id}`} className="card-link flex items-center gap-3 p-3">
+            <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-border">
+              <PlayerAvatar name={p.name} src={p.photo_url} sizes="40px" className="text-sm" />
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate font-semibold">{p.name}</span>
+              <span className="block truncate text-xs text-muted">{detail(p)}</span>
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 export function SummaryView() {
   const sportSlug = useSearchParams().get("sport");
@@ -22,17 +44,17 @@ export function SummaryView() {
   const scoped = players.filter((p) => !sport || p.sport_id === sport.id);
 
   const sold = scoped.filter((p) => p.status === "sold").sort((a, b) => (b.sold_price ?? 0) - (a.sold_price ?? 0));
+  const inTeams = scoped.filter((p) => p.status === "captain" || p.status === "foreign");
   const unsold = scoped.filter((p) => p.status === "unsold");
-  const pending = scoped.filter((p) => p.status === "available");
   const totalSpent = sold.reduce((sum, p) => sum + (p.sold_price ?? 0), 0);
 
-  const csvRows: SummaryRow[] = [...sold, ...unsold].map((p) => ({
+  const csvRows: SummaryRow[] = [...sold, ...inTeams, ...unsold].map((p) => ({
     sport: sportName(p.sport_id),
     player: p.name,
     batch: p.batch,
     role: p.role_or_position,
     details: Object.values(p.attributes ?? {}).filter(Boolean).join(", "),
-    status: p.status === "sold" ? "Sold" : "Unsold",
+    status: statusLabel(p.status),
     team: teamName(p.team_id),
     basePrice: p.base_price,
     soldPrice: p.sold_price,
@@ -44,7 +66,7 @@ export function SummaryView() {
 
   return (
     <div style={config ? accentStyle(config) : undefined}>
-      <PageHeader eyebrow="Results" title="Auction summary" subtitle="Every sale and every unsold player, updated as the auction runs.">
+      <PageHeader eyebrow="Results" title="Auction results" subtitle="Every sale from the completed auction, with the price and the team that bought each player.">
         <SummaryDownload rows={csvRows} filename={`mpl-auction-${sport?.slug ?? "all-sports"}.csv`} />
       </PageHeader>
 
@@ -53,14 +75,14 @@ export function SummaryView() {
       <div className="mb-10 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard icon="check" label="Sold" value={sold.length} />
         <StatCard icon="close" label="Unsold" value={unsold.length} />
-        <StatCard icon="spin" label="Still to auction" value={pending.length} />
+        <StatCard icon="trophy" label="Highest bid" value={formatCompact(sold[0]?.sold_price)} />
         <StatCard icon="wallet" label="Total spent" value={formatCompact(totalSpent)} highlight />
       </div>
 
       <section aria-labelledby="sold-heading" className="mb-12">
         <h2 id="sold-heading" className="section-title mb-4">Sold players</h2>
         {sold.length === 0 ? (
-          <EmptyState icon="gavel" title="No players sold yet." text="Sales appear here as the auction runs." />
+          <EmptyState icon="gavel" title="No players sold." />
         ) : (
           <div className="card overflow-x-auto">
             <table className="w-full min-w-[640px] text-left text-sm">
@@ -115,26 +137,17 @@ export function SummaryView() {
         )}
       </section>
 
+      {inTeams.length > 0 && (
+        <section aria-labelledby="in-teams-heading" className="mb-12">
+          <h2 id="in-teams-heading" className="section-title mb-4">Captains and foreign players</h2>
+          <PlayerList players={inTeams} detail={(p) => [statusLabel(p.status), teamName(p.team_id), !sport && sportName(p.sport_id)].filter(Boolean).join(" · ")} />
+        </section>
+      )}
+
       {unsold.length > 0 && (
         <section aria-labelledby="unsold-heading">
           <h2 id="unsold-heading" className="section-title mb-4">Unsold players</h2>
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {unsold.map((p) => (
-              <li key={p.id}>
-                <Link href={`/players/${p.id}`} className="card-link flex items-center gap-3 p-3">
-                  <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-border">
-                    <PlayerAvatar name={p.name} src={p.photo_url} sizes="40px" className="text-sm" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block truncate font-semibold">{p.name}</span>
-                    <span className="block truncate text-xs text-muted">
-                      {[!sport && sportName(p.sport_id), p.role_or_position, p.batch].filter(Boolean).join(" · ")}
-                    </span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <PlayerList players={unsold} detail={(p) => [!sport && sportName(p.sport_id), p.role_or_position, p.batch].filter(Boolean).join(" · ")} />
         </section>
       )}
     </div>

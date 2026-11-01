@@ -36,7 +36,7 @@
     "name": "Brand Blasters",
     "sport_id": 2,
     "logo_url": "/teams/brand_blasters.jpeg",
-    "captain": "",
+    "captain": "Aftab Ahmad",
     "total_purse": 20000000
   },
   {
@@ -44,7 +44,7 @@
     "name": "Process Panther",
     "sport_id": 2,
     "logo_url": "/teams/process_panthers.jpeg",
-    "captain": "",
+    "captain": "Pursottam Periwal",
     "total_purse": 20000000
   },
   {
@@ -52,7 +52,7 @@
     "name": "Risk Rangers",
     "sport_id": 2,
     "logo_url": "/teams/risk_rangers.jpeg",
-    "captain": "",
+    "captain": "Divy Singh",
     "total_purse": 20000000
   },
   {
@@ -60,7 +60,7 @@
     "name": "Talent Titan",
     "sport_id": 2,
     "logo_url": "/teams/talent_titan.jpeg",
-    "captain": "",
+    "captain": "Ayush Kumar",
     "total_purse": 20000000
   },
   {
@@ -68,7 +68,7 @@
     "name": "Brand Blasters",
     "sport_id": 3,
     "logo_url": "/teams/brand_blasters.jpeg",
-    "captain": "",
+    "captain": "Shibam Acharya",
     "total_purse": 20000000
   },
   {
@@ -76,7 +76,7 @@
     "name": "Process Panther",
     "sport_id": 3,
     "logo_url": "/teams/process_panthers.jpeg",
-    "captain": "",
+    "captain": "Pursottam Periwal",
     "total_purse": 20000000
   },
   {
@@ -84,7 +84,7 @@
     "name": "Risk Rangers",
     "sport_id": 3,
     "logo_url": "/teams/risk_rangers.jpeg",
-    "captain": "",
+    "captain": "Suneet Ranjan Khuntia",
     "total_purse": 20000000
   },
   {
@@ -92,7 +92,7 @@
     "name": "Talent Titan",
     "sport_id": 3,
     "logo_url": "/teams/talent_titan.jpeg",
-    "captain": "",
+    "captain": "Ayush Kumar",
     "total_purse": 20000000
   }
 ]

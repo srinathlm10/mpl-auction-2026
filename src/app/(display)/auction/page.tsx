@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
+import { AdminGate } from "@/components/admin/AdminGate";
 import { AuctionStage } from "@/components/auction/AuctionStage";
+import { AuctionComplete } from "@/components/views/AuctionComplete";
 
-export const metadata: Metadata = { title: "Live Auction" };
+export const metadata: Metadata = { title: "Auction complete" };
 
-/** The auction itself: pick a sport, spin the wheel, take bids. (No login.) */
+/** The auction itself, for the signed-in admin. Everyone else is told it is over. */
 export default function AuctionPage() {
-  return <AuctionStage mode="admin" />;
+  return (
+    <AdminGate fallback={<AuctionComplete />}>
+      <AuctionStage mode="admin" />
+    </AdminGate>
+  );
 }

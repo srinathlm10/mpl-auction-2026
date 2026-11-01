@@ -1,6 +1,7 @@
-export type PlayerStatus = "available" | "sold" | "unsold";
+/** "captain" and "foreign" players are in a team without being bought. */
+export type PlayerStatus = "available" | "sold" | "unsold" | "captain" | "foreign";
 
-export const PLAYER_STATUSES: PlayerStatus[] = ["available", "sold", "unsold"];
+export const PLAYER_STATUSES: PlayerStatus[] = ["available", "sold", "captain", "foreign", "unsold"];
 
 export interface Sport {
   id: number;

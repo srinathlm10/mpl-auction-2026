@@ -14,7 +14,7 @@ const display = Barlow_Condensed({
 });
 
 export const metadata: Metadata = {
-  title: { default: `${siteConfig.name} – Player Auction`, template: `%s · ${siteConfig.shortName}` },
+  title: { default: `${siteConfig.name} – Cricket, Volleyball & Football`, template: `%s · ${siteConfig.shortName}` },
   description: siteConfig.description,
 };
 

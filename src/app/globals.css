@@ -136,6 +136,11 @@
     @apply inline-flex items-center gap-1.5 text-sm font-semibold text-muted transition hover:text-primary;
   }
 
+  /* The big dark panel at the top of the home and auction pages. */
+  .bg-hero {
+    background-color: #0b1030;
+    background-image: radial-gradient(85% 130% at 0% 0%, #4338ca 0%, transparent 62%);
+  }
   /* Coloured sport header. The left side, where the text sits, stays dark enough for white text in every sport. */
   .bg-banner {
     background-color: #0b1030;

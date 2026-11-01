@@ -3,7 +3,7 @@
 import { useMemo, useSyncExternalStore } from "react";
 import { buildMatches } from "./live";
 import { liveConfigured } from "./live-config";
-import { fixtures } from "./live-data";
+import { fixtures, squads } from "./live-data";
 import { getServerSnapshot, getSnapshot, subscribeRealtime } from "./live-store";
 
 /**
@@ -13,5 +13,5 @@ import { getServerSnapshot, getSnapshot, subscribeRealtime } from "./live-store"
 export function useLive() {
   const snap = useSyncExternalStore(subscribeRealtime, getSnapshot, getServerSnapshot);
   const matches = useMemo(() => buildMatches(fixtures, snap.rows), [snap.rows]);
-  return { matches, squads: snap.squads, status: snap.status, loaded: snap.loaded, error: snap.error, configured: liveConfigured };
+  return { matches, squads, status: snap.status, loaded: snap.loaded, error: snap.error, configured: liveConfigured };
 }

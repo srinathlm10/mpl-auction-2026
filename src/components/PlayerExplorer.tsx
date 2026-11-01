@@ -27,7 +27,7 @@ const SORT_OPTIONS: FilterOption[] = [
   { value: "status", label: "Status" },
 ];
 
-const STATUS_ORDER: Record<string, number> = { available: 0, sold: 1, unsold: 2 };
+const STATUS_ORDER: Record<string, number> = { available: 0, captain: 1, sold: 2, foreign: 3, unsold: 4 };
 
 function sortPlayers(players: Player[], sort: string): Player[] {
   const list = [...players];
@@ -56,6 +56,7 @@ export function PlayerExplorer({ players, teamNames, roleLabel, attributes = [] 
 
   const roles = useMemo(() => unique(players.map((p) => p.role_or_position)), [players]);
   const batches = useMemo(() => unique(players.map((p) => p.batch)), [players]);
+  const statuses = useMemo(() => PLAYER_STATUSES.filter((s) => players.some((p) => p.status === s)), [players]);
   const attrOptions = useMemo(
     () => Object.fromEntries(attributes.map((a) => [a.key, unique(players.map((p) => p.attributes?.[a.key] ?? ""))])),
     [players, attributes],
@@ -95,7 +96,7 @@ export function PlayerExplorer({ players, teamNames, roleLabel, attributes = [] 
             label: "Status",
             value: status,
             onChange: setStatus,
-            options: [{ value: ALL, label: "Any status" }, ...PLAYER_STATUSES.map((s) => ({ value: s, label: statusLabel(s) }))],
+            options: [{ value: ALL, label: "Any status" }, ...statuses.map((s) => ({ value: s, label: statusLabel(s) }))],
           },
           // Only show filters that have something to choose from.
           ...(batches.length > 0

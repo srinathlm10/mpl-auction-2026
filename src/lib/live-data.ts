@@ -1,11 +1,16 @@
 import fixturesJson from "@/data/fixtures.json";
+import { squadOf } from "./auction";
 import { baseTeams } from "./data";
-import type { Fixture, LiveSport } from "./live";
+import type { Fixture, LiveSport, Squads } from "./live";
+import { publishedAuction } from "./local-auction";
 import { getSportConfig } from "./sports";
 import type { Team } from "./types";
 
 /** The planned matches (src/data/fixtures.json). Their scores come from the live database. */
 export const fixtures: Fixture[] = fixturesJson as Fixture[];
+
+/** Each team's players, from the finished auction. */
+export const squads: Squads = Object.fromEntries(baseTeams.map((t) => [t.id, squadOf(publishedAuction.players, t.id).map((p) => p.name)]));
 
 export function getFixture(id: string): Fixture | undefined {
   return fixtures.find((f) => f.id === id);

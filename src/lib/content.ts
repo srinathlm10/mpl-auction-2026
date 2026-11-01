@@ -29,6 +29,17 @@ export const footballRules: string[] = [
   "The table on the Live Scores page updates when each match ends, and the final's teams appear there once the league is over.",
 ];
 
+const { league, final } = RULES.volleyball;
+
+export const volleyballRules: string[] = [
+  "The four teams play a league: each team plays the other three once, six matches in all.",
+  `Every league match is a single set: first to ${league.setPoints} points, and a team must win by ${league.winBy}.`,
+  `A win earns ${RULES.volleyball.pointsForWin} points and a loss 0 points.`,
+  "Teams are ranked by points, then point difference, then points scored, then the result of their match against each other.",
+  `The top ${RULES.volleyball.finalists} teams go straight to the final. There are no semi-finals.`,
+  `The final is best of ${final.bestOf} sets: first to ${final.setPoints} points in each set, with a deciding set to ${final.decidingSetPoints} if needed, and a team must win a set by ${final.winBy}.`,
+];
+
 export const auctionRules: string[] = [
   "Every player starts at a fixed base price shown on their profile.",
   "Each team has a fixed purse for its sport. The remaining purse is always visible on the Teams page.",

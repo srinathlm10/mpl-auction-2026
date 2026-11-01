@@ -5,12 +5,12 @@ import { liveConfigured, SCORER_CHANGED_EVENT, SCORER_STORAGE_KEY } from "./live
 import { getClient, type ScorerLogin } from "./live-store";
 
 /*
- * Who may change a score? One scorer login: an ID and a password. There is no sign-up and nobody
- * else can create an account. Viewers never need to sign in.
+ * Who may change anything? One admin login: an ID and a password. There is no sign-up and nobody
+ * else can create an account. Visitors never need to sign in: the whole site is open to read.
  *
- * The login is checked by the database on every change (see supabase/live-scores.sql), so a visitor
- * who opens the scoring page can look but cannot change anything. After signing in, this device
- * remembers the login (in its own storage) until "Sign out" is pressed.
+ * The login is checked by the database on every change to a score (see supabase/live-scores.sql).
+ * The same login opens the admin pages and the auction (components/admin/AdminGate.tsx). After
+ * signing in, this device remembers the login (in its own storage) until "Sign out" is pressed.
  */
 
 let memoryLogin: ScorerLogin | null = null; // used when the browser will not let us store anything

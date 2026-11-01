@@ -17,7 +17,7 @@ export function StatCard({ label, value, hint, icon, highlight }: Props) {
         <p className="caption">{label}</p>
         {icon && <Icon name={icon} className="h-4 w-4 text-accent-strong" />}
       </div>
-      <p className={cn("mt-2 font-display text-3xl font-bold leading-none sm:text-4xl", highlight && "text-accent-strong")}>{value}</p>
+      <p className={cn("mt-2 font-display text-[1.65rem] font-bold leading-none min-[360px]:text-3xl sm:text-4xl", highlight && "text-accent-strong")}>{value}</p>
       {hint && <p className="mt-1.5 text-xs text-muted">{hint}</p>}
     </div>
   );

@@ -3,6 +3,7 @@
 import { SportTabs } from "@/components/SportTabs";
 import { TeamCard } from "@/components/TeamCard";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { squadOf } from "@/lib/auction";
 import { accentStyle, getSportConfig } from "@/lib/sports";
 import { useAuctionData } from "@/lib/use-auction";
 
@@ -11,7 +12,7 @@ export function TeamsView() {
 
   return (
     <>
-      <PageHeader eyebrow="Squads" title="Teams" subtitle="Captains, purse left and every player each team has bought." />
+      <PageHeader eyebrow="Squads" title="Teams" subtitle="Every team's captain, players and remaining purse, now that the auction is complete." />
       <SportTabs sports={sports} hrefFor={(s) => `#${s.slug}`} />
 
       <div className="space-y-12">
@@ -30,11 +31,7 @@ export function TeamsView() {
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   {sportTeams.map((team) => (
-                    <TeamCard
-                      key={team.id}
-                      team={{ ...team, players: players.filter((p) => p.team_id === team.id && p.status === "sold") }}
-                      squadSize={sport.squad_size}
-                    />
+                    <TeamCard key={team.id} team={{ ...team, players: squadOf(players, team.id) }} />
                   ))}
                 </div>
               )}

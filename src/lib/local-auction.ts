@@ -1,14 +1,17 @@
 import { bidAmountError, checkTeamBid, DEFAULT_SLABS, incrementFor, validateSlabs } from "./auction";
-import { basePlayers, baseSports, baseTeams } from "./data";
+import { auctionResults, basePlayers, baseSports, baseTeams } from "./data";
 import { formatCompact } from "./format";
 import type { AuctionSettings, AuctionSnapshot, AuctionState, Bid, BidSlab, Player, PlayerStatus, Team } from "./types";
 
 /*
- * The live auction, run entirely in the browser. Player and team details come
- * from src/data/*.json; everything the auction changes (results, bids, live
- * state, settings) is saved in this browser's localStorage, so a page refresh
- * keeps the auction exactly where it was. Other windows of the same browser
- * (the projector screen at /auction/screen) follow along live.
+ * The live auction, run entirely in the browser by the admin. Player and team
+ * details come from src/data/*.json; everything the auction changes (results,
+ * bids, live state, settings) is saved in this browser's localStorage, so a page
+ * refresh keeps the auction exactly where it was. Other windows of the same
+ * browser (the projector screen at /auction/screen) follow along live.
+ *
+ * Nothing saved here reaches other people: the public pages show publishedAuction,
+ * which comes from src/data/auction-results.json.
  */
 
 const STORAGE_KEY = "mpl-auction-v1";
@@ -32,6 +35,10 @@ export interface AuctionStore {
   nextBidId: number;
 }
 
+function publishedResults(): Record<number, PlayerResult> {
+  return Object.fromEntries(basePlayers.map((p) => [p.id, auctionResults[p.id] ?? { status: "unsold", team_id: null, sold_price: null }]));
+}
+
 export function initialStore(): AuctionStore {
   return {
     version: 1,
@@ -48,7 +55,7 @@ export function initialStore(): AuctionStore {
     },
     settings: { id: 1, base_price: basePlayers[0]?.base_price ?? 100_000, increment_slabs: DEFAULT_SLABS },
     squadSizes: {},
-    results: {},
+    results: publishedResults(),
     bids: [],
     nextBidId: 1,
   };
@@ -65,7 +72,7 @@ export function applyResults(store: AuctionStore) {
       ...p,
       base_price: store.settings.base_price,
       status: r?.status ?? "available",
-      team_id: r?.status === "sold" ? r.team_id : null,
+      team_id: r?.team_id ?? null,
       sold_price: r?.status === "sold" ? r.sold_price : null,
     };
   });
@@ -77,6 +84,9 @@ export function applyResults(store: AuctionStore) {
   }));
   return { sports, players, teams };
 }
+
+/** The finished auction: what every visitor sees, whatever is saved in their browser. */
+export const publishedAuction = applyResults(initialStore());
 
 export function snapshotOf(store: AuctionStore): AuctionSnapshot {
   const { sports, players, teams } = applyResults(store);

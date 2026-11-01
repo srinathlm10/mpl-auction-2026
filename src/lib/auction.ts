@@ -1,5 +1,5 @@
 import { formatCompact } from "./format";
-import type { BidSlab, Team } from "./types";
+import type { BidSlab, Player, PlayerStatus, Team } from "./types";
 
 /*
  * Pure auction rules. lib/local-auction.ts enforces them when an action runs;
@@ -12,6 +12,15 @@ export const DEFAULT_SLABS: BidSlab[] = [
   { up_to: 10_000_000, step: 1_000_000 },
   { up_to: null, step: 2_500_000 },
 ];
+
+const SQUAD_ORDER: Partial<Record<PlayerStatus, number>> = { captain: 0, sold: 1, foreign: 2 };
+
+/** A team's players: the captain, then the players bought (dearest first), then the foreign player. */
+export function squadOf(players: Player[], teamId: number): Player[] {
+  return players
+    .filter((p) => p.team_id === teamId)
+    .sort((a, b) => (SQUAD_ORDER[a.status] ?? 1) - (SQUAD_ORDER[b.status] ?? 1) || (b.sold_price ?? 0) - (a.sold_price ?? 0));
+}
 
 /** How much the next bid adds, given the current bid. */
 export function incrementFor(current: number, slabs: BidSlab[]): number {

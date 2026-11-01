@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useMemo, useState, type Dispatch, type FormEvent, type SetStateAction } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { useAdmin } from "@/components/admin/AdminGate";
 import { ConnectionNote, SoundToggle, StatusPill, TeamLogo } from "@/components/live/parts";
 import { Icon } from "@/components/ui/Icon";
-import { basePlayers, baseSports } from "@/lib/data";
 import { cn } from "@/lib/format";
 import {
   addEvent,
@@ -22,17 +21,16 @@ import {
   LIVE_SPORTS,
   matchClock,
   parseMinute,
-  RULES,
   reopen,
   removeEvent,
   secondHalf,
+  setRules,
   shiftClock,
   startMatch,
   teamsKnown,
   undo,
   undoStep,
   type EventKind,
-  type LiveSport,
   type LiveState,
   type Match,
   type MatchEvent,
@@ -42,13 +40,11 @@ import {
   type UndoEntry,
 } from "@/lib/live";
 import { sportInfo, teamOf } from "@/lib/live-data";
-import { applyLocal, publishSquads, reloadScores, saveMatch, serverNow, type ScorerLogin } from "@/lib/live-store";
+import { applyLocal, reloadScores, saveMatch, serverNow, type ScorerLogin } from "@/lib/live-store";
 import { accentStyle } from "@/lib/sports";
-import { useAuctionData } from "@/lib/use-auction";
 import { useLive } from "@/lib/use-live";
 import { useLiveSounds } from "@/lib/use-live-sound";
 import { useNow } from "@/lib/use-now";
-import { useScorer } from "@/lib/use-scorer";
 
 /* ------------------------------------------------------------------ helpers */
 
@@ -64,19 +60,6 @@ function friendly(message: string): string {
   if (/does not exist|schema cache|could not find the function/i.test(message)) return "Not saved: the database is not set up. Run supabase/live-scores.sql first.";
   if (/fetch|network/i.test(message)) return "Not saved: no connection. Check the internet and try again.";
   return `Not saved: ${message}`;
-}
-
-/** Every player of a sport, for when a team's squad has not been published yet. */
-function playerPool(sport: LiveSport): string[] {
-  const sportId = baseSports.find((s) => s.slug === sport)?.id;
-  return [...new Set(basePlayers.filter((p) => p.sport_id === sportId).map((p) => p.name))].sort(byName);
-}
-
-/** The names to pick from for a team: its published squad, or else every player of the sport. */
-function namesFor(squads: Squads, teamId: number, sport: LiveSport): { names: string[]; published: boolean } {
-  const squad = squads[teamId];
-  if (squad && squad.length > 0) return { names: [...squad].sort(byName), published: true };
-  return { names: playerPool(sport), published: false };
 }
 
 const MAX_UNDO = 50;
@@ -143,7 +126,6 @@ function PlayerPicker({
   teamId,
   forTeamName,
   names,
-  published,
   initialMinute,
   onPick,
   onCancel,
@@ -153,7 +135,6 @@ function PlayerPicker({
   teamId: number;
   forTeamName: string;
   names: string[];
-  published: boolean;
   initialMinute: string;
   onPick: (player: string, minute: MatchMinute) => void;
   onCancel: () => void;
@@ -193,7 +174,7 @@ function PlayerPicker({
           <div className="min-w-0 flex-1">
             <h2 className="font-display text-xl font-bold uppercase leading-tight">{KIND_TITLE[kind](forTeamName)}</h2>
             <p className="text-xs text-muted">
-              {published ? `Players of ${teamOf(teamId).name}` : `Squad not published yet: all ${names.length} football players`}
+              Players of {teamOf(teamId).name}
             </p>
           </div>
           <TeamLogo teamId={teamId} size="sm" />
@@ -244,7 +225,7 @@ function EventRow({ match, event, squads, onChange }: { match: Match; event: Mat
 
   // An own goal is put in by a player of the OTHER team.
   const playerTeam = event.kind === "own_goal" ? (event.side === "a" ? match.team_b : match.team_a) : event.side === "a" ? match.team_a : match.team_b;
-  const { names } = namesFor(squads, playerTeam, "football");
+  const names = [...(squads[playerTeam] ?? [])].sort(byName);
   const creditedTeam = teamOf(event.side === "a" ? match.team_a : match.team_b).name;
 
   function save() {
@@ -351,7 +332,7 @@ function FootballPanel({
             : { label: "Reopen match", run: () => moveClock("Reopen match", reopen(state, serverNow(), half)) };
 
   const pickerTeamId = picker ? (picker.kind === "own_goal" ? (picker.side === "a" ? match.team_b : match.team_a) : picker.side === "a" ? match.team_a : match.team_b) : null;
-  const pickerNames = pickerTeamId !== null ? namesFor(squads, pickerTeamId, "football") : null;
+  const pickerNames = pickerTeamId !== null ? [...(squads[pickerTeamId] ?? [])].sort(byName) : null;
 
   return (
     <div className="space-y-5">
@@ -419,8 +400,7 @@ function FootballPanel({
           kind={picker.kind}
           teamId={pickerTeamId}
           forTeamName={teamOf(picker.side === "a" ? match.team_a : match.team_b).name}
-          names={pickerNames.names}
-          published={pickerNames.published}
+          names={pickerNames}
           initialMinute={picker.minute}
           onPick={record}
           onCancel={() => setPicker(null)}
@@ -435,7 +415,7 @@ function FootballPanel({
 function VolleyballPanel({ match, commit }: { match: Match; commit: (next: LiveState) => void }) {
   const state = stateOf(match);
   const v = match.volleyball;
-  const rules = RULES.volleyball;
+  const rules = setRules(match);
   const finished = match.status === "finished";
 
   if (match.status === "upcoming") {
@@ -450,7 +430,7 @@ function VolleyballPanel({ match, commit }: { match: Match; commit: (next: LiveS
     <div className="space-y-5">
       {finished && v?.winner && (
         <p className="card bg-primary/10 p-4 text-center font-display text-xl font-bold uppercase">
-          {teamOf(v.winner === "a" ? match.team_a : match.team_b).name} win {v.won.a}–{v.won.b}
+          {teamOf(v.winner === "a" ? match.team_a : match.team_b).name} win{rules.bestOf > 1 && ` ${v.won.a}–${v.won.b}`}
         </p>
       )}
 
@@ -471,7 +451,7 @@ function VolleyballPanel({ match, commit }: { match: Match; commit: (next: LiveS
             key={side}
             type="button"
             disabled={finished}
-            onClick={() => commit(addPoint(state, side))}
+            onClick={() => commit(addPoint(state, side, rules))}
             className="btn-primary flex-col !gap-1 !py-4 active:!scale-95"
             style={{ minHeight: 112 }}
           >
@@ -482,7 +462,7 @@ function VolleyballPanel({ match, commit }: { match: Match; commit: (next: LiveS
       </div>
 
       <div className="flex gap-2">
-        <button type="button" className="btn-outline flex-1" disabled={match.points.length === 0} onClick={() => commit(undo("volleyball", state))}>↩ Undo last point</button>
+        <button type="button" className="btn-outline flex-1" disabled={match.points.length === 0} onClick={() => commit(undo("volleyball", state, rules))}>↩ Undo last point</button>
       </div>
 
       {v && (
@@ -562,157 +542,20 @@ function MatchPanel({ match, squads, login, onBack }: { match: Match; squads: Sq
   );
 }
 
-/* ------------------------------------------------------------------ sign in */
-
-/** The scorer's sign-in: one ID and password (no sign-up). Everyone else just watches, with no login. */
-function SignInForm({ onSignIn, notice }: { onSignIn: (user: string, password: string) => Promise<string | null>; notice?: string }) {
-  const [user, setUser] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function submit(e: FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    setError(null);
-    const message = await onSignIn(user, password);
-    setBusy(false);
-    if (message) setError(message);
-  }
-
-  return (
-    <form onSubmit={submit} className="card mx-auto max-w-md space-y-4 p-5 sm:p-6">
-      <div>
-        <h2 className="font-display text-2xl font-bold uppercase">Scorer sign-in</h2>
-        <p className="mt-1 text-sm text-muted">
-          Only the person who updates the scores signs in. To just follow the matches,{" "}
-          <Link href="/live" className="font-semibold text-primary hover:underline">open the live scores</Link>: no login needed.
-        </p>
-      </div>
-      {notice && <p role="status" className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-200">{notice}</p>}
-      <div>
-        <label className="label" htmlFor="scorer-id">ID</label>
-        <input id="scorer-id" className="input" autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} required value={user} onChange={(e) => setUser(e.target.value)} />
-      </div>
-      <div>
-        <label className="label" htmlFor="scorer-password">Password</label>
-        <input id="scorer-password" className="input" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-      </div>
-      {error && <p role="alert" className="text-sm font-semibold text-red-600 dark:text-red-400">{error}</p>}
-      <button type="submit" className="btn-primary w-full" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
-    </form>
-  );
-}
-
-/* ------------------------------------------------------------------ squads */
-
-/** Copies the teams' players from this browser's auction results, so every scorer can pick from them. */
-function SquadsCard({ squads, login }: { squads: Squads; login: ScorerLogin }) {
-  const auction = useAuctionData();
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
-
-  const fromAuction = useMemo(
-    () =>
-      LIVE_SPORTS.map((sport) => {
-        const sportId = baseSports.find((s) => s.slug === sport)?.id;
-        const teams = auction.teams.filter((t) => t.sport_id === sportId);
-        const map: Squads = {};
-        for (const t of teams) map[t.id] = auction.players.filter((p) => p.team_id === t.id && p.status === "sold").map((p) => p.name).sort(byName);
-        const players = Object.values(map).reduce((n, list) => n + list.length, 0);
-        const published = teams.filter((t) => (squads[t.id]?.length ?? 0) > 0).length;
-        return { sport, teams: teams.length, map, players, published };
-      }),
-    [auction, squads],
-  );
-  const total = fromAuction.reduce((n, s) => n + s.players, 0);
-
-  async function publish() {
-    setBusy(true);
-    setMessage(null);
-    for (const s of fromAuction) {
-      if (s.players === 0) continue; // never replace published squads with nothing
-      const error = await publishSquads(s.sport, s.map, login);
-      if (error) {
-        setBusy(false);
-        return setMessage({ ok: false, text: friendly(error) });
-      }
-    }
-    setBusy(false);
-    setMessage({ ok: true, text: `Published ${total} players. Scorers will now pick from each team's squad.` });
-  }
-
-  return (
-    <section aria-label="Squads" className="space-y-3">
-      <h2 className="section-title">Squads</h2>
-      <div className="card space-y-3 p-4 text-sm">
-        <ul className="space-y-1">
-          {fromAuction.map((s) => (
-            <li key={s.sport} className="flex flex-wrap items-baseline justify-between gap-2">
-              <span className="font-semibold">{sportInfo(s.sport).emoji} {sportInfo(s.sport).name}</span>
-              <span className="text-muted">
-                {s.published > 0 ? `${s.published} of ${s.teams} teams published` : "not published: scorers pick from all players"}
-                {s.players > 0 && ` · ${s.players} bought in this browser`}
-              </span>
-            </li>
-          ))}
-        </ul>
-        <p className="text-muted">
-          After the auction, open this page on the laptop that ran it and publish, so every scorer can choose goal scorers from the team. Publishing again replaces the squads.
-        </p>
-        <button type="button" className="btn-primary w-full" disabled={busy || total === 0} onClick={() => void publish()}>
-          {busy ? "Publishing…" : total === 0 ? "No auction results in this browser" : `Publish squads (${total} players)`}
-        </button>
-        {message && <p role="status" className={cn("font-semibold", message.ok ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400")}>{message.text}</p>}
-      </div>
-    </section>
-  );
-}
-
 /* ----------------------------------------------------------------- console */
 
 export function ScoreConsole() {
-  const { matches, squads, status, loaded, error, configured } = useLive();
-  const { state: scorer, signIn, signOut, retry } = useScorer();
+  const { matches, squads, status, loaded, error } = useLive();
+  const { login, signOut } = useAdmin();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   useLiveSounds(matches, loaded);
-
-  if (!configured) {
-    return (
-      <div className="card max-w-2xl space-y-3 p-5 text-sm sm:p-6">
-        <h2 className="font-display text-2xl font-bold uppercase">Live scoring is not set up yet</h2>
-        <p className="text-muted">It needs a free Supabase project (no sign-ups for anyone). Steps (also in the README, “Live scores”):</p>
-        <ol className="list-decimal space-y-1 pl-5 text-muted">
-          <li>In Supabase, open <b>SQL Editor</b>, paste the file <code>supabase/live-scores.sql</code> and run it. It creates the scorer login.</li>
-          <li>Set <code>NEXT_PUBLIC_SUPABASE_URL</code> and <code>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code> (Netlify → Site configuration → Environment variables, or <code>.env.local</code>) and redeploy.</li>
-          <li>Come back to this page and sign in with the scorer ID and password.</li>
-        </ol>
-      </div>
-    );
-  }
-
-  if (scorer.phase === "loading") return <p className="text-muted">Checking the sign-in…</p>;
-  if (scorer.phase === "signed-out") return <SignInForm onSignIn={signIn} notice={scorer.notice} />;
-
-  if (scorer.phase === "error") {
-    return (
-      <div className="card mx-auto max-w-xl space-y-3 p-5 text-sm sm:p-6">
-        <h2 className="font-display text-2xl font-bold uppercase">Can&apos;t reach the scores</h2>
-        <p className="text-muted">Check the internet connection and try again. ({scorer.message})</p>
-        <div className="flex gap-2">
-          <button type="button" className="btn-primary" onClick={retry}>Try again</button>
-          <button type="button" className="btn-outline" onClick={signOut}>Sign out</button>
-        </div>
-      </div>
-    );
-  }
 
   const selected = matches.find((m) => m.id === selectedId) ?? null;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-        <p className="text-muted">Signed in as <span className="font-semibold text-foreground">{scorer.login.user}</span></p>
+        <p className="text-muted">Signed in as <span className="font-semibold text-foreground">{login.user}</span></p>
         <div className="flex flex-wrap gap-2">
           <SoundToggle />
           <ConfirmButton label="Sign out" confirmLabel="Sign out on this device?" className="!min-h-[40px]" onConfirm={signOut} />
@@ -720,7 +563,7 @@ export function ScoreConsole() {
       </div>
 
       {selected ? (
-        <MatchPanel match={selected} squads={squads} login={scorer.login} onBack={() => setSelectedId(null)} />
+        <MatchPanel match={selected} squads={squads} login={login} onBack={() => setSelectedId(null)} />
       ) : (
         <div className="space-y-6">
           {LIVE_SPORTS.map((sport) => {
@@ -746,7 +589,6 @@ export function ScoreConsole() {
               </section>
             );
           })}
-          <SquadsCard squads={squads} login={scorer.login} />
           <ConnectionNote status={status} error={error} loaded={loaded} />
         </div>
       )}

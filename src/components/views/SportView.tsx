@@ -27,15 +27,14 @@ export function SportView({ slug }: { slug: string }) {
         <div className="relative">
           <h1 className="font-display text-5xl font-extrabold uppercase leading-none sm:text-7xl">{sport.name}</h1>
           {config.tagline && <p className="mt-1 pr-20 text-sm font-medium text-white/90 sm:pr-0 sm:text-base">{config.tagline}</p>}
-          <dl className="mt-5 grid max-w-xl grid-cols-4 gap-2">
+          <dl className="mt-5 grid max-w-sm grid-cols-3 gap-2">
             {[
               ["Players", players.length],
-              ["Available", count("available")],
               ["Sold", count("sold")],
               ["Unsold", count("unsold")],
             ].map(([label, value]) => (
               <div key={label} className="min-w-0 rounded-xl bg-black/25 px-2 py-2 sm:px-3">
-                <dt className="truncate text-[9px] font-semibold uppercase text-white/85 sm:text-[11px] sm:tracking-wide">{label}</dt>
+                <dt className="truncate text-[10px] font-semibold uppercase tracking-wide text-white/85 sm:text-[11px]">{label}</dt>
                 <dd className="font-display text-2xl font-bold leading-tight sm:text-3xl">{value}</dd>
               </div>
             ))}

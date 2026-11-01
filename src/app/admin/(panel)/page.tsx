@@ -7,7 +7,7 @@ import { useAuctionData } from "@/lib/use-auction";
 export default function AdminDashboard() {
   const { sports, players, teams } = useAuctionData();
   const count = (status: string) => players.filter((p) => p.status === status).length;
-  const stats = { players: players.length, teams: teams.length, sold: count("sold"), available: count("available"), unsold: count("unsold") };
+  const stats = { players: players.length, teams: teams.length, sold: count("sold"), unsold: count("unsold") };
 
   return (
     <div className="space-y-8">
@@ -17,7 +17,7 @@ export default function AdminDashboard() {
         <StatCard label="Players" value={stats.players} />
         <StatCard label="Teams" value={stats.teams} />
         <StatCard label="Sold players" value={stats.sold} />
-        <StatCard label="Still available" value={stats.available} hint={`${stats.unsold} unsold`} />
+        <StatCard label="Unsold" value={stats.unsold} />
       </div>
 
       <section>

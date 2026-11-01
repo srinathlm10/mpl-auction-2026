@@ -19,7 +19,13 @@ export const LIVE_SPORTS: LiveSport[] = ["football", "volleyball"];
 /** Change these to change the rules (the length of a football half can also be set per match in fixtures.json). */
 export const RULES = {
   football: { halfMinutes: 20, pointsForWin: 3, pointsForDraw: 1, finalists: 2 },
-  volleyball: { bestOf: 3, setPoints: 25, decidingSetPoints: 15, winBy: 2 },
+  volleyball: {
+    league: { bestOf: 1, setPoints: 25, decidingSetPoints: 25, winBy: 2 },
+    final: { bestOf: 3, setPoints: 25, decidingSetPoints: 15, winBy: 2 },
+    pointsForWin: 3,
+    pointsForDraw: 0,
+    finalists: 2,
+  },
 };
 
 export interface VolleyballRules {
@@ -29,9 +35,12 @@ export interface VolleyballRules {
   winBy: number;
 }
 
+/** League matches are one set, the final is best of three. */
+export const setRules = (m: { stage?: "final" }): VolleyballRules => (m.stage === "final" ? RULES.volleyball.final : RULES.volleyball.league);
+
 /**
  * A match as planned (src/data/fixtures.json). Team ids are the ids in teams.json.
- * The football final uses -1 and -2 (1st and 2nd in the league) until the league is over.
+ * The finals use -1 and -2 (1st and 2nd in the league) until the league is over.
  * Put real team ids there to choose the finalists by hand.
  */
 export interface Fixture {
@@ -79,7 +88,7 @@ export interface LiveRow extends LiveState {
 
 export const emptyState = (): LiveState => ({ status: "upcoming", period: null, period_started_at: null, events: [], points: "" });
 
-/** Players of each team, by team id (published from the auction results). */
+/** Players of each team, by team id (from the auction results). */
 export type Squads = Record<number, string[]>;
 
 /* ------------------------------------------------------------------ volleyball */
@@ -102,7 +111,7 @@ export interface VolleyballScore {
 }
 
 /** Works out sets from the rally log. A set is won at the target points with a lead of `winBy`; the last possible set is shorter. */
-export function volleyballScore(points: string, rules: VolleyballRules = RULES.volleyball): VolleyballScore {
+export function volleyballScore(points: string, rules: VolleyballRules): VolleyballScore {
   const need = Math.floor(rules.bestOf / 2) + 1;
   const sets: SetScore[] = [];
   const won = { a: 0, b: 0 };
@@ -325,14 +334,14 @@ export function undoStep(state: LiveState, history: UndoEntry[]): UndoStep | nul
 }
 
 /** Volleyball: a rally won by `side`. Ignored once the match is over. */
-export function addPoint(state: LiveState, side: Side, rules: VolleyballRules = RULES.volleyball): LiveState {
+export function addPoint(state: LiveState, side: Side, rules: VolleyballRules): LiveState {
   if (volleyballScore(state.points, rules).finished) return state;
   const points = state.points + side;
   return { ...state, points, status: volleyballScore(points, rules).finished ? "finished" : "live" };
 }
 
 /** Takes back the last goal/card (football) or the last point (volleyball). */
-export function undo(sport: LiveSport, state: LiveState, rules: VolleyballRules = RULES.volleyball): LiveState {
+export function undo(sport: LiveSport, state: LiveState, rules: VolleyballRules): LiveState {
   if (sport === "football") return { ...state, events: state.events.slice(0, -1) };
   const points = state.points.slice(0, -1);
   const finished = volleyballScore(points, rules).finished;
@@ -342,7 +351,7 @@ export function undo(sport: LiveSport, state: LiveState, rules: VolleyballRules 
 /* --------------------------------------------------------------- a match to show */
 
 export interface Match extends Fixture, LiveState {
-  /** Goals (football) or sets won (volleyball). */
+  /** Goals (football), points in the set (one-set volleyball) or sets won (volleyball final). */
   score: { a: number; b: number };
   /** Volleyball only. */
   volleyball: VolleyballScore | null;
@@ -354,14 +363,16 @@ export function buildMatch(fixture: Fixture, row?: LiveRow | null): Match {
   const state: LiveState = row
     ? { status: row.status, period: row.period, period_started_at: row.period_started_at, events: row.events, points: row.points }
     : emptyState();
-  const volleyball = fixture.sport === "volleyball" ? volleyballScore(state.points) : null;
+  const rules = setRules(fixture);
+  const volleyball = fixture.sport === "volleyball" ? volleyballScore(state.points, rules) : null;
   // A volleyball match is over as soon as a team has won enough sets, whatever the stored status says.
   const status: MatchStatus = volleyball?.finished && state.status !== "upcoming" ? "finished" : state.status;
+  const score = !volleyball ? footballScore(state.events) : rules.bestOf === 1 ? { a: volleyball.sets[0]?.a ?? 0, b: volleyball.sets[0]?.b ?? 0 } : { ...volleyball.won };
   return {
     ...fixture,
     ...state,
     status,
-    score: volleyball ? { ...volleyball.won } : footballScore(state.events),
+    score,
     volleyball,
     updated_at: row?.updated_at ?? null,
   };
@@ -369,9 +380,11 @@ export function buildMatch(fixture: Fixture, row?: LiveRow | null): Match {
 
 export function buildMatches(fixtures: Fixture[], rows: Record<string, LiveRow>): Match[] {
   const matches = fixtures.map((f) => buildMatch(f, rows[f.id]));
-  const top = finalists(matches);
-  if (!top) return matches;
-  return matches.map((m) => (m.stage === "final" && !teamsKnown(m) ? { ...m, team_a: top[0], team_b: top[1] } : m));
+  return matches.map((m) => {
+    if (m.stage !== "final" || teamsKnown(m)) return m;
+    const top = finalists(matches, m.sport);
+    return top ? { ...m, team_a: top[0], team_b: top[1] } : m;
+  });
 }
 
 export const isLive = (m: Pick<Match, "status">) => m.status === "live" || m.status === "break";
@@ -379,7 +392,7 @@ export const isLive = (m: Pick<Match, "status">) => m.status === "live" || m.sta
 /** False for the final until the league has decided who plays in it. */
 export const teamsKnown = (m: Pick<Fixture, "team_a" | "team_b">) => m.team_a > 0 && m.team_b > 0;
 
-/* ------------------------------------------------------------------ football league */
+/* ------------------------------------------------------------------- leagues */
 
 export interface Standing {
   team: number;
@@ -387,22 +400,23 @@ export interface Standing {
   won: number;
   drawn: number;
   lost: number;
-  goalsFor: number;
-  goalsAgainst: number;
-  goalDifference: number;
+  /** Goals (football) or points in the set (volleyball). */
+  scored: number;
+  conceded: number;
+  difference: number;
   points: number;
 }
 
-const leagueMatches = (matches: Match[]) => matches.filter((m) => m.sport === "football" && m.stage !== "final");
+const leagueMatches = (matches: Match[], sport: LiveSport) => matches.filter((m) => m.sport === sport && m.stage !== "final");
 
-/** The football league table: only finished matches count, and the final is not part of it. */
-export function leagueTable(matches: Match[]): Standing[] {
-  const { pointsForWin, pointsForDraw } = RULES.football;
-  const league = leagueMatches(matches);
+/** A sport's league table: only finished matches count, and the final is not part of it. */
+export function leagueTable(matches: Match[], sport: LiveSport): Standing[] {
+  const { pointsForWin, pointsForDraw } = RULES[sport];
+  const league = leagueMatches(matches, sport);
   const table = new Map<number, Standing>();
   for (const m of league) {
     for (const team of [m.team_a, m.team_b]) {
-      if (!table.has(team)) table.set(team, { team, played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0 });
+      if (!table.has(team)) table.set(team, { team, played: 0, won: 0, drawn: 0, lost: 0, scored: 0, conceded: 0, difference: 0, points: 0 });
     }
   }
 
@@ -411,9 +425,9 @@ export function leagueTable(matches: Match[]): Standing[] {
     const row = table.get(team);
     if (!row) return;
     row.played += 1;
-    row.goalsFor += scored;
-    row.goalsAgainst += conceded;
-    row.goalDifference += scored - conceded;
+    row.scored += scored;
+    row.conceded += conceded;
+    row.difference += scored - conceded;
     if (scored > conceded) {
       row.won += 1;
       row.points += pointsForWin;
@@ -439,18 +453,18 @@ export function leagueTable(matches: Match[]): Standing[] {
   return [...table.values()].sort(
     (x, y) =>
       y.points - x.points ||
-      y.goalDifference - x.goalDifference ||
-      y.goalsFor - x.goalsFor ||
+      y.difference - x.difference ||
+      y.scored - x.scored ||
       headToHead(y.team, x.team) ||
       x.team - y.team,
   );
 }
 
-/** The two teams in the final, once every league match has finished. */
-function finalists(matches: Match[]): [number, number] | null {
-  const league = leagueMatches(matches);
+/** The two teams in a sport's final, once every league match has finished. */
+function finalists(matches: Match[], sport: LiveSport): [number, number] | null {
+  const league = leagueMatches(matches, sport);
   if (league.length === 0 || league.some((m) => m.status !== "finished")) return null;
-  const [first, second] = leagueTable(matches);
+  const [first, second] = leagueTable(matches, sport);
   return first && second ? [first.team, second.team] : null;
 }
 
@@ -467,7 +481,7 @@ export function statusLabel(m: Match, now: Date): string {
     if (m.status === "finished") return "Full time";
     return matchClock(m, now)?.text ?? "1st half";
   }
-  if (m.status === "finished") return "Final";
+  if (m.status === "finished") return "Finished";
   return `Set ${m.volleyball?.sets.length ?? 1}`;
 }
 
@@ -571,26 +585,3 @@ export function normalizeRow(raw: unknown): LiveRow | null {
   };
 }
 
-/** Squads as stored: { "9": ["Name", ...], "10": [...] } (team id -> player names). Anything else is ignored. */
-export function normalizeSquads(raw: unknown): Squads {
-  let value = raw;
-  if (typeof value === "string") {
-    try {
-      value = JSON.parse(value);
-    } catch {
-      return {};
-    }
-  }
-  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
-  const squads: Squads = {};
-  for (const [key, list] of Object.entries(value as Record<string, unknown>)) {
-    const id = Number(key);
-    if (!Number.isInteger(id) || !Array.isArray(list)) continue;
-    squads[id] = list
-      .filter((n): n is string => typeof n === "string")
-      .map((n) => n.trim().slice(0, 60))
-      .filter(Boolean)
-      .slice(0, 60);
-  }
-  return squads;
-}

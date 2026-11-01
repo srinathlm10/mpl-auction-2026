@@ -5,6 +5,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { StatCard } from "@/components/ui/StatCard";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { squadOf } from "@/lib/auction";
 import { formatCompact, formatPrice } from "@/lib/format";
 import { accentStyle, getSportConfig } from "@/lib/sports";
 import { useAuctionData } from "@/lib/use-auction";
@@ -16,8 +18,7 @@ export function TeamView({ teamId }: { teamId: number }) {
 
   const sport = sports.find((s) => s.id === team.sport_id);
   const config = getSportConfig(sport?.slug ?? "", sport?.name);
-  const squad = players.filter((p) => p.team_id === team.id && p.status === "sold");
-  const squadSize = sport?.squad_size ?? 0;
+  const squad = squadOf(players, team.id);
   const spent = squad.reduce((sum, p) => sum + (p.sold_price ?? 0), 0);
 
   return (
@@ -46,25 +47,31 @@ export function TeamView({ teamId }: { teamId: number }) {
         <StatCard icon="wallet" label="Total purse" value={formatCompact(team.total_purse)} />
         <StatCard icon="tag" label="Spent" value={formatCompact(spent)} />
         <StatCard icon="wallet" label="Remaining" value={formatCompact(team.remaining_purse)} highlight />
-        <StatCard icon="users" label="Squad" value={`${squad.length}${squadSize ? `/${squadSize}` : ""}`} />
+        <StatCard icon="users" label="Squad" value={squad.length} />
       </div>
 
       <h2 className="section-title mb-4">Squad</h2>
       {squad.length === 0 ? (
-        <EmptyState icon="users" title="No players bought yet." text="Players this team buys in the auction will be listed here." />
+        <EmptyState icon="users" title="No players yet." text="This team's squad will be listed here." />
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {squad.map((p) => (
             <li key={p.id}>
-              <Link href={`/players/${p.id}`} className="card-link flex items-center gap-3 p-3">
+              <Link href={`/players/${p.id}`} className="card-link flex h-full items-center gap-3 p-3">
                 <div className="relative h-16 w-14 shrink-0 overflow-hidden rounded-xl bg-border">
                   <PlayerAvatar name={p.name} src={p.photo_url} sizes="56px" className="text-lg" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-display text-xl font-bold uppercase leading-tight">{p.name}</p>
-                  <p className="truncate text-xs text-muted">{[p.role_or_position, p.batch].filter(Boolean).join(" · ")}</p>
+                  <p className="font-display text-xl font-bold uppercase leading-tight">{p.name}</p>
+                  {p.status === "sold" ? (
+                    <p className="truncate text-xs text-muted">{[p.role_or_position, p.batch].filter(Boolean).join(" · ")}</p>
+                  ) : (
+                    <StatusBadge status={p.status} className="mt-1" />
+                  )}
                 </div>
-                <p className="shrink-0 font-display text-2xl font-bold" title={formatPrice(p.sold_price)}>{formatCompact(p.sold_price)}</p>
+                {p.status === "sold" && (
+                  <p className="shrink-0 font-display text-2xl font-bold" title={formatPrice(p.sold_price)}>{formatCompact(p.sold_price)}</p>
+                )}
               </Link>
             </li>
           ))}

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { cn } from "@/lib/format";
-import { formatMinute, isLive, leader, statusLabel, type Match, type Side } from "@/lib/live";
+import { formatMinute, isLive, leader, setRules, statusLabel, type Match, type Side } from "@/lib/live";
 import { formatKickoff, sportInfo, teamOf } from "@/lib/live-data";
 import { serverNow, type ConnectionStatus } from "@/lib/live-store";
 import { liveSounds, setLiveSoundOn, unlockAudio } from "@/lib/sound";
@@ -84,8 +84,9 @@ export function StatusPill({ match, className, onColor = false, now }: { match: 
   return <span className={cn(base, tone, className)}>{label}</span>;
 }
 
-/** "25–20 · 18–25 · 9–7" for volleyball, the goals so far for football. */
-function summaryLine(match: Match): string {
+/** "25–20 · 18–25 · 9–7" for the volleyball final, the goals so far for football. One set needs no line: the score says it all. */
+function summaryLine(match: Match): string | null {
+  if (match.volleyball && setRules(match).bestOf === 1) return null;
   if (match.volleyball) {
     return (
       match.volleyball.sets
@@ -124,6 +125,7 @@ export function MatchCard({ match }: { match: Match }) {
   const { name, emoji, config } = sportInfo(match.sport);
   const now = useNow(5000);
   const upcoming = match.status === "upcoming";
+  const summary = upcoming ? null : summaryLine(match);
   return (
     <Link
       href={`/live/${match.id}`}
@@ -144,7 +146,7 @@ export function MatchCard({ match }: { match: Match }) {
         <TeamRow match={match} side="a" />
         <TeamRow match={match} side="b" />
       </div>
-      {!upcoming && <p className="mt-3 truncate border-t border-border pt-2.5 text-xs font-medium text-muted">{summaryLine(match)}</p>}
+      {summary && <p className="mt-3 truncate border-t border-border pt-2.5 text-xs font-medium text-muted">{summary}</p>}
     </Link>
   );
 }

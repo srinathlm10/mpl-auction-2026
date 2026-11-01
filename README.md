@@ -2,7 +2,7 @@
 
 Mobile-first website for the MPL player auction (Cricket, Volleyball, Football), with a **live auction**: spin wheel, bidding, SOLD alerts, and a projector screen that mirrors the auctioneer.
 
-**Next.js 15 + Tailwind CSS, fully static.** No logins and no environment variables needed. Player and team details are written in code (`src/data/*.json`), photos and logos sit in `public/`. The auction itself runs in the browser. The only optional extra is **live scores** for football and volleyball, which use a free Supabase project (see "Live scores" below).
+**Next.js 15 + Tailwind CSS, fully static.** Anyone can read the whole site without logging in. One admin login, checked by a small Supabase database, updates the scores and opens the admin pages. Player and team details are written in code (`src/data/*.json`).
 
 ## Run locally
 
@@ -44,11 +44,16 @@ One player looks like this (only `id`, `name` and `sport_id` are required):
 
 Then commit and push; the site rebuilds with the new players.
 
+## The auction is complete
+
+The finished auction is in `src/data/auction-results.json`: every sale, captain and foreign player, by player id. Anyone on the list without an entry shows as Unsold. Captains' names are in `src/data/teams.json`. Every visitor sees exactly this, whatever is saved in their browser. Edit those files and push to change a result.
+
+Visitors who open `/auction` are told the auction is over and sent to the Teams page. The auction screens below open only for the signed-in admin.
+
 ## How the auction is saved
 
-- Results, bids and settings are saved in the **browser that runs `/auction`** (localStorage). A refresh, or closing and reopening the browser, keeps everything.
+- Results, bids and settings are saved in the **browser that runs `/auction`** (localStorage), signed in as the admin. A refresh, or closing and reopening the browser, keeps everything. Nothing saved there reaches other people.
 - **Projector:** open `/auction/screen` in **another window of the same browser on the same laptop** and drag it to the projector. It follows the control screen live. (A different laptop or phone does not see the auction.)
-- The public pages (Teams, Results, player pages) also show the results, in that same browser.
 - **Back up** during breaks: Admin → Settings → **Download backup**. **Restore from backup** loads it on any laptop. **Reset whole auction** starts over.
 - Don't run the auction in a private / incognito window: it forgets everything when closed.
 
@@ -87,7 +92,7 @@ Sounds are made in the browser (Web Audio), so there are no audio files – they
 Change in **Settings** (`/admin/auction/settings`), saved in the auction browser:
 
 - **Base price** (default ₹1 lakh): the opening bid for every player.
-- **Squad size per sport**: 12 Cricket, 8 Volleyball, 7 Football.
+- **Squad size per sport**: 12 Cricket, 8 Volleyball, 7 Football, used only while an auction is running.
 - **Bid increment slabs**: only used when a bid is placed without an amount; on the auction screen every bid is set with − / + or typed in.
 
 Change in code (`src/data/teams.json`): team names, captains, logos and purse.
@@ -98,11 +103,11 @@ Change in code (`src/data/teams.json`): team names, captains, logos and purse.
 
 | URL | Who | What |
 |-----|-----|------|
-| `/auction` | Auctioneer (no login) | Pick a sport, wheel in the middle and the 4 teams in the corners; Spin, Start Bidding, bid amount −/+, Bid buttons on each team, Undo / Sold / Unsold, bring back unsold |
-| `/auction/screen` | Projector (same browser) | View-only copy: same live state, SOLD alerts, sound, full screen |
-| `/admin/auction/settings` | Auctioneer | Base price, squad sizes, backup / restore / reset |
-| `/auction/summary` | Anyone | Sold and unsold lists, totals, CSV download |
-| `/teams/<id>` | Anyone | One team's squad, spent and remaining purse |
+| `/auction` | Admin (everyone else sees "The auction is complete") | Pick a sport, wheel in the middle and the 4 teams in the corners; Spin, Start Bidding, bid amount −/+, Bid buttons on each team, Undo / Sold / Unsold, bring back unsold |
+| `/auction/screen` | Admin's projector (same browser) | View-only copy: same live state, SOLD alerts, sound, full screen |
+| `/admin/auction/settings` | Admin | Base price, squad sizes, backup / restore / reset |
+| `/auction/summary` | Anyone | Sold players, captains and foreign players, unsold players, totals, CSV download |
+| `/teams/<id>` | Anyone | One team's captain, squad, spent and remaining purse |
 
 ## Live scores (football and volleyball)
 
@@ -124,15 +129,17 @@ Live scores need a free [Supabase](https://supabase.com) project, because every 
 
 ### Scoring a match
 
-1. Tap **Login** at the top of any page (it opens `/admin/score`) and sign in with the scorer ID and password. The phone remembers the login until **Sign out** is pressed, and the button then says **Scoring**. There is no sign-up and no other account. Anyone can open `/admin/score` but cannot change a score: **the database checks the ID and password on every change and refuses anything else**.
+1. Tap **Login** at the top of any page (it opens `/admin/score`) and sign in with the admin ID and password. The phone remembers the login until **Sign out** is pressed, and the button then says **Admin**. There is no sign-up and no other account. Anyone can open `/admin/score` but cannot change a score: **the database checks the ID and password on every change and refuses anything else**.
 2. Pick a match and tap **Kick off**: the clock starts for everyone. Tap **Goal** for a team the moment it happens (the minute is taken from the clock), then **pick the scorer from that team's players**. Yellow / red cards work the same way; **OG** is an own goal (it counts for the team you tap it under). ✎ edits a player or minute, ✕ deletes. **+1 min / −1 min** fixes a clock that was started late or early. Then **Half time**, **Start 2nd half**, **Full time**. **Undo** takes back the last thing you did, one step at a time, and says what it will undo: a goal or card, a clock change, or a tap on Kick off, Half time, Start 2nd half or Full time. Undoing a clock change never touches goals or cards.
 3. Volleyball: tap **+1** for the team that won the rally. Sets and the match end by themselves; **Undo last point** fixes a mistake.
-4. **Squads**: after the auction, open `/admin/score` (signed in) on the laptop that ran it and tap **Publish squads**. Scorers then choose goal scorers from each team's squad. Before that they choose from all the players of the sport. The clock uses the database's time, so a phone with a wrong clock still shows the right minute.
+4. **Squads**: scorers choose goal scorers from each team's squad, which comes from the finished auction.
 5. To lock someone out (for example after sharing the password too widely), change the password with the statement at the end of `supabase/live-scores.sql`: every phone that had the old one is signed out the next time it opens the page.
 
 The matches (which teams play, in what order, optional start time) are in `src/data/fixtures.json`: by default every team plays every other team once in each sport. Add `"starts_at": "2026-11-14T16:00:00+05:30"` to show a start time.
 
 Football has a league and a final. Every team plays the other three, the table on Live Scores updates when each match ends (3 points for a win, 1 for a draw, then goal difference, goals scored and head-to-head), and the top 2 go straight to the final (`football-7`). The final's teams fill in by themselves once all six league matches are finished, and the scorer can open it from then on. To choose the finalists by hand, put real team ids in place of `-1` and `-2` in `fixtures.json`. The points are in `RULES.football` in `src/lib/live.ts`.
+
+Volleyball works the same way: every team plays the other three, and each league match is a single set to 25 (win by 2). A win earns 3 points, then point difference, points scored and head-to-head decide ties. The top 2 play the final (`volleyball-7`), best of 3 sets with a deciding set to 15. The rules are in `RULES.volleyball` in `src/lib/live.ts`.
 
 Free-plan note: Supabase's free plan allows about 200 phones holding a live connection at the same time. Beyond that, extra phones automatically check for new scores every few seconds instead.
 
@@ -141,7 +148,7 @@ Free-plan note: Supabase's free plan allows about 200 phones holding a live conn
 The site is deployed on Netlify from the `main` branch of the GitHub repo.
 
 1. Push to GitHub. Every push to `main` redeploys by itself (and each pull request gets a preview). To set it up from scratch: Netlify → **Add new site → Import an existing project** → pick the repo; Netlify detects Next.js, so the defaults are fine.
-2. No environment variables are needed (the optional ones in `.env.example` set the auction date, contact details and the live-scores database). They are read when the site is built, so after adding or changing one, trigger a new deploy.
+2. The live scores and the admin login need the Supabase variables in `.env.example`; the contact details there are optional. They are read when the site is built, so after adding or changing one, redeploy.
 
 ## Structure
 
@@ -150,15 +157,15 @@ public/
   players/     player photos
   teams/       team logos
 src/
-  data/        players.json, teams.json, sports.json, fixtures.json  (all the details, edit these)
+  data/        players.json, teams.json, sports.json, fixtures.json, auction-results.json  (all the details, edit these)
   app/
     (site)/      public pages + auction/summary + teams/[id]
-    (display)/   /auction (control) and /auction/screen (projector)
+    (display)/   /auction (control) and /auction/screen (projector), admin only
     admin/       (panel) dashboard + settings
   components/
     auction/     AuctionStage, SpinWheel, BiddingPanel, BidAmountControl, PlayerSpotlight, TeamCorner, SoldOverlay, ...
-    views/       client views of the public pages (they add the auction results)
-    admin/       AdminNav, SettingsForm, ScoreConsole (the scorer's page)
+    views/       the public pages, and AuctionComplete (what visitors see at /auction)
+    admin/       AdminGate (the admin login), AdminNav, SettingsForm, ScoreConsole (the scorer's page)
     live/        match cards, goal banner, sound button
   lib/
     data.ts           reads src/data/*.json

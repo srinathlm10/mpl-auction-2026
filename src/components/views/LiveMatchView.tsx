@@ -6,7 +6,7 @@ import { GoalBanner, useGoalAlert } from "@/components/live/GoalAlerts";
 import { ClockText, ConnectionNote, Digit, SoundToggle, StatusPill, TeamLogo } from "@/components/live/parts";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/format";
-import { formatMinute, leader, matchClock, RULES, scorerLines, teamsKnown, type EventKind, type Match, type MatchEvent, type ScorerLine, type SetScore, type Side } from "@/lib/live";
+import { formatMinute, leader, matchClock, RULES, scorerLines, setRules, teamsKnown, type EventKind, type Match, type MatchEvent, type ScorerLine, type SetScore, type Side } from "@/lib/live";
 import { formatKickoff, sportInfo, teamOf } from "@/lib/live-data";
 import { accentStyle } from "@/lib/sports";
 import { useLive } from "@/lib/use-live";
@@ -92,9 +92,12 @@ function Squads({ match, names }: { match: Match; names: Record<Side, string[]> 
             {names[side].length === 0 ? (
               <p className="text-sm text-muted">Squad not published yet.</p>
             ) : (
-              <ul className="columns-2 gap-4 text-sm [&>li]:truncate [&>li]:py-0.5">
+              <ul className="columns-2 gap-4 text-sm [&>li]:break-inside-avoid [&>li]:py-0.5">
                 {names[side].map((n) => (
-                  <li key={n}>{n}</li>
+                  <li key={n}>
+                    {n}
+                    {n === teamOf(side === "a" ? match.team_a : match.team_b).captain && <span className="font-semibold text-muted"> (C)</span>}
+                  </li>
                 ))}
               </ul>
             )}
@@ -112,7 +115,7 @@ function SetsTable({ match }: { match: Match }) {
   }
   const cell = (side: Side, set: SetScore) =>
     cn("p-3 text-center font-display text-2xl font-bold tabular-nums", set.winner === side ? "text-foreground" : "text-muted");
-  const rules = RULES.volleyball;
+  const rules = setRules(match);
   return (
     <div>
       <div className="card overflow-hidden">
@@ -129,7 +132,7 @@ function SetsTable({ match }: { match: Match }) {
               <tr key={i} className={cn(!set.done && "bg-accent/10")}>
                 <td className="p-3 font-semibold">
                   Set {i + 1}
-                  {!set.done && <span className="ml-2 rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">In play</span>}
+                  {!set.done && <span className="ml-2 whitespace-nowrap rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">In play</span>}
                 </td>
                 <td className={cell("a", set)}><Digit value={set.a} /></td>
                 <td className={cell("b", set)}><Digit value={set.b} /></td>
@@ -161,6 +164,7 @@ export function LiveMatchView({ id }: { id: string }) {
   const v = match.volleyball;
   const winner = leader(match);
   const kickoff = formatKickoff(match.starts_at);
+  const oneSet = match.sport === "volleyball" && setRules(match).bestOf === 1;
 
   /* The line under the score: the clock (football), the set in play (volleyball), or who won. */
   let under: React.ReactNode = null;
@@ -176,8 +180,8 @@ export function LiveMatchView({ id }: { id: string }) {
       );
     }
   } else if (v) {
-    if (v.finished && v.winner) under = `${teamOf(v.winner === "a" ? match.team_a : match.team_b).name} win ${v.won.a}–${v.won.b}`;
-    else if (v.current) under = <>Set {v.sets.length} · <Digit value={v.current.a} /> – <Digit value={v.current.b} /></>;
+    if (v.finished && v.winner) under = `${teamOf(v.winner === "a" ? match.team_a : match.team_b).name} win${oneSet ? "" : ` ${v.won.a}–${v.won.b}`}`;
+    else if (v.current && !oneSet) under = <>Set {v.sets.length} · <Digit value={v.current.a} /> – <Digit value={v.current.b} /></>;
   }
 
   const squadNames: Record<Side, string[]> = {
@@ -238,12 +242,16 @@ export function LiveMatchView({ id }: { id: string }) {
         </div>
       </section>
 
-      <section aria-labelledby="detail-heading">
-        <h2 id="detail-heading" className="section-title mb-3">
-          {match.sport === "football" ? "Timeline" : "Sets"}
-        </h2>
-        {match.sport === "football" ? <Timeline match={match} /> : <SetsTable match={match} />}
-      </section>
+      {oneSet ? (
+        <p className="text-sm text-muted">One set · first to {RULES.volleyball.league.setPoints} points, win by {RULES.volleyball.league.winBy}.</p>
+      ) : (
+        <section aria-labelledby="detail-heading">
+          <h2 id="detail-heading" className="section-title mb-3">
+            {match.sport === "football" ? "Timeline" : "Sets"}
+          </h2>
+          {match.sport === "football" ? <Timeline match={match} /> : <SetsTable match={match} />}
+        </section>
+      )}
 
       <Squads match={match} names={squadNames} />
 

@@ -10,9 +10,8 @@ export function Footer() {
     {
       title: "Auction",
       links: [
-        { href: "/auction", label: "Live auction" },
-        { href: "/auction/summary", label: "Results" },
         { href: "/teams", label: "Teams" },
+        { href: "/auction/summary", label: "Results" },
       ],
     },
     { title: "League", links: [{ href: "/about", label: "Rules" }, { href: "/about#contact", label: "Contact" }] },

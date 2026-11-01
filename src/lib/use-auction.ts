@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useSyncExternalStore } from "react";
-import { applyResults, getServerStore, getStore, snapshotOf, subscribe } from "./local-auction";
+import { getServerStore, getStore, publishedAuction, snapshotOf, subscribe } from "./local-auction";
 import { isMuted, subscribeMuted } from "./sound";
 
 export function useMuted() {
@@ -22,8 +22,5 @@ export function useAuctionSnapshot() {
   return useMemo(() => (store === getServerStore() ? null : snapshotOf(store)), [store]);
 }
 
-/** Sports, players and teams with the auction results so far, for the public pages. */
-export function useAuctionData() {
-  const store = useStore();
-  return useMemo(() => ({ ...applyResults(store), settings: store.settings }), [store]);
-}
+/** Sports, players and teams after the auction, the same for every visitor. */
+export const useAuctionData = () => publishedAuction;

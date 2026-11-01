@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { about, auctionRules, contactNote, footballRules, leagueRules } from "@/lib/content";
-import { cn } from "@/lib/format";
+import { about, auctionRules, contactNote, footballRules, leagueRules, volleyballRules } from "@/lib/content";
 import { siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = { title: "About & Rules" };
@@ -21,7 +20,8 @@ export default function AboutPage() {
       <div className="mt-12 grid gap-6 lg:grid-cols-2">
         <RuleList id="league-rules" title="League rules" icon="shield" rules={leagueRules} />
         <RuleList id="auction-rules" title="Auction rules" icon="gavel" rules={auctionRules} />
-        <RuleList id="football-rules" title="Football format" icon="trophy" rules={footballRules} className="lg:col-span-2" />
+        <RuleList id="football-rules" title="Football format" icon="trophy" rules={footballRules} />
+        <RuleList id="volleyball-rules" title="Volleyball format" icon="trophy" rules={volleyballRules} />
       </div>
 
       <section id="contact" className="mt-12 scroll-mt-24" aria-labelledby="contact-heading">
@@ -54,9 +54,9 @@ export default function AboutPage() {
   );
 }
 
-function RuleList({ id, title, icon, rules, className }: { id: string; title: string; icon: IconName; rules: string[]; className?: string }) {
+function RuleList({ id, title, icon, rules }: { id: string; title: string; icon: IconName; rules: string[] }) {
   return (
-    <section id={id} className={cn("card scroll-mt-24 p-5 sm:p-6", className)} aria-labelledby={`${id}-heading`}>
+    <section id={id} className="card scroll-mt-24 p-5 sm:p-6" aria-labelledby={`${id}-heading`}>
       <h2 id={`${id}-heading`} className="mb-5 flex items-center gap-3 font-display text-3xl font-bold uppercase leading-none">
         <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
           <Icon name={icon} />

@@ -17,12 +17,6 @@ export function formatCompact(amount: number | null | undefined): string {
   return `${sym}${numberFormat.format(amount)}`;
 }
 
-export function formatDate(isoDate: string, style: "long" | "medium" = "long"): string {
-  const date = new Date(`${isoDate}T00:00:00Z`);
-  if (Number.isNaN(date.getTime())) return isoDate;
-  return new Intl.DateTimeFormat("en-IN", { dateStyle: style, timeZone: "UTC" }).format(date);
-}
-
 export function initials(name: string): string {
   return name
     .split(/\s+/)

@@ -1,6 +1,6 @@
 import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
 import { liveConfigured, supabaseKey, supabaseUrl } from "./live-config";
-import { normalizeRow, normalizeSquads, type LiveRow, type LiveSport, type LiveState, type Squads } from "./live";
+import { normalizeRow, type LiveRow, type LiveState } from "./live";
 
 /*
  * One shared connection to the live scores for the whole page.
@@ -23,8 +23,6 @@ export type ConnectionStatus = "off" | "connecting" | "live" | "polling";
 
 export interface LiveSnapshot {
   rows: Record<string, LiveRow>;
-  /** Players of each team (team id -> names), once the squads have been published. */
-  squads: Squads;
   status: ConnectionStatus;
   /** True once the scores have been read at least once. */
   loaded: boolean;
@@ -32,10 +30,9 @@ export interface LiveSnapshot {
   error: string | null;
 }
 
-const EMPTY: LiveSnapshot = { rows: {}, squads: {}, status: "off", loaded: false, error: null };
+const EMPTY: LiveSnapshot = { rows: {}, status: "off", loaded: false, error: null };
 
 const TABLE = "live_matches";
-const SQUADS_TABLE = "live_squads";
 const POLL_WHILE_PUSHED_MS = 60_000; // safety net while Realtime is working
 const POLL_FALLBACK_MS = 8_000; // main way of updating when Realtime is not working
 const CLOCK_RESYNC_MS = 5 * 60_000;
@@ -109,26 +106,19 @@ async function refresh(gen: number) {
   try {
     const client = await getClient();
     void syncClock(client);
-    const [matchesResult, squadsResult] = await Promise.all([client.from(TABLE).select("*"), client.from(SQUADS_TABLE).select("*")]);
+    const { data, error } = await client.from(TABLE).select("*");
     if (gen !== generation) return;
-    if (matchesResult.error) throw new Error(matchesResult.error.message);
+    if (error) throw new Error(error.message);
 
     const rows: Record<string, LiveRow> = {};
-    for (const raw of matchesResult.data ?? []) {
+    for (const raw of data ?? []) {
       const row = normalizeRow(raw);
       if (row) rows[row.id] = row;
     }
     for (const id of saving.keys()) {
       if (snapshot.rows[id]) rows[id] = snapshot.rows[id];
     }
-
-    // Squads are optional: if the table is missing or empty, scorers pick from the whole player list.
-    let squads = snapshot.squads;
-    if (!squadsResult.error) {
-      squads = {};
-      for (const raw of squadsResult.data ?? []) Object.assign(squads, normalizeSquads((raw as { squads?: unknown }).squads));
-    }
-    set({ rows, squads, loaded: true, error: null });
+    set({ rows, loaded: true, error: null });
   } catch (e) {
     if (gen !== generation) return;
     set({ loaded: true, error: e instanceof Error ? e.message : "Could not load the scores." });
@@ -282,19 +272,6 @@ export function saveMatch(id: string, state: LiveState, login: ScorerLogin): Pro
   });
   writeChain = job;
   return job;
-}
-
-/** Makes a sport's squads (team id -> player names) available to every scorer. Returns an error message, or null. */
-export async function publishSquads(sport: LiveSport, squads: Squads, login: ScorerLogin): Promise<string | null> {
-  try {
-    const client = await getClient();
-    const { error } = await client.rpc("live_save_squads", { p_user: login.user, p_password: login.password, p_sport: sport, p_squads: squads });
-    if (error) return error.message;
-    await refresh(generation);
-    return null;
-  } catch (e) {
-    return e instanceof Error ? e.message : "Could not publish the squads.";
-  }
 }
 
 /** Reads the scores again now (used after a failed save to undo the optimistic change). */
