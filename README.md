@@ -132,6 +132,8 @@ Live scores need a free [Supabase](https://supabase.com) project, because every 
 
 The matches (which teams play, in what order, optional start time) are in `src/data/fixtures.json`: by default every team plays every other team once in each sport. Add `"starts_at": "2026-11-14T16:00:00+05:30"` to show a start time.
 
+Football has a league and a final. Every team plays the other three, the table on Live Scores updates when each match ends (3 points for a win, 1 for a draw, then goal difference, goals scored and head-to-head), and the top 2 go straight to the final (`football-7`). The final's teams fill in by themselves once all six league matches are finished, and the scorer can open it from then on. To choose the finalists by hand, put real team ids in place of `-1` and `-2` in `fixtures.json`. The points are in `RULES.football` in `src/lib/live.ts`.
+
 Free-plan note: Supabase's free plan allows about 200 phones holding a live connection at the same time. Beyond that, extra phones automatically check for new scores every few seconds instead.
 
 ## Deploy (Netlify)

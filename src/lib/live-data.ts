@@ -11,9 +11,12 @@ export function getFixture(id: string): Fixture | undefined {
   return fixtures.find((f) => f.id === id);
 }
 
+/** Who plays in the final until the league is over. */
+const LEAGUE_PLACES: Record<number, string> = { [-1]: "1st in league", [-2]: "2nd in league" };
+
 export function teamOf(id: number): Team {
   return (
-    baseTeams.find((t) => t.id === id) ?? { id, name: "TBA", sport_id: 0, logo_url: null, captain: "", total_purse: 0, remaining_purse: 0 }
+    baseTeams.find((t) => t.id === id) ?? { id, name: LEAGUE_PLACES[id] ?? "TBA", sport_id: 0, logo_url: null, captain: "", total_purse: 0, remaining_purse: 0 }
   );
 }
 

@@ -18,7 +18,7 @@ export const LIVE_SPORTS: LiveSport[] = ["football", "volleyball"];
 
 /** Change these to change the rules (the length of a football half can also be set per match in fixtures.json). */
 export const RULES = {
-  football: { halfMinutes: 20 },
+  football: { halfMinutes: 20, pointsForWin: 3, pointsForDraw: 1, finalists: 2 },
   volleyball: { bestOf: 3, setPoints: 25, decidingSetPoints: 15, winBy: 2 },
 };
 
@@ -29,11 +29,16 @@ export interface VolleyballRules {
   winBy: number;
 }
 
-/** A match as planned (src/data/fixtures.json). Team ids are the ids in teams.json. */
+/**
+ * A match as planned (src/data/fixtures.json). Team ids are the ids in teams.json.
+ * The football final uses -1 and -2 (1st and 2nd in the league) until the league is over.
+ * Put real team ids there to choose the finalists by hand.
+ */
 export interface Fixture {
   id: string;
   sport: LiveSport;
   round: string;
+  stage?: "final";
   team_a: number;
   team_b: number;
   /** ISO time with offset, e.g. "2026-11-14T16:00:00+05:30". Optional. */
@@ -363,10 +368,91 @@ export function buildMatch(fixture: Fixture, row?: LiveRow | null): Match {
 }
 
 export function buildMatches(fixtures: Fixture[], rows: Record<string, LiveRow>): Match[] {
-  return fixtures.map((f) => buildMatch(f, rows[f.id]));
+  const matches = fixtures.map((f) => buildMatch(f, rows[f.id]));
+  const top = finalists(matches);
+  if (!top) return matches;
+  return matches.map((m) => (m.stage === "final" && !teamsKnown(m) ? { ...m, team_a: top[0], team_b: top[1] } : m));
 }
 
 export const isLive = (m: Pick<Match, "status">) => m.status === "live" || m.status === "break";
+
+/** False for the final until the league has decided who plays in it. */
+export const teamsKnown = (m: Pick<Fixture, "team_a" | "team_b">) => m.team_a > 0 && m.team_b > 0;
+
+/* ------------------------------------------------------------------ football league */
+
+export interface Standing {
+  team: number;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  points: number;
+}
+
+const leagueMatches = (matches: Match[]) => matches.filter((m) => m.sport === "football" && m.stage !== "final");
+
+/** The football league table: only finished matches count, and the final is not part of it. */
+export function leagueTable(matches: Match[]): Standing[] {
+  const { pointsForWin, pointsForDraw } = RULES.football;
+  const league = leagueMatches(matches);
+  const table = new Map<number, Standing>();
+  for (const m of league) {
+    for (const team of [m.team_a, m.team_b]) {
+      if (!table.has(team)) table.set(team, { team, played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0 });
+    }
+  }
+
+  const finished = league.filter((m) => m.status === "finished");
+  const record = (team: number, scored: number, conceded: number) => {
+    const row = table.get(team);
+    if (!row) return;
+    row.played += 1;
+    row.goalsFor += scored;
+    row.goalsAgainst += conceded;
+    row.goalDifference += scored - conceded;
+    if (scored > conceded) {
+      row.won += 1;
+      row.points += pointsForWin;
+    } else if (scored === conceded) {
+      row.drawn += 1;
+      row.points += pointsForDraw;
+    } else {
+      row.lost += 1;
+    }
+  };
+  for (const m of finished) {
+    record(m.team_a, m.score.a, m.score.b);
+    record(m.team_b, m.score.b, m.score.a);
+  }
+
+  // Above 0 when team x beat team y in the league.
+  const headToHead = (x: number, y: number) => {
+    const game = finished.find((m) => (m.team_a === x && m.team_b === y) || (m.team_a === y && m.team_b === x));
+    if (!game) return 0;
+    return Math.sign(game.team_a === x ? game.score.a - game.score.b : game.score.b - game.score.a);
+  };
+
+  return [...table.values()].sort(
+    (x, y) =>
+      y.points - x.points ||
+      y.goalDifference - x.goalDifference ||
+      y.goalsFor - x.goalsFor ||
+      headToHead(y.team, x.team) ||
+      x.team - y.team,
+  );
+}
+
+/** The two teams in the final, once every league match has finished. */
+function finalists(matches: Match[]): [number, number] | null {
+  const league = leagueMatches(matches);
+  if (league.length === 0 || league.some((m) => m.status !== "finished")) return null;
+  const [first, second] = leagueTable(matches);
+  return first && second ? [first.team, second.team] : null;
+}
 
 /** The football clock of a match (null for volleyball and for matches that have not started). */
 export function matchClock(m: Match, now: Date): FootballClock | null {

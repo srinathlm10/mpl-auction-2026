@@ -42,6 +42,14 @@
     "team_b": 11
   },
   {
+    "id": "football-7",
+    "sport": "football",
+    "round": "Final",
+    "stage": "final",
+    "team_a": -1,
+    "team_b": -2
+  },
+  {
     "id": "volleyball-1",
     "sport": "volleyball",
     "round": "Match 1",

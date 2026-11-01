@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { GoalBanner, useGoalAlert } from "@/components/live/GoalAlerts";
+import { LeagueTable } from "@/components/live/LeagueTable";
 import { ConnectionNote, MatchCard, SoundToggle } from "@/components/live/parts";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { cn } from "@/lib/format";
@@ -85,6 +86,7 @@ export function LiveView() {
           </p>
         )}
         <Section title="Live now" matches={liveNow} />
+        {filter !== "volleyball" && <LeagueTable matches={matches} />}
         <Section title="Up next" matches={upcoming} />
         <Section title="Results" matches={results} />
         {shown.length === 0 && <p className="text-muted">No matches.</p>}

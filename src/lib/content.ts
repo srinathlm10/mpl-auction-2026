@@ -1,3 +1,5 @@
+import { RULES } from "./live";
+
 /**
  * Text for the About & Rules page. Replace the placeholders with your
  * actual league and auction rules.
@@ -17,6 +19,14 @@ export const leagueRules: string[] = [
   "Matches follow the standard rules of the sport unless the committee announces a change before the tournament.",
   "The decision of the umpires / referees and the organising committee is final.",
   "Fair play is mandatory. Misconduct can lead to a player or team being disqualified.",
+];
+
+export const footballRules: string[] = [
+  "The four teams play a league: each team plays the other three once, six matches in all.",
+  `A win earns ${RULES.football.pointsForWin} points, a draw ${RULES.football.pointsForDraw} point and a loss 0 points.`,
+  "Teams are ranked by points, then goal difference, then goals scored, then the result of their match against each other.",
+  `The top ${RULES.football.finalists} teams go straight to the final. There are no semi-finals.`,
+  "The table on the Live Scores page updates when each match ends, and the final's teams appear there once the league is over.",
 ];
 
 export const auctionRules: string[] = [

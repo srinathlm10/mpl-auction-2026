@@ -28,6 +28,7 @@ import {
   secondHalf,
   shiftClock,
   startMatch,
+  teamsKnown,
   undo,
   undoStep,
   type EventKind,
@@ -731,9 +732,9 @@ export function ScoreConsole() {
                 <ul className="space-y-2">
                   {list.map((m) => (
                     <li key={m.id}>
-                      <button type="button" onClick={() => setSelectedId(m.id)} className={cn("card-link flex w-full items-center gap-3 p-3 text-left", isLive(m) && "ring-2 ring-red-500/40")} style={accentStyle(sportInfo(sport).config)}>
+                      <button type="button" disabled={!teamsKnown(m)} onClick={() => setSelectedId(m.id)} className={cn("card-link flex w-full items-center gap-3 p-3 text-left disabled:pointer-events-none disabled:opacity-60", isLive(m) && "ring-2 ring-red-500/40")} style={accentStyle(sportInfo(sport).config)}>
                         <span className="min-w-0 flex-1">
-                          <span className="block text-xs font-semibold uppercase tracking-wide text-muted">{m.round}</span>
+                          <span className="block text-xs font-semibold uppercase tracking-wide text-muted">{teamsKnown(m) ? m.round : `${m.round}: opens when the league ends`}</span>
                           <span className="block truncate font-display text-lg font-bold uppercase leading-tight">{teamOf(m.team_a).name} vs {teamOf(m.team_b).name}</span>
                         </span>
                         {m.status !== "upcoming" && <span className="font-display text-2xl font-extrabold tabular-nums">{m.score.a}–{m.score.b}</span>}

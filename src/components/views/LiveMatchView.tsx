@@ -6,7 +6,7 @@ import { GoalBanner, useGoalAlert } from "@/components/live/GoalAlerts";
 import { ClockText, ConnectionNote, Digit, SoundToggle, StatusPill, TeamLogo } from "@/components/live/parts";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/format";
-import { formatMinute, leader, matchClock, RULES, scorerLines, type EventKind, type Match, type MatchEvent, type ScorerLine, type SetScore, type Side } from "@/lib/live";
+import { formatMinute, leader, matchClock, RULES, scorerLines, teamsKnown, type EventKind, type Match, type MatchEvent, type ScorerLine, type SetScore, type Side } from "@/lib/live";
 import { formatKickoff, sportInfo, teamOf } from "@/lib/live-data";
 import { accentStyle } from "@/lib/sports";
 import { useLive } from "@/lib/use-live";
@@ -164,7 +164,7 @@ export function LiveMatchView({ id }: { id: string }) {
 
   /* The line under the score: the clock (football), the set in play (volleyball), or who won. */
   let under: React.ReactNode = null;
-  if (!started) under = kickoff ?? "Time to be announced";
+  if (!started) under = teamsKnown(match) ? (kickoff ?? "Time to be announced") : "Teams decided by the league table";
   else if (match.sport === "football") {
     if (match.status === "finished") under = winner ? `${teamOf(winner === "a" ? match.team_a : match.team_b).name} win` : "Draw";
     else if (clock) {

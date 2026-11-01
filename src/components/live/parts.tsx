@@ -24,7 +24,7 @@ export function TeamLogo({ teamId, size = "md" }: { teamId: number; size?: keyof
   const s = LOGO_SIZES[size];
   return (
     <span className={cn("relative block shrink-0 overflow-hidden bg-white shadow-card ring-1 ring-border", s.box)}>
-      <PlayerAvatar fit="contain" name={team.name} src={team.logo_url} sizes={s.px} className={s.text} />
+      <PlayerAvatar fit="contain" name={teamId > 0 ? team.name : "?"} src={team.logo_url} sizes={s.px} className={s.text} />
     </span>
   );
 }
