@@ -85,7 +85,7 @@ export function StatusPill({ match, className, onColor = false, now }: { match: 
 }
 
 /** "25–20 · 18–25 · 9–7" for the volleyball final, the goals so far for football. One set needs no line: the score says it all. */
-function summaryLine(match: Match): string | null {
+export function summaryLine(match: Match): string | null {
   if (match.volleyball && setRules(match).bestOf === 1) return null;
   if (match.volleyball) {
     return (

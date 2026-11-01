@@ -14,7 +14,7 @@ export function Footer() {
         { href: "/auction/summary", label: "Results" },
       ],
     },
-    { title: "League", links: [{ href: "/about", label: "Rules" }, { href: "/about#contact", label: "Contact" }] },
+    { title: "League", links: [{ href: "/points-table", label: "Points table" }, { href: "/about", label: "Rules" }, { href: "/about#contact", label: "Contact" }] },
   ];
 
   return (

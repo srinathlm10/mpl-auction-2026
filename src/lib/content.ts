@@ -26,7 +26,7 @@ export const footballRules: string[] = [
   `A win earns ${RULES.football.pointsForWin} points, a draw ${RULES.football.pointsForDraw} point and a loss 0 points.`,
   "Teams are ranked by points, then goal difference, then goals scored, then the result of their match against each other.",
   `The top ${RULES.football.finalists} teams go straight to the final. There are no semi-finals.`,
-  "The table on the Live Scores page updates when each match ends, and the final's teams appear there once the league is over.",
+  "The Points Table page updates when each match ends, and the final's teams appear once the league is over.",
 ];
 
 const { league, final } = RULES.volleyball;

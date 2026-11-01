@@ -27,7 +27,7 @@ export function Header({ items }: { items: NavItem[] }) {
   // Close the mobile menu after navigating.
   useEffect(() => setOpen(false), [pathname]);
 
-  // Once this device is signed in as the admin, the Login button says "Admin" and the auction appears.
+  // Once this device is signed in as the admin, the Login button says "Admin" and the phone menu lists the auction.
   useEffect(() => {
     const check = () => {
       try {
@@ -46,7 +46,7 @@ export function Header({ items }: { items: NavItem[] }) {
   }, []);
 
   const isActive = (href: string) => (href === "/" || href === LIVE ? pathname === href : pathname.startsWith(href));
-  // The logo already goes home, and Live Auction and Login have their own buttons.
+  // The logo already goes home, Login has its own button, and the admin pages link to the auction.
   const links = items.filter((item) => item.href !== "/" && item.href !== LIVE && item.href !== LOGIN);
   const hasLogin = items.some((item) => item.href === LOGIN);
   const loginLabel = signedIn ? "Admin" : "Login";
@@ -82,15 +82,6 @@ export function Header({ items }: { items: NavItem[] }) {
         </nav>
 
         <div className="flex items-center gap-2">
-          {signedIn && (
-            <Link
-              href={LIVE}
-              className={cn("btn-gold hidden min-h-[40px] whitespace-nowrap px-3 sm:inline-flex", isActive(LIVE) && "ring-2 ring-gold/40 ring-offset-2 ring-offset-background")}
-            >
-              <Icon name="gavel" className="h-4 w-4" />
-              Live Auction
-            </Link>
-          )}
           {hasLogin && (
             <Link
               href={LOGIN}

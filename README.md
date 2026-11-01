@@ -106,6 +106,7 @@ Change in code (`src/data/teams.json`): team names, captains, logos and purse.
 | `/auction` | Admin (everyone else sees "The auction is complete") | Pick a sport, wheel in the middle and the 4 teams in the corners; Spin, Start Bidding, bid amount −/+, Bid buttons on each team, Undo / Sold / Unsold, bring back unsold |
 | `/auction/screen` | Admin's projector (same browser) | View-only copy: same live state, SOLD alerts, sound, full screen |
 | `/admin/auction/settings` | Admin | Base price, squad sizes, backup / restore / reset |
+| `/points-table` | Anyone | Football and volleyball standings and every match score, updated live |
 | `/auction/summary` | Anyone | Sold players, captains and foreign players, unsold players, totals, CSV download |
 | `/teams/<id>` | Anyone | One team's captain, squad, spent and remaining purse |
 
