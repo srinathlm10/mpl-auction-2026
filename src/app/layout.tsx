@@ -1,13 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Saira_Condensed } from "next/font/google";
+import { Barlow_Condensed, Inter } from "next/font/google";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
-// Body: Plus Jakarta Sans (clear at small sizes). Headings and numbers: Saira Condensed
-// (scoreboard style, with a proper ₹ sign).
-const sans = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
-const display = Saira_Condensed({
-  subsets: ["latin"],
+// Body: Inter (clear at small sizes). Headings and numbers: Barlow Condensed (scoreboard style).
+// The ₹ sign is in the latin-ext file, so that is loaded up front for the amounts.
+const sans = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
+const display = Barlow_Condensed({
+  subsets: ["latin", "latin-ext"],
   weight: ["500", "600", "700", "800"],
   variable: "--font-display",
   display: "swap",

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { cn } from "@/lib/format";
 import { formatMinute, isLive, leader, statusLabel, type Match, type Side } from "@/lib/live";
@@ -13,7 +14,7 @@ import { useLiveSoundOn } from "@/lib/use-live-sound";
 import { useNow } from "@/lib/use-now";
 
 const LOGO_SIZES = {
-  sm: { box: "h-9 w-9 rounded-xl", px: "36px", text: "text-xs" },
+  sm: { box: "h-8 w-8 rounded-lg", px: "32px", text: "text-xs" },
   md: { box: "h-12 w-12 rounded-xl", px: "48px", text: "text-base" },
   lg: { box: "h-16 w-16 rounded-2xl sm:h-24 sm:w-24", px: "96px", text: "text-xl" },
 };
@@ -85,7 +86,6 @@ export function StatusPill({ match, className, onColor = false, now }: { match: 
 
 /** "25–20 · 18–25 · 9–7" for volleyball, the goals so far for football. */
 function summaryLine(match: Match): string {
-  if (match.status === "upcoming") return formatKickoff(match.starts_at) ?? "Time to be announced";
   if (match.volleyball) {
     return (
       match.volleyball.sets
@@ -107,12 +107,14 @@ function TeamRow({ match, side }: { match: Match; side: Side }) {
   const ahead = leader(match) === side;
   const dim = match.status === "finished" && leader(match) !== null && !ahead;
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2.5">
       <TeamLogo teamId={team.id} size="sm" />
       <span className={cn("min-w-0 flex-1 truncate font-display text-xl font-bold uppercase leading-tight", dim && "text-muted")}>{team.name}</span>
-      <span className={cn("font-display text-3xl font-extrabold leading-none tabular-nums", ahead ? "text-foreground" : "text-muted")}>
-        {match.status === "upcoming" ? "–" : <Digit value={match.score[side]} />}
-      </span>
+      {match.status !== "upcoming" && (
+        <span className={cn("font-display text-3xl font-extrabold leading-none tabular-nums", ahead ? "text-foreground" : "text-muted")}>
+          <Digit value={match.score[side]} />
+        </span>
+      )}
     </div>
   );
 }
@@ -121,23 +123,28 @@ function TeamRow({ match, side }: { match: Match; side: Side }) {
 export function MatchCard({ match }: { match: Match }) {
   const { name, emoji, config } = sportInfo(match.sport);
   const now = useNow(5000);
+  const upcoming = match.status === "upcoming";
   return (
     <Link
       href={`/live/${match.id}`}
       style={accentStyle(config)}
-      className={cn("card-link block p-4 sm:p-5", isLive(match) && "ring-2 ring-red-500/40")}
+      className={cn("card-link block p-3.5 sm:p-4", isLive(match) && "ring-2 ring-red-500/40")}
     >
-      <div className="flex items-center justify-between gap-2">
-        <span className="eyebrow !text-[11px] sm:!text-xs">
-          {emoji} {name} · {match.round}
+      <div className="flex min-h-[20px] items-center justify-between gap-2">
+        <span className="truncate text-xs font-semibold text-accent-strong">
+          <span aria-hidden>{emoji}</span> {name} · {match.round}
         </span>
-        <StatusPill match={match} now={now} />
+        {upcoming ? (
+          <span className="shrink-0 text-xs font-medium text-muted">{formatKickoff(match.starts_at) ?? "Time TBA"}</span>
+        ) : (
+          <StatusPill match={match} now={now} />
+        )}
       </div>
-      <div className="mt-4 space-y-2.5">
+      <div className="mt-3 space-y-2">
         <TeamRow match={match} side="a" />
         <TeamRow match={match} side="b" />
       </div>
-      <p className="mt-4 truncate border-t border-border pt-3 text-xs font-medium text-muted">{summaryLine(match)}</p>
+      {!upcoming && <p className="mt-3 truncate border-t border-border pt-2.5 text-xs font-medium text-muted">{summaryLine(match)}</p>}
     </Link>
   );
 }
@@ -174,7 +181,7 @@ export function SoundToggle({ className }: { className?: string }) {
         className,
       )}
     >
-      <span aria-hidden>{on ? "🔊" : "🔇"}</span>
+      <Icon name={on ? "volume" : "mute"} className="h-4 w-4" />
       {on ? "Sound on" : "Sound off"}
     </button>
   );

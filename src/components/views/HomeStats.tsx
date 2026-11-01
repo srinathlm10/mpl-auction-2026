@@ -1,8 +1,7 @@
 "use client";
 
 import { StatCard } from "@/components/ui/StatCard";
-import { formatDate } from "@/lib/format";
-import { siteConfig } from "@/lib/site";
+import { fixtures } from "@/lib/live-data";
 import { useAuctionData } from "@/lib/use-auction";
 
 export function HomeStats() {
@@ -14,7 +13,7 @@ export function HomeStats() {
       <StatCard icon="users" label="Players" value={players.length} hint={`${count("sold")} sold so far`} />
       <StatCard icon="shield" label="Teams" value={teams.length} hint={`Across ${sports.length} sports`} />
       <StatCard icon="tag" label="Still available" value={count("available")} hint={`${count("unsold")} unsold`} />
-      <StatCard icon="calendar" label="Auction day" value={formatDate(siteConfig.auctionDate, "medium")} />
+      <StatCard icon="calendar" label="Matches" value={fixtures.length} hint="Football & Volleyball" />
     </div>
   );
 }

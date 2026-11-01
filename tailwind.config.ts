@@ -27,8 +27,8 @@ const config: Config = {
         display: ["var(--font-display)", "var(--font-sans)", "sans-serif"],
       },
       boxShadow: {
-        card: "0 1px 2px rgb(15 23 42 / 0.05), 0 10px 30px -14px rgb(15 23 42 / 0.20)",
-        lift: "0 2px 4px rgb(15 23 42 / 0.06), 0 22px 44px -18px rgb(15 23 42 / 0.35)",
+        card: "0 1px 2px rgb(15 23 42 / 0.04), 0 6px 18px -12px rgb(15 23 42 / 0.14)",
+        lift: "0 2px 4px rgb(15 23 42 / 0.05), 0 18px 36px -18px rgb(15 23 42 / 0.28)",
       },
       letterSpacing: {
         display: "0.01em",

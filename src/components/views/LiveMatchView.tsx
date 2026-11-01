@@ -190,19 +190,17 @@ export function LiveMatchView({ id }: { id: string }) {
       <GoalBanner alert={goal.alert} leaving={goal.leaving} burst={goal.burst} onClose={goal.dismiss} />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link href="/live" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+        <Link href="/live" className="back-link">
           <Icon name="arrowLeft" className="h-4 w-4" /> All matches
         </Link>
         <SoundToggle />
       </div>
 
-      <section className={cn("relative overflow-hidden rounded-3xl bg-gradient-to-br from-accent to-accent/60 p-5 text-white shadow-lift sm:p-8", flash && "animate-goal-glow")}>
-        <div aria-hidden className="absolute inset-0 bg-[repeating-linear-gradient(135deg,transparent_0_16px,rgb(255_255_255/0.07)_16px_32px)]" />
-        <span aria-hidden className="absolute -right-6 -top-6 text-[8rem] leading-none opacity-25 sm:text-[12rem]">{emoji}</span>
+      <section className={cn("bg-scoreboard relative overflow-hidden rounded-2xl p-5 text-white shadow-lift sm:p-8", flash && "animate-goal-glow")}>
         <div className="relative">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/90 sm:text-sm">
-              {name} · {match.round}
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/90 sm:text-sm">
+              <span aria-hidden>{emoji}</span> {name} · {match.round}
             </p>
             <StatusPill match={match} onColor now={now} />
           </div>
@@ -224,10 +222,12 @@ export function LiveMatchView({ id }: { id: string }) {
                   <span className="text-white/70">vs</span>
                 )}
               </div>
-              {under && <div className="mt-3 font-display text-lg font-semibold uppercase tracking-wide sm:text-2xl">{under}</div>}
+              {started && under && <div className="mt-3 font-display text-lg font-semibold uppercase tracking-wide sm:text-2xl">{under}</div>}
             </div>
             <TeamSide teamId={match.team_b} />
           </div>
+
+          {!started && <p className="mt-5 text-center font-display text-lg font-semibold uppercase tracking-wide text-white/90 sm:text-xl">{under}</p>}
 
           {match.sport === "football" && started && (
             <div className="mt-6 grid grid-cols-2 gap-4 border-t border-white/20 pt-4 sm:gap-8">

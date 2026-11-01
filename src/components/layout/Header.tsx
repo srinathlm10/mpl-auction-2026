@@ -46,7 +46,8 @@ export function Header({ items }: { items: NavItem[] }) {
   }, []);
 
   const isActive = (href: string) => (href === "/" || href === LIVE ? pathname === href : pathname.startsWith(href));
-  const links = items.filter((item) => item.href !== LIVE && item.href !== LOGIN);
+  // The logo already goes home, and Live Auction and Login have their own buttons.
+  const links = items.filter((item) => item.href !== "/" && item.href !== LIVE && item.href !== LOGIN);
   const hasLogin = items.some((item) => item.href === LOGIN);
   const loginLabel = signedIn ? "Scoring" : "Login";
 
@@ -70,7 +71,7 @@ export function Header({ items }: { items: NavItem[] }) {
               href={item.href}
               aria-current={isActive(item.href) ? "page" : undefined}
               className={cn(
-                "whitespace-nowrap rounded-full px-2.5 py-1.5 text-sm font-semibold transition",
+                "whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-semibold transition",
                 isActive(item.href) ? "bg-primary text-primary-foreground shadow-sm" : "text-muted hover:bg-primary/10 hover:text-foreground",
               )}
             >
@@ -84,10 +85,7 @@ export function Header({ items }: { items: NavItem[] }) {
             href={LIVE}
             className={cn("btn-gold hidden min-h-[40px] whitespace-nowrap px-3 sm:inline-flex", isActive(LIVE) && "ring-2 ring-gold/40 ring-offset-2 ring-offset-background")}
           >
-            <span className="relative flex h-2 w-2" aria-hidden>
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-red-600" />
-            </span>
+            <Icon name="gavel" className="h-4 w-4" />
             Live Auction
           </Link>
           {hasLogin && (

@@ -21,7 +21,7 @@ export function TeamsView() {
           return (
             <section key={sport.id} id={sport.slug} style={accentStyle(config)} className="scroll-mt-24" aria-labelledby={`${sport.slug}-heading`}>
               <h2 id={`${sport.slug}-heading`} className="section-title mb-5 flex items-center gap-3">
-                <span aria-hidden className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/20 text-2xl">{config.emoji}</span>
+                <span aria-hidden className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/15 text-2xl">{config.emoji}</span>
                 {sport.name}
                 <span className="ml-1 h-px flex-1 bg-border" aria-hidden />
               </h2>

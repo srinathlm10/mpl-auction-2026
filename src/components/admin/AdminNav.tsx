@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/ui/Logo";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { cn } from "@/lib/format";
 
 const LINKS = [
@@ -25,7 +24,6 @@ export function AdminNav() {
         <div className="flex items-center gap-2">
           <Link href="/auction" className="btn-primary hidden sm:inline-flex">Open the auction</Link>
           <Link href="/" className="btn-outline hidden sm:inline-flex">View site</Link>
-          <ThemeToggle />
         </div>
       </div>
       <nav aria-label="Admin" className="container-page -mb-px flex gap-1 overflow-x-auto">

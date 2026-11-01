@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { SportTabs } from "@/components/SportTabs";
 import { SummaryDownload, type SummaryRow } from "@/components/SummaryDownload";
-import { Icon } from "@/components/ui/Icon";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { StatCard } from "@/components/ui/StatCard";
@@ -60,10 +60,7 @@ export function SummaryView() {
       <section aria-labelledby="sold-heading" className="mb-12">
         <h2 id="sold-heading" className="section-title mb-4">Sold players</h2>
         {sold.length === 0 ? (
-          <div className="card flex flex-col items-center gap-2 p-10 text-center text-muted">
-            <Icon name="gavel" className="h-8 w-8" />
-            No players sold yet. Sales appear here as the auction runs.
-          </div>
+          <EmptyState icon="gavel" title="No players sold yet." text="Sales appear here as the auction runs." />
         ) : (
           <div className="card overflow-x-auto">
             <table className="w-full min-w-[640px] text-left text-sm">
@@ -118,11 +115,9 @@ export function SummaryView() {
         )}
       </section>
 
-      <section aria-labelledby="unsold-heading">
-        <h2 id="unsold-heading" className="section-title mb-4">Unsold players</h2>
-        {unsold.length === 0 ? (
-          <p className="card p-6 text-muted">No unsold players.</p>
-        ) : (
+      {unsold.length > 0 && (
+        <section aria-labelledby="unsold-heading">
+          <h2 id="unsold-heading" className="section-title mb-4">Unsold players</h2>
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {unsold.map((p) => (
               <li key={p.id}>
@@ -140,8 +135,8 @@ export function SummaryView() {
               </li>
             ))}
           </ul>
-        )}
-      </section>
+        </section>
+      )}
     </div>
   );
 }

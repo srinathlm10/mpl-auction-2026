@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { FilterBar, type FilterOption } from "@/components/FilterBar";
 import { PlayerCard } from "@/components/PlayerCard";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { statusLabel } from "@/components/ui/StatusBadge";
 import type { AttributeDef } from "@/lib/sports";
 import { PLAYER_STATUSES, type Player } from "@/lib/types";
@@ -119,7 +120,7 @@ export function PlayerExplorer({ players, teamNames, roleLabel, attributes = [] 
       />
 
       {visible.length === 0 ? (
-        <div className="card p-10 text-center text-muted">No players match these filters.</div>
+        <EmptyState icon="search" title="No players match these filters." text="Try a different name, or clear the filters above." />
       ) : (
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
           {visible.map((player) => (

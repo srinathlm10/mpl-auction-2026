@@ -18,7 +18,7 @@ function Section({ title, hint, matches }: { title: string; hint?: string; match
     <section aria-label={title}>
       <h2 className="section-title">{title}</h2>
       {hint && <p className="mt-1 text-sm text-muted">{hint}</p>}
-      <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {matches.map((m) => (
           <MatchCard key={m.id} match={m} />
         ))}
@@ -48,11 +48,11 @@ export function LiveView() {
   return (
     <div>
       <GoalBanner alert={goal.alert} leaving={goal.leaving} burst={goal.burst} onClose={goal.dismiss} />
-      <PageHeader eyebrow="Football & Volleyball" title="Live scores" subtitle="Follow every match as it happens. No login needed; open a match to share its link.">
+      <PageHeader eyebrow="Football & Volleyball" title="Live scores" subtitle="Follow every match as it happens. No login needed.">
         <SoundToggle />
       </PageHeader>
 
-      <nav aria-label="Sport" className="-mx-4 mb-8 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0">
+      <nav aria-label="Sport" className="-mx-4 mb-6 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0">
         <ul className="flex w-max gap-2 sm:w-auto">
           <li>
             <button type="button" className={chip(filter === "all")} aria-pressed={filter === "all"} onClick={() => setFilter("all")}>
@@ -77,9 +77,12 @@ export function LiveView() {
         <p className="card mb-8 p-4 text-sm text-muted sm:p-5">Live scores have not been switched on yet. The schedule is shown below, and scores will appear here once play starts.</p>
       )}
 
-      <div className="space-y-10">
+      <div className="space-y-8 sm:space-y-10">
         {configured && loaded && liveNow.length === 0 && upcoming.length + results.length > 0 && (
-          <p className="card p-4 text-sm text-muted sm:p-5">No match is being played right now.</p>
+          <p className="flex items-center gap-2 text-sm text-muted">
+            <span aria-hidden className="h-2 w-2 rounded-full bg-slate-400" />
+            No match is being played right now.
+          </p>
         )}
         <Section title="Live now" matches={liveNow} />
         <Section title="Up next" matches={upcoming} />

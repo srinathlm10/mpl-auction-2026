@@ -6,9 +6,9 @@ import { liveConfigured } from "@/lib/live-config";
 export function SiteHeader() {
   const items: NavItem[] = [
     { href: "/", label: "Home" },
+    ...(liveConfigured ? [{ href: "/live", label: "Live Scores" }] : []),
     ...baseSports.map((s) => ({ href: `/sports/${s.slug}`, label: s.name })),
     { href: "/teams", label: "Teams" },
-    ...(liveConfigured ? [{ href: "/live", label: "Live Scores" }] : []),
     { href: "/auction", label: "Live Auction" },
     { href: "/auction/summary", label: "Results" },
     { href: "/about", label: "Rules" },

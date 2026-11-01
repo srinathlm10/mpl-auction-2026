@@ -30,12 +30,11 @@ export function SportSelector({ sports, players, disabled, onSelect }: Props) {
               style={accentStyle(config)}
               className="card-link group relative flex flex-col overflow-hidden text-left disabled:opacity-50"
             >
-              <div className="relative flex h-32 w-full items-end overflow-hidden bg-gradient-to-br from-accent/90 to-accent/50 p-5">
-                <div aria-hidden className="absolute inset-0 bg-[repeating-linear-gradient(135deg,transparent_0_14px,rgb(255_255_255/0.08)_14px_28px)]" />
-                <span aria-hidden className="absolute -right-4 -top-3 text-[6rem] leading-none lg:-right-3 lg:-top-4 lg:text-[7.5rem] drop-shadow-xl transition duration-300 group-hover:rotate-6 group-hover:scale-105">
+              <div className="bg-banner relative flex h-32 w-full items-end overflow-hidden p-5">
+                <span aria-hidden className="absolute -right-3 -top-3 text-[5.5rem] leading-none drop-shadow-xl transition duration-300 group-hover:rotate-6 group-hover:scale-105 lg:-top-4 lg:text-[7rem]">
                   {config.emoji}
                 </span>
-                <span className="relative z-10 font-display text-3xl font-extrabold uppercase leading-none text-white [text-shadow:0_2px_10px_rgb(0_0_0/0.35)] lg:text-4xl">{sport.name}</span>
+                <span className="relative z-10 font-display text-3xl font-extrabold uppercase leading-none text-white lg:text-4xl">{sport.name}</span>
               </div>
               <dl className="grid w-full grid-cols-3 gap-2 p-5">
                 {[

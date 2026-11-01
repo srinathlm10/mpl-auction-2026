@@ -35,17 +35,15 @@ export function PlayerView({ playerId }: { playerId: number }) {
 
   return (
     <div style={accentStyle(config)}>
-      <Link href={sport ? `/sports/${sport.slug}` : "/"} className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-muted transition hover:text-primary">
+      <Link href={sport ? `/sports/${sport.slug}` : "/"} className="back-link mb-5">
         <Icon name="arrowLeft" className="h-4 w-4" />
         {sport?.name ?? "Home"} players
       </Link>
 
       <div className="grid gap-6 md:grid-cols-[minmax(0,360px)_1fr] md:gap-10 lg:gap-14">
         <div className="relative mx-auto w-full max-w-sm md:max-w-none">
-          <div aria-hidden className="absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-accent/40 to-primary/30 blur-2xl" />
-          <div className="card relative aspect-[4/5] w-full overflow-hidden rounded-3xl bg-border">
+          <div className="card relative aspect-[4/5] w-full overflow-hidden bg-border">
             <PlayerAvatar name={player.name} src={player.photo_url} sizes="(min-width: 768px) 360px, 90vw" priority className="text-[7rem]" />
-            <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/40 to-transparent" />
           </div>
         </div>
 
@@ -68,7 +66,7 @@ export function PlayerView({ playerId }: { playerId: number }) {
             >
               {facts.map((f, i) => (
                 <div key={f.label} className={cn("bg-surface p-4", facts.length % 2 === 1 && i === facts.length - 1 && "col-span-2 sm:col-span-1")}>
-                  <dt className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted">{f.label}</dt>
+                  <dt className="caption">{f.label}</dt>
                   <dd className="mt-1 font-display text-2xl font-bold leading-tight">{f.value}</dd>
                 </div>
               ))}
@@ -78,18 +76,18 @@ export function PlayerView({ playerId }: { playerId: number }) {
           <div
             className={
               sold
-                ? "mt-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-gradient-to-br from-accent to-accent/70 p-5 text-white shadow-lift"
+                ? "bg-banner mt-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl p-5 text-white shadow-lift"
                 : "mt-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-surface p-5 shadow-card"
             }
           >
             {sold ? (
               <>
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/80">Sold to</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/85">Sold to</p>
                   <p className="font-display text-3xl font-bold uppercase leading-tight">{team?.name ?? "Team"}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/80">For</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/85">For</p>
                   <p className="font-display text-4xl font-extrabold leading-none">{formatCompact(player.sold_price)}</p>
                   <p className="text-xs text-white/80">{formatPrice(player.sold_price)}</p>
                 </div>
@@ -97,7 +95,7 @@ export function PlayerView({ playerId }: { playerId: number }) {
             ) : (
               <>
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted">Base price</p>
+                  <p className="caption">Base price</p>
                   <p className="font-display text-4xl font-extrabold leading-none">{formatCompact(player.base_price)}</p>
                   <p className="text-xs text-muted">{formatPrice(player.base_price)}</p>
                 </div>

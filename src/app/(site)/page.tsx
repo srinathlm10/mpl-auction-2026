@@ -7,6 +7,7 @@ import { HomeStats } from "@/components/views/HomeStats";
 import { LiveNowStrip } from "@/components/views/LiveNowStrip";
 import { basePlayers as players, baseSports as sports, baseTeams as teams } from "@/lib/data";
 import { formatDate } from "@/lib/format";
+import { liveConfigured } from "@/lib/live-config";
 import { siteConfig } from "@/lib/site";
 import { getSportConfig } from "@/lib/sports";
 
@@ -16,43 +17,50 @@ const STEPS: { icon: IconName; title: string; text: string }[] = [
   { icon: "trophy", title: "Sold!", text: "Highest bid wins the player. Purses and squads update instantly." },
 ];
 
+const HERO_LINK = "btn min-h-[48px] flex-1 border border-white/25 bg-white/10 px-2 text-white hover:bg-white/20 sm:flex-none sm:px-5 sm:text-base";
+
 export default function HomePage() {
   return (
-    <div className="space-y-16 sm:space-y-20">
+    <div className="space-y-12 sm:space-y-16">
       {/* Hero */}
-      <section className="relative isolate overflow-hidden rounded-[2rem] bg-[#0c1240] text-white shadow-lift">
-        <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(80%_120%_at_0%_0%,#4338ca_0%,transparent_60%),radial-gradient(60%_90%_at_100%_100%,#7c2d12_0%,transparent_60%)] opacity-90" />
-        <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(rgb(255_255_255/0.04)_1px,transparent_1px),linear-gradient(90deg,rgb(255_255_255/0.04)_1px,transparent_1px)] bg-[size:44px_44px]" />
+      <section className="relative isolate overflow-hidden rounded-3xl bg-[#0b1030] text-white shadow-lift">
+        <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(85%_130%_at_0%_0%,#4338ca_0%,transparent_62%)]" />
+        <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(rgb(255_255_255/0.035)_1px,transparent_1px),linear-gradient(90deg,rgb(255_255_255/0.035)_1px,transparent_1px)] bg-[size:44px_44px]" />
 
-        <div className="grid items-center gap-10 px-6 py-10 sm:px-12 sm:py-16 lg:grid-cols-[1.35fr_1fr]">
+        <div className="grid items-center gap-10 px-5 py-8 sm:px-12 sm:py-12 lg:grid-cols-[1.35fr_1fr]">
           <div>
-            <p className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-indigo-100 sm:text-sm">
+            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-indigo-100 sm:text-sm">
               <Image src="/nitr_logo.png" alt="" width={28} height={27} className="h-7 w-auto rounded-full bg-white p-0.5" />
               School of Management, NIT Rourkela
             </p>
-            <h1 className="mt-5 font-display text-[clamp(2.75rem,7.5vw,5.25rem)] font-extrabold uppercase leading-[0.92]">
+            <h1 className="mt-4 font-display text-[clamp(3rem,8vw,5rem)] font-extrabold uppercase leading-[0.9]">
               {siteConfig.name}
             </h1>
-            <p className="mt-3 font-display text-2xl font-semibold uppercase tracking-wide text-amber-300 sm:text-3xl">Player Auction</p>
-            <p className="mt-5 max-w-xl text-base text-indigo-100/90 sm:text-lg">
-              Captains build their squads in a live auction. Browse every player, follow every bid and track every team
-              across Cricket, Volleyball and Football.
+            <p className="mt-3 font-display text-2xl font-semibold uppercase tracking-wide text-amber-300 sm:text-3xl">
+              {sports.map((s) => s.name).join(" · ")}
             </p>
-            <div className="mt-6 flex flex-wrap gap-2">
-              <span className="chip border-white/15 bg-white/10 text-white">
-                <Icon name="calendar" className="h-4 w-4 text-amber-300" />
-                {formatDate(siteConfig.auctionDate)}
-              </span>
-            </div>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="#sports" className="btn-gold min-h-[48px] px-5 text-base">
-                Explore players
-                <Icon name="arrowRight" className="h-4 w-4" />
+            <p className="mt-4 max-w-xl text-indigo-100/90 sm:text-lg">
+              Captains build their squads in a live auction. Browse every player, track every team and follow every match
+              as it happens.
+            </p>
+            <div className="mt-6 flex gap-2 sm:gap-2.5">
+              {liveConfigured && (
+                <Link href="/live" className="btn-gold min-h-[48px] flex-[1.6] whitespace-nowrap px-2 sm:flex-none sm:px-5 sm:text-base">
+                  Live scores
+                  <Icon name="arrowRight" className="hidden h-4 w-4 sm:block" />
+                </Link>
+              )}
+              <Link href="#sports" className={HERO_LINK}>
+                Players
               </Link>
-              <Link href="/teams" className="btn min-h-[48px] border border-white/25 bg-white/10 px-5 text-base text-white hover:bg-white/20">
-                View teams
+              <Link href="/teams" className={HERO_LINK}>
+                Teams
               </Link>
             </div>
+            <p className="mt-5 flex items-center gap-2 text-sm text-indigo-100/90">
+              <Icon name="calendar" className="h-4 w-4 text-amber-300" />
+              Auction day: {formatDate(siteConfig.auctionDate)}
+            </p>
           </div>
 
           <div className="relative mx-auto hidden aspect-square w-full max-w-[340px] lg:block" aria-hidden>
@@ -66,14 +74,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Matches being played right now (only shows during a match) */}
+      {/* Matches being played right now, or the next ones */}
       <LiveNowStrip />
 
       {/* Sports */}
       <section id="sports" aria-labelledby="sports-heading" className="scroll-mt-24">
         <p className="eyebrow text-primary">Three sports, one auction</p>
-        <h2 id="sports-heading" className="section-title mt-2 mb-6">Choose your game</h2>
-        <div className="grid gap-5 md:grid-cols-3">
+        <h2 id="sports-heading" className="section-title mb-5 mt-2">Choose your game</h2>
+        <div className="grid gap-4 md:grid-cols-3">
           {sports.map((sport) => (
             <SportCard
               key={sport.id}
@@ -88,27 +96,26 @@ export default function HomePage() {
       {/* How it works */}
       <section aria-labelledby="how-heading">
         <p className="eyebrow text-primary">On auction day</p>
-        <h2 id="how-heading" className="section-title mt-2 mb-6">How it works</h2>
-        <ol className="grid gap-4 md:grid-cols-3">
-          {STEPS.map((step, i) => (
-            <li key={step.title} className="card relative overflow-hidden p-6">
-              <span aria-hidden className="absolute bottom-0 right-3 font-display text-[6.5rem] font-extrabold leading-[0.8] text-primary/[0.07]">
-                {i + 1}
+        <h2 id="how-heading" className="section-title mb-5 mt-2">How it works</h2>
+        <ol className="grid gap-3 md:grid-cols-3 md:gap-4">
+          {STEPS.map((step) => (
+            <li key={step.title} className="card flex gap-4 p-4 sm:p-5">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Icon name={step.icon} className="h-5 w-5" />
               </span>
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm shadow-primary/30">
-                <Icon name={step.icon} className="h-6 w-6" />
-              </span>
-              <h3 className="mt-4 font-display text-2xl font-bold uppercase">{step.title}</h3>
-              <p className="relative mt-1 pr-10 text-sm text-muted">{step.text}</p>
+              <div>
+                <h3 className="font-display text-xl font-bold uppercase leading-tight sm:text-2xl">{step.title}</h3>
+                <p className="mt-0.5 text-sm text-muted">{step.text}</p>
+              </div>
             </li>
           ))}
         </ol>
       </section>
 
       {/* Highlights */}
-      <section aria-labelledby="highlights-heading" style={{ "--accent": "var(--primary)" } as React.CSSProperties}>
+      <section aria-labelledby="highlights-heading">
         <p className="eyebrow text-primary">Live numbers</p>
-        <h2 id="highlights-heading" className="section-title mt-2 mb-6">At a glance</h2>
+        <h2 id="highlights-heading" className="section-title mb-5 mt-2">At a glance</h2>
         <HomeStats />
       </section>
     </div>

@@ -57,8 +57,7 @@ export function PlayerSpotlight(props: Props) {
         className="flex h-full w-full animate-[reveal_0.4s_ease-out] flex-col overflow-hidden rounded-3xl border border-border bg-background shadow-2xl sm:h-[80vh] sm:w-[80vw] lg:flex-row"
       >
         {/* Left: photo in a circle, base price */}
-        <div className="relative flex shrink-0 flex-col items-center justify-center gap-4 overflow-hidden bg-gradient-to-br from-accent to-accent/60 px-6 pb-6 pt-14 lg:w-[40%] lg:gap-6 lg:py-14">
-          <div aria-hidden className="absolute inset-0 bg-[repeating-linear-gradient(135deg,transparent_0_18px,rgb(255_255_255/0.07)_18px_36px)]" />
+        <div className="bg-banner relative flex shrink-0 flex-col items-center justify-center gap-4 overflow-hidden px-6 pb-6 pt-14 lg:w-[40%] lg:gap-6 lg:py-14">
           <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3.5 py-1 text-xs font-extrabold uppercase tracking-[0.18em] text-slate-900 shadow-lg 2xl:text-base">
             On the block
           </span>
