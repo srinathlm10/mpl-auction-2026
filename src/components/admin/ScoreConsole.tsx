@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { useAdmin } from "@/components/admin/AdminGate";
+import { LeagueTable } from "@/components/live/LeagueTable";
 import { ConnectionNote, SoundToggle, StatusPill, TeamLogo } from "@/components/live/parts";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/format";
@@ -546,7 +547,7 @@ function MatchPanel({ match, squads, login, onBack }: { match: Match; squads: Sq
 
 export function ScoreConsole() {
   const { matches, squads, status, loaded, error } = useLive();
-  const { login, signOut } = useAdmin();
+  const { login } = useAdmin();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   useLiveSounds(matches, loaded);
 
@@ -556,10 +557,7 @@ export function ScoreConsole() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
         <p className="text-muted">Signed in as <span className="font-semibold text-foreground">{login.user}</span></p>
-        <div className="flex flex-wrap gap-2">
-          <SoundToggle />
-          <ConfirmButton label="Sign out" confirmLabel="Sign out on this device?" className="!min-h-[40px]" onConfirm={signOut} />
-        </div>
+        <SoundToggle />
       </div>
 
       {selected ? (
@@ -586,6 +584,9 @@ export function ScoreConsole() {
                     </li>
                   ))}
                 </ul>
+                <div className="mt-5">
+                  <LeagueTable matches={matches} sport={sport} />
+                </div>
               </section>
             );
           })}

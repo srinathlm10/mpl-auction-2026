@@ -10,6 +10,7 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { cn } from "@/lib/format";
 import { SCORER_CHANGED_EVENT, SCORER_STORAGE_KEY } from "@/lib/live-config";
 import { siteConfig } from "@/lib/site";
+import { signOutAdmin } from "@/lib/use-scorer";
 
 export interface NavItem {
   href: string;
@@ -18,6 +19,27 @@ export interface NavItem {
 
 const LIVE = "/auction";
 const LOGIN = "/admin/score";
+
+/** Takes two taps, so a stray tap while scoring does not sign the admin out. */
+function SignOutButton() {
+  const [armed, setArmed] = useState(false);
+  useEffect(() => {
+    if (!armed) return;
+    const timer = setTimeout(() => setArmed(false), 3000);
+    return () => clearTimeout(timer);
+  }, [armed]);
+  return (
+    <button
+      type="button"
+      aria-label={armed ? "Sign out on this device?" : "Sign out"}
+      onClick={() => (armed ? signOutAdmin() : setArmed(true))}
+      className={cn(armed ? "btn-danger !bg-red-600 !text-white" : "btn-outline", "min-h-[40px] whitespace-nowrap px-3")}
+    >
+      <Icon name="logout" className={cn("h-4 w-4", armed && "hidden sm:block")} />
+      <span className={armed ? undefined : "hidden sm:inline"}>{armed ? "Sure?" : "Sign out"}</span>
+    </button>
+  );
+}
 
 export function Header({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
@@ -56,12 +78,13 @@ export function Header({ items }: { items: NavItem[] }) {
     <header className="site-nav sticky top-0 z-40 border-b border-border/80 bg-background/80 backdrop-blur-xl">
       <div className="container-page flex h-16 items-center justify-between gap-3">
         <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label={`${siteConfig.shortName} home`}>
-          <Image src="/nitr_logo.png" alt="NIT Rourkela" width={38} height={37} className="h-9 w-auto" priority />
-          <span aria-hidden className="h-7 w-px bg-border" />
+          {/* The admin has one more button, so the logos give way on narrow screens. */}
+          <Image src="/nitr_logo.png" alt="NIT Rourkela" width={38} height={37} className={cn("h-9 w-auto", signedIn && "hidden sm:block")} priority />
+          <span aria-hidden className={cn("h-7 w-px bg-border", signedIn && "hidden sm:block")} />
           <Logo size={34} />
-          <span className="leading-none">
+          <span className={cn("leading-none", signedIn && "hidden min-[360px]:block")}>
             <span className="block font-display text-2xl font-extrabold uppercase">{siteConfig.shortName}</span>
-            <span className="hidden text-[10px] font-semibold uppercase tracking-[0.16em] text-muted sm:block">NIT Rourkela</span>
+            <span className={cn("hidden text-[10px] font-semibold uppercase tracking-[0.16em] text-muted sm:block", signedIn && "xl:hidden")}>NIT Rourkela</span>
           </span>
         </Link>
 
@@ -72,7 +95,7 @@ export function Header({ items }: { items: NavItem[] }) {
               href={item.href}
               aria-current={isActive(item.href) ? "page" : undefined}
               className={cn(
-                "whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-semibold transition",
+                "whitespace-nowrap rounded-full px-2.5 py-1.5 text-sm font-semibold transition",
                 isActive(item.href) ? "bg-primary text-primary-foreground shadow-sm" : "text-muted hover:bg-primary/10 hover:text-foreground",
               )}
             >
@@ -93,6 +116,7 @@ export function Header({ items }: { items: NavItem[] }) {
               <span className="hidden sm:inline">{loginLabel}</span>
             </Link>
           )}
+          {signedIn && <SignOutButton />}
           <ThemeToggle />
           <button
             type="button"

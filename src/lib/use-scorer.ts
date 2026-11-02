@@ -40,6 +40,11 @@ function store(login: ScorerLogin | null) {
   window.dispatchEvent(new Event(SCORER_CHANGED_EVENT));
 }
 
+/** Forgets the login on this device. Every admin page and other open tab closes by itself. */
+export function signOutAdmin() {
+  store(null);
+}
+
 export type ScorerState =
   | { phase: "loading" }
   /** Show the sign-in form. `notice` explains why when a remembered login stopped working. */
@@ -86,6 +91,24 @@ export function useScorer() {
     };
   }, [attempt]);
 
+  // Sign out is in the site header, which sits outside the admin pages; another tab can sign out too.
+  useEffect(() => {
+    const onChange = () => {
+      if (!readStored()) setState((s) => (s.phase === "signed-out" ? s : { phase: "signed-out" }));
+    };
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== SCORER_STORAGE_KEY || e.newValue !== null) return;
+      memoryLogin = null;
+      onChange();
+    };
+    window.addEventListener(SCORER_CHANGED_EVENT, onChange);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener(SCORER_CHANGED_EVENT, onChange);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, []);
+
   /** Returns an error message to show, or null when signed in. */
   const signIn = useCallback(async (user: string, password: string): Promise<string | null> => {
     const login = { user: user.trim(), password };
@@ -101,11 +124,5 @@ export function useScorer() {
 
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
 
-  /** Forgets the login on this device. */
-  const signOut = useCallback(() => {
-    store(null);
-    setState({ phase: "signed-out" });
-  }, []);
-
-  return { state, signIn, signOut, retry };
+  return { state, signIn, retry };
 }

@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { LeagueTable } from "@/components/live/LeagueTable";
 import { StatCard } from "@/components/ui/StatCard";
+import { LIVE_SPORTS } from "@/lib/live";
 import { useAuctionData } from "@/lib/use-auction";
+import { useLive } from "@/lib/use-live";
 
 export default function AdminDashboard() {
   const { sports, players, teams } = useAuctionData();
+  const { matches } = useLive();
   const count = (status: string) => players.filter((p) => p.status === status).length;
   const stats = { players: players.length, teams: teams.length, sold: count("sold"), unsold: count("unsold") };
 
@@ -18,6 +22,12 @@ export default function AdminDashboard() {
         <StatCard label="Teams" value={stats.teams} />
         <StatCard label="Sold players" value={stats.sold} />
         <StatCard label="Unsold" value={stats.unsold} />
+      </div>
+
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-6">
+        {LIVE_SPORTS.map((sport) => (
+          <LeagueTable key={sport} matches={matches} sport={sport} />
+        ))}
       </div>
 
       <section>
@@ -48,6 +58,7 @@ export default function AdminDashboard() {
         <Link href="/auction" className="btn-primary">Open the auction</Link>
         <Link href="/auction/screen" target="_blank" className="btn-outline">Projector screen ↗</Link>
         <Link href="/admin/score" className="btn-outline">Live scoring</Link>
+        <Link href="/points-table" className="btn-outline">Points table</Link>
         <Link href="/admin/auction/settings" className="btn-outline">Auction settings</Link>
         <Link href="/auction/summary" className="btn-outline">Results &amp; CSV</Link>
       </section>

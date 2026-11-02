@@ -8,7 +8,6 @@ import { useScorer } from "@/lib/use-scorer";
 
 interface AdminSession {
   login: ScorerLogin;
-  signOut: () => void;
 }
 
 const AdminContext = createContext<AdminSession | null>(null);
@@ -82,8 +81,8 @@ function SetupSteps() {
  * without the login, and an auction saved in a browser never reaches anyone else.
  */
 export function AdminGate({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) {
-  const { state, signIn, signOut, retry } = useScorer();
-  const session = useMemo(() => (state.phase === "ready" ? { login: state.login, signOut } : null), [state, signOut]);
+  const { state, signIn, retry } = useScorer();
+  const session = useMemo(() => (state.phase === "ready" ? { login: state.login } : null), [state]);
 
   if (session) return <AdminContext.Provider value={session}>{children}</AdminContext.Provider>;
   if (fallback !== undefined) return <>{fallback}</>;
@@ -98,10 +97,7 @@ export function AdminGate({ children, fallback }: { children: ReactNode; fallbac
         <div className="card mx-auto max-w-xl space-y-3 p-5 text-sm sm:p-6">
           <h1 className="font-display text-2xl font-bold uppercase">Can&apos;t check the sign-in</h1>
           <p className="text-muted">Check the internet connection and try again. ({state.message})</p>
-          <div className="flex gap-2">
-            <button type="button" className="btn-primary" onClick={retry}>Try again</button>
-            <button type="button" className="btn-outline" onClick={signOut}>Sign out</button>
-          </div>
+          <button type="button" className="btn-primary" onClick={retry}>Try again</button>
         </div>
       ) : (
         <p className="text-center text-muted">Checking the sign-in…</p>
