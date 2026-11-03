@@ -5,12 +5,12 @@ import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { PlayerAvatar } from "@/components/ui/PlayerAvatar";
 import { cn } from "@/lib/format";
-import { formatMinute, isLive, leader, setRules, statusLabel, type Match, type Side } from "@/lib/live";
+import { formatMinute, isLive, leader, statusLabel, type Match, type Side } from "@/lib/live";
 import { formatKickoff, sportInfo, teamOf } from "@/lib/live-data";
 import { serverNow, type ConnectionStatus } from "@/lib/live-store";
 import { liveSounds, setLiveSoundOn, unlockAudio } from "@/lib/sound";
 import { accentStyle } from "@/lib/sports";
-import { useLiveSoundOn } from "@/lib/use-live-sound";
+import { useAudioReady, useLiveSoundOn } from "@/lib/use-live-sound";
 import { useNow } from "@/lib/use-now";
 
 const LOGO_SIZES = {
@@ -84,9 +84,8 @@ export function StatusPill({ match, className, onColor = false, now }: { match: 
   return <span className={cn(base, tone, className)}>{label}</span>;
 }
 
-/** "25–20 · 18–25 · 9–7" for the volleyball final, the goals so far for football. One set needs no line: the score says it all. */
+/** "25–20 · 18–25 · 9–7" for volleyball, the goals so far for football. */
 export function summaryLine(match: Match): string | null {
-  if (match.volleyball && setRules(match).bestOf === 1) return null;
   if (match.volleyball) {
     return (
       match.volleyball.sets
@@ -165,26 +164,34 @@ export function ConnectionNote({ status, error, loaded }: { status: ConnectionSt
   );
 }
 
-/** Switches the whistles, goal horn and other live-score sounds on or off (off to begin with). */
+/**
+ * Switches the whistles, goal horn and other live-score sounds on or off (on to begin with). Browsers
+ * hold sound back until the first tap, so until then it says so: a button reading "Sound on" over
+ * silence would be misleading, and tapping it then must start the sound, not switch it off.
+ */
 export function SoundToggle({ className }: { className?: string }) {
   const on = useLiveSoundOn();
+  const ready = useAudioReady();
+  const playing = on && ready;
   return (
     <button
       type="button"
+      data-sound-toggle
       aria-pressed={on}
       onClick={() => {
-        if (on) return setLiveSoundOn(false);
+        if (playing) return setLiveSoundOn(false);
         setLiveSoundOn(true);
         void unlockAudio().then(() => liveSounds.preview());
       }}
       className={cn(
         "inline-flex min-h-[40px] items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-semibold transition",
-        on ? "border-transparent bg-primary text-primary-foreground shadow-sm" : "border-border bg-surface text-foreground hover:border-primary/60 hover:text-primary",
+        playing ? "border-transparent bg-primary text-primary-foreground shadow-sm" : "border-border bg-surface text-foreground hover:border-primary/60 hover:text-primary",
+        on && !ready && "border-primary/60 text-primary",
         className,
       )}
     >
       <Icon name={on ? "volume" : "mute"} className="h-4 w-4" />
-      {on ? "Sound on" : "Sound off"}
+      {playing ? "Sound on" : on ? "Tap for sound" : "Sound off"}
     </button>
   );
 }

@@ -7,12 +7,39 @@ import { accentStyle } from "@/lib/sports";
 
 const signed = (n: number) => (n > 0 ? `+${n}` : `${n}`);
 
-const COLUMNS: { key: keyof Standing; short: string; full: string; football?: boolean }[] = [
-  { key: "played", short: "P", full: "Played" },
-  { key: "won", short: "W", full: "Won" },
-  { key: "drawn", short: "D", full: "Drawn", football: true },
-  { key: "lost", short: "L", full: "Lost" },
-];
+const COUNT = "w-5 sm:w-9";
+const DIFFERENCE = "w-7 sm:w-11";
+
+interface Column {
+  short: string;
+  full: string;
+  width: string;
+  value: (row: Standing) => string | number;
+  /** Only where there is room: phones get the same number of columns in both sports. */
+  wide?: boolean;
+}
+
+const PLAYED: Column = { short: "P", full: "Played", width: COUNT, value: (r) => r.played };
+const WON: Column = { short: "W", full: "Won", width: COUNT, value: (r) => r.won };
+const LOST: Column = { short: "L", full: "Lost", width: COUNT, value: (r) => r.lost };
+
+const COLUMNS: Record<LiveSport, Column[]> = {
+  football: [
+    PLAYED,
+    WON,
+    { short: "D", full: "Drawn", width: COUNT, value: (r) => r.drawn },
+    LOST,
+    { short: "GD", full: "Goal difference", width: DIFFERENCE, value: (r) => signed(r.difference) },
+  ],
+  volleyball: [
+    PLAYED,
+    WON,
+    LOST,
+    { short: "Sets", full: "Sets won and lost", width: "w-14", value: (r) => `${r.setsWon}–${r.setsLost}`, wide: true },
+    { short: "SD", full: "Set difference", width: DIFFERENCE, value: (r) => signed(r.setDifference) },
+    { short: "PD", full: "Point difference", width: DIFFERENCE, value: (r) => signed(r.difference) },
+  ],
+};
 
 /** A sport's league table, with the places that reach the final marked. */
 export function LeagueTable({ matches, sport }: { matches: Match[]; sport: LiveSport }) {
@@ -20,9 +47,6 @@ export function LeagueTable({ matches, sport }: { matches: Match[]; sport: LiveS
   if (table.length === 0) return null;
   const { finalists } = RULES[sport];
   const { name, config } = sportInfo(sport);
-  const football = sport === "football";
-  const columns = COLUMNS.filter((c) => football || !c.football);
-  const difference = football ? { short: "GD", full: "Goal difference" } : { short: "PD", full: "Point difference" };
   const heading = `${sport}-table-heading`;
 
   return (
@@ -35,14 +59,11 @@ export function LeagueTable({ matches, sport }: { matches: Match[]; sport: LiveS
             <tr className="caption">
               <th scope="col" className="w-7 py-2.5 sm:w-8">#</th>
               <th scope="col" className="py-2.5 pl-1 text-left">Team</th>
-              {columns.map((c) => (
-                <th key={c.key} scope="col" className="w-5 py-2.5 sm:w-9">
+              {COLUMNS[sport].map((c) => (
+                <th key={c.short} scope="col" className={cn("py-2.5", c.width, c.wide && "hidden sm:table-cell")}>
                   <abbr title={c.full} className="no-underline">{c.short}</abbr>
                 </th>
               ))}
-              <th scope="col" className="w-8 py-2.5 sm:w-11">
-                <abbr title={difference.full} className="no-underline">{difference.short}</abbr>
-              </th>
               <th scope="col" className="w-9 py-2.5 pr-2 sm:w-12 sm:pr-3">Pts</th>
             </tr>
           </thead>
@@ -56,16 +77,18 @@ export function LeagueTable({ matches, sport }: { matches: Match[]; sport: LiveS
                     <span className="min-w-0 font-display text-base font-bold uppercase leading-[1.05] sm:text-lg">{teamOf(row.team).name}</span>
                   </Link>
                 </td>
-                {columns.map((c) => (
-                  <td key={c.key} className="tabular-nums">{row[c.key]}</td>
+                {COLUMNS[sport].map((c) => (
+                  <td key={c.short} className={cn("tabular-nums", c.wide && "hidden sm:table-cell")}>{c.value(row)}</td>
                 ))}
-                <td className="tabular-nums">{signed(row.difference)}</td>
                 <td className="pr-2 font-display text-xl font-extrabold tabular-nums sm:pr-3">{row.points}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <p className="mt-2 text-xs text-muted">
+        {COLUMNS[sport].filter((c) => !c.wide).map((c) => `${c.short} ${c.full.toLowerCase()}`).join(" · ")}
+      </p>
     </section>
   );
 }

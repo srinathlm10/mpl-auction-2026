@@ -20,8 +20,8 @@ export const LIVE_SPORTS: LiveSport[] = ["football", "volleyball"];
 export const RULES = {
   football: { halfMinutes: 20, pointsForWin: 3, pointsForDraw: 1, finalists: 2 },
   volleyball: {
-    league: { bestOf: 1, setPoints: 25, decidingSetPoints: 25, winBy: 2 },
-    final: { bestOf: 3, setPoints: 25, decidingSetPoints: 15, winBy: 2 },
+    league: { bestOf: 3, setPoints: 15, decidingSetPoints: 15, winBy: 2 },
+    final: { bestOf: 3, setPoints: 25, decidingSetPoints: 25, winBy: 2 },
     pointsForWin: 3,
     pointsForDraw: 0,
     finalists: 2,
@@ -35,7 +35,7 @@ export interface VolleyballRules {
   winBy: number;
 }
 
-/** League matches are one set, the final is best of three. */
+/** Both are best of three: league sets are to 15, the final's to 25. */
 export const setRules = (m: { stage?: "final" }): VolleyballRules => (m.stage === "final" ? RULES.volleyball.final : RULES.volleyball.league);
 
 /**
@@ -363,16 +363,14 @@ export function buildMatch(fixture: Fixture, row?: LiveRow | null): Match {
   const state: LiveState = row
     ? { status: row.status, period: row.period, period_started_at: row.period_started_at, events: row.events, points: row.points }
     : emptyState();
-  const rules = setRules(fixture);
-  const volleyball = fixture.sport === "volleyball" ? volleyballScore(state.points, rules) : null;
+  const volleyball = fixture.sport === "volleyball" ? volleyballScore(state.points, setRules(fixture)) : null;
   // A volleyball match is over as soon as a team has won enough sets, whatever the stored status says.
   const status: MatchStatus = volleyball?.finished && state.status !== "upcoming" ? "finished" : state.status;
-  const score = !volleyball ? footballScore(state.events) : rules.bestOf === 1 ? { a: volleyball.sets[0]?.a ?? 0, b: volleyball.sets[0]?.b ?? 0 } : { ...volleyball.won };
   return {
     ...fixture,
     ...state,
     status,
-    score,
+    score: volleyball ? { ...volleyball.won } : footballScore(state.events),
     volleyball,
     updated_at: row?.updated_at ?? null,
   };
@@ -400,7 +398,11 @@ export interface Standing {
   won: number;
   drawn: number;
   lost: number;
-  /** Goals (football) or points in the set (volleyball). */
+  /** Volleyball: sets won and lost, and the difference. Football: all 0. */
+  setsWon: number;
+  setsLost: number;
+  setDifference: number;
+  /** Goals (football) or rally points (volleyball). */
   scored: number;
   conceded: number;
   difference: number;
@@ -416,22 +418,28 @@ export function leagueTable(matches: Match[], sport: LiveSport): Standing[] {
   const table = new Map<number, Standing>();
   for (const m of league) {
     for (const team of [m.team_a, m.team_b]) {
-      if (!table.has(team)) table.set(team, { team, played: 0, won: 0, drawn: 0, lost: 0, scored: 0, conceded: 0, difference: 0, points: 0 });
+      if (!table.has(team)) table.set(team, { team, played: 0, won: 0, drawn: 0, lost: 0, setsWon: 0, setsLost: 0, setDifference: 0, scored: 0, conceded: 0, difference: 0, points: 0 });
     }
   }
 
   const finished = league.filter((m) => m.status === "finished");
-  const record = (team: number, scored: number, conceded: number) => {
+  /** `mine`/`theirs` are the match score: goals, or sets in volleyball. `scored`/`conceded` are goals or rally points. */
+  const record = (team: number, mine: number, theirs: number, scored: number, conceded: number) => {
     const row = table.get(team);
     if (!row) return;
     row.played += 1;
+    if (sport === "volleyball") {
+      row.setsWon += mine;
+      row.setsLost += theirs;
+      row.setDifference += mine - theirs;
+    }
     row.scored += scored;
     row.conceded += conceded;
     row.difference += scored - conceded;
-    if (scored > conceded) {
+    if (mine > theirs) {
       row.won += 1;
       row.points += pointsForWin;
-    } else if (scored === conceded) {
+    } else if (mine === theirs) {
       row.drawn += 1;
       row.points += pointsForDraw;
     } else {
@@ -439,8 +447,10 @@ export function leagueTable(matches: Match[], sport: LiveSport): Standing[] {
     }
   };
   for (const m of finished) {
-    record(m.team_a, m.score.a, m.score.b);
-    record(m.team_b, m.score.b, m.score.a);
+    // Volleyball is won by sets; the rally points are the tie-break below.
+    const rallies = m.volleyball ? m.volleyball.sets.reduce((sum, s) => ({ a: sum.a + s.a, b: sum.b + s.b }), { a: 0, b: 0 }) : m.score;
+    record(m.team_a, m.score.a, m.score.b, rallies.a, rallies.b);
+    record(m.team_b, m.score.b, m.score.a, rallies.b, rallies.a);
   }
 
   // Above 0 when team x beat team y in the league.
@@ -450,9 +460,12 @@ export function leagueTable(matches: Match[], sport: LiveSport): Standing[] {
     return Math.sign(game.team_a === x ? game.score.a - game.score.b : game.score.b - game.score.a);
   };
 
+  /* Football: points, goal difference, goals scored. Volleyball is won by sets, so sets come first,
+     then the rally points. Both end with the match between the two teams. */
   return [...table.values()].sort(
     (x, y) =>
       y.points - x.points ||
+      y.setDifference - x.setDifference ||
       y.difference - x.difference ||
       y.scored - x.scored ||
       headToHead(y.team, x.team) ||

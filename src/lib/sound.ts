@@ -23,14 +23,20 @@ function getCtx(): AudioContext | null {
       window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AC) return null;
     ctx = new AC();
+    ctx.onstatechange = () => listeners.forEach((l) => l());
   }
   return ctx;
 }
 
 export function unlockAudio(): Promise<void> {
   const c = getCtx();
-  if (c && c.state === "suspended") return c.resume().catch(() => undefined);
+  if (c && c.state !== "running") return c.resume().catch(() => undefined);
   return Promise.resolve();
+}
+
+/** False until the browser lets this page play sound, which usually takes a first tap or key press. */
+export function isAudioReady() {
+  return ctx?.state === "running";
 }
 
 export function isMuted() {
@@ -120,18 +126,18 @@ export const sounds = {
 /* ------------------------------------------------------------ live scores */
 /*
  * Sounds for the live football / volleyball scores: whistles, a goal horn with a crowd roar, a card
- * sound and volleyball point / set sounds. They are OFF until someone taps the sound button (people
- * follow matches on their phones in public), and that choice is remembered. Separate from the
- * auction's mute setting above.
+ * sound and volleyball point / set sounds. They are ON unless someone switches them off with the sound
+ * button, and that choice is remembered. Browsers still hold all sound back until the first tap or key
+ * press on the page. Separate from the auction's mute setting above.
  */
 
-let liveOn = false;
+let liveOn = true;
 
 if (typeof window !== "undefined") {
   try {
-    liveOn = localStorage.getItem("mpl-live-sound") === "1";
+    liveOn = localStorage.getItem("mpl-live-sound") !== "0";
   } catch {
-    // storage blocked – stay off
+    // storage blocked – stay on
   }
 }
 

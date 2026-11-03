@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Fragment } from "react";
 import { Digit, summaryLine, TeamLogo } from "@/components/live/parts";
 import { cn } from "@/lib/format";
 import { isLive, leader, statusLabel, type LiveSport, type Match, type Side } from "@/lib/live";
@@ -40,7 +41,7 @@ export function ScoreTable({ matches, sport }: { matches: Match[]; sport: LiveSp
             <tr className="caption">
               <th scope="col" className="w-12 py-2.5 sm:w-14">Match</th>
               <th scope="col" className="py-2.5 pr-1 text-right">Team</th>
-              <th scope="col" className="w-[4.75rem] py-2.5 sm:w-24">Score</th>
+              <th scope="col" className="w-[4.75rem] py-2.5 sm:w-28">Score</th>
               <th scope="col" className="py-2.5 pl-1 text-left">Team</th>
             </tr>
           </thead>
@@ -62,7 +63,16 @@ export function ScoreTable({ matches, sport }: { matches: Match[]; sport: LiveSp
                         <span className={cn("mt-1 block text-[11px] leading-tight text-muted", isLive(m) && "font-semibold text-red-600 dark:text-red-400")}>
                           {upcoming ? formatKickoff(m.starts_at) ?? "Time TBA" : statusLabel(m, now)}
                         </span>
-                        {sets && <span className="mt-0.5 block text-[11px] leading-tight text-muted">{sets}</span>}
+                        {sets && (
+                          <span className="mt-0.5 block text-[11px] leading-tight text-muted">
+                            {sets.split(" · ").map((set, i) => (
+                              <Fragment key={i}>
+                                {i > 0 && " · "}
+                                <span className="whitespace-nowrap">{set}</span>
+                              </Fragment>
+                            ))}
+                          </span>
+                        )}
                       </Link>
                     </td>
                     <TeamCell match={m} side="b" />

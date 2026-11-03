@@ -33,11 +33,11 @@ const { league, final } = RULES.volleyball;
 
 export const volleyballRules: string[] = [
   "The four teams play a league: each team plays the other three once, six matches in all.",
-  `Every league match is a single set: first to ${league.setPoints} points, and a team must win by ${league.winBy}.`,
+  `Every league match is best of ${league.bestOf} sets: first to ${league.setPoints} points in each set, and a team must win a set by ${league.winBy}. The first team to win ${Math.floor(league.bestOf / 2) + 1} sets wins the match.`,
   `A win earns ${RULES.volleyball.pointsForWin} points and a loss 0 points.`,
-  "Teams are ranked by points, then point difference, then points scored, then the result of their match against each other.",
+  "Teams are ranked by points, then set difference, then point difference, then points scored, then the result of their match against each other.",
   `The top ${RULES.volleyball.finalists} teams go straight to the final. There are no semi-finals.`,
-  `The final is best of ${final.bestOf} sets: first to ${final.setPoints} points in each set, with a deciding set to ${final.decidingSetPoints} if needed, and a team must win a set by ${final.winBy}.`,
+  `The final is also best of ${final.bestOf} sets, but with ${final.setPoints} points in each set.`,
 ];
 
 export const auctionRules: string[] = [

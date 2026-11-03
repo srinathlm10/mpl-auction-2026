@@ -6,7 +6,7 @@ import { GoalBanner, useGoalAlert } from "@/components/live/GoalAlerts";
 import { ClockText, ConnectionNote, Digit, SoundToggle, StatusPill, TeamLogo } from "@/components/live/parts";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/format";
-import { formatMinute, leader, matchClock, RULES, scorerLines, setRules, teamsKnown, type EventKind, type Match, type MatchEvent, type ScorerLine, type SetScore, type Side } from "@/lib/live";
+import { formatMinute, leader, matchClock, scorerLines, setRules, teamsKnown, type EventKind, type Match, type MatchEvent, type ScorerLine, type SetScore, type Side } from "@/lib/live";
 import { formatKickoff, sportInfo, teamOf } from "@/lib/live-data";
 import { accentStyle } from "@/lib/sports";
 import { useLive } from "@/lib/use-live";
@@ -142,7 +142,8 @@ function SetsTable({ match }: { match: Match }) {
         </table>
       </div>
       <p className="mt-2 text-xs text-muted">
-        Best of {rules.bestOf} sets · first to {rules.setPoints} points ({rules.decidingSetPoints} in a deciding set), win by {rules.winBy}.
+        Best of {rules.bestOf} sets · first to {rules.setPoints} points
+        {rules.decidingSetPoints !== rules.setPoints && ` (${rules.decidingSetPoints} in a deciding set)`}, win by {rules.winBy}.
       </p>
     </div>
   );
@@ -164,7 +165,6 @@ export function LiveMatchView({ id }: { id: string }) {
   const v = match.volleyball;
   const winner = leader(match);
   const kickoff = formatKickoff(match.starts_at);
-  const oneSet = match.sport === "volleyball" && setRules(match).bestOf === 1;
 
   /* The line under the score: the clock (football), the set in play (volleyball), or who won. */
   let under: React.ReactNode = null;
@@ -180,8 +180,8 @@ export function LiveMatchView({ id }: { id: string }) {
       );
     }
   } else if (v) {
-    if (v.finished && v.winner) under = `${teamOf(v.winner === "a" ? match.team_a : match.team_b).name} win${oneSet ? "" : ` ${v.won.a}–${v.won.b}`}`;
-    else if (v.current && !oneSet) under = <>Set {v.sets.length} · <Digit value={v.current.a} /> – <Digit value={v.current.b} /></>;
+    if (v.finished && v.winner) under = `${teamOf(v.winner === "a" ? match.team_a : match.team_b).name} win ${v.won.a}–${v.won.b}`;
+    else if (v.current) under = <>Set {v.sets.length} · <Digit value={v.current.a} /> – <Digit value={v.current.b} /></>;
   }
 
   const squadNames: Record<Side, string[]> = {
@@ -242,16 +242,12 @@ export function LiveMatchView({ id }: { id: string }) {
         </div>
       </section>
 
-      {oneSet ? (
-        <p className="text-sm text-muted">One set · first to {RULES.volleyball.league.setPoints} points, win by {RULES.volleyball.league.winBy}.</p>
-      ) : (
-        <section aria-labelledby="detail-heading">
-          <h2 id="detail-heading" className="section-title mb-3">
-            {match.sport === "football" ? "Timeline" : "Sets"}
-          </h2>
-          {match.sport === "football" ? <Timeline match={match} /> : <SetsTable match={match} />}
-        </section>
-      )}
+      <section aria-labelledby="detail-heading">
+        <h2 id="detail-heading" className="section-title mb-3">
+          {match.sport === "football" ? "Timeline" : "Sets"}
+        </h2>
+        {match.sport === "football" ? <Timeline match={match} /> : <SetsTable match={match} />}
+      </section>
 
       <Squads match={match} names={squadNames} />
 

@@ -116,8 +116,8 @@ Everyone sees **the same live score on any phone, with no login and no sign-up**
 
 - **`/live`**: every match (Live now, Up next, Results). **`/live/football-1`** (and so on): one match, with a link you can send in WhatsApp.
 - **Football** looks like a score card on Google: team crests, the score, a **running match clock** (`34'`, then `20+2'` in stoppage time, `HT`, `FT`), the goal scorers under each team and a timeline with every goal and card. Halves are 20 minutes: change `halfMinutes` in `src/lib/live.ts`, or add `"half_minutes": 25` to a match in `src/data/fixtures.json`.
-- **Volleyball** shows sets won, the set in play and every finished set. Best of 3 sets, 25 points (15 in a deciding set), win by 2: change `RULES.volleyball` in `src/lib/live.ts`.
-- **Goal animation and sounds**: when a goal arrives, a "GOAL!" banner drops in with the scorer, the minute and the new score, with confetti and a glow on the scoreboard. Sounds (whistles for kick-off, half time and full time, a goal horn with a crowd roar, a card sound, volleyball point and set sounds) are made in the browser and are **off until someone taps the "Sound" button**.
+- **Volleyball** shows sets won, the set in play and every finished set. League matches are best of 3 sets to 15; the final is best of 3 sets to 25; win a set by 2. Change `RULES.volleyball` in `src/lib/live.ts`.
+- **Goal animation and sounds**: when a goal arrives, a "GOAL!" banner drops in with the scorer, the minute and the new score, with confetti and a glow on the scoreboard. Sounds (whistles for kick-off, half time and full time, a goal horn with a crowd roar, a card sound, volleyball point and set sounds) are made in the browser and are **on unless someone switches them off with the "Sound" button**. Browsers hold all sound back until the first tap on the page, so the button says **Tap for sound** until then.
 - The home page shows a **Live scores** strip while a match is being played, and nothing otherwise.
 
 ### Setting it up (once, about 5 minutes)
@@ -140,7 +140,7 @@ The matches (which teams play, in what order, optional start time) are in `src/d
 
 Football has a league and a final. Every team plays the other three, the table on Live Scores updates when each match ends (3 points for a win, 1 for a draw, then goal difference, goals scored and head-to-head), and the top 2 go straight to the final (`football-7`). The final's teams fill in by themselves once all six league matches are finished, and the scorer can open it from then on. To choose the finalists by hand, put real team ids in place of `-1` and `-2` in `fixtures.json`. The points are in `RULES.football` in `src/lib/live.ts`.
 
-Volleyball works the same way: every team plays the other three, and each league match is a single set to 25 (win by 2). A win earns 3 points, then point difference, points scored and head-to-head decide ties. The top 2 play the final (`volleyball-7`), best of 3 sets with a deciding set to 15. The rules are in `RULES.volleyball` in `src/lib/live.ts`.
+Volleyball works the same way: every team plays the other three, and each league match is best of 3 sets to 15 (win a set by 2). A win earns 3 points, then set difference, point difference, points scored and head-to-head decide ties. The top 2 play the final (`volleyball-7`), best of 3 sets to 25. The rules are in `RULES.volleyball` in `src/lib/live.ts`.
 
 Free-plan note: Supabase's free plan allows about 200 phones holding a live connection at the same time. Beyond that, extra phones automatically check for new scores every few seconds instead.
 

@@ -2,12 +2,20 @@
 
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { snapshotOfMatch, soundCue, type Match, type MatchSnapshot } from "./live";
-import { isLiveSoundOn, liveSounds, subscribeLiveSound, unlockAudio } from "./sound";
+import { isAudioReady, isLiveSoundOn, liveSounds, subscribeLiveSound, unlockAudio } from "./sound";
 
-/** Whether the live-score sounds are switched on in this browser (off until someone taps the sound button). */
+/** Whether the live-score sounds are switched on in this browser (on until someone switches them off). */
 export function useLiveSoundOn() {
-  return useSyncExternalStore(subscribeLiveSound, isLiveSoundOn, () => false);
+  return useSyncExternalStore(subscribeLiveSound, isLiveSoundOn, () => true);
 }
+
+/** Whether the browser is letting this page play sound yet. */
+export function useAudioReady() {
+  return useSyncExternalStore(subscribeLiveSound, isAudioReady, () => false);
+}
+
+/* On a phone only the end of a tap counts as a gesture, so a pointerdown alone would not unlock sound. */
+const GESTURES = ["pointerup", "touchend", "click", "keydown"];
 
 /**
  * Plays the sound that fits each change in the matches: whistles, a goal horn, cards, volleyball points.
@@ -16,19 +24,19 @@ export function useLiveSoundOn() {
  */
 export function useLiveSounds(matches: Match[], loaded: boolean) {
   const on = useLiveSoundOn();
+  const ready = useAudioReady();
   const before = useRef<Map<string, MatchSnapshot> | null>(null);
 
-  // Browsers only allow sound after a tap; the first tap anywhere on the page unlocks it.
+  // Keeps trying on every tap until the browser allows sound. The sound button handles its own taps.
   useEffect(() => {
-    if (!on) return;
-    const unlock = () => unlockAudio();
-    window.addEventListener("pointerdown", unlock, { once: true });
-    window.addEventListener("keydown", unlock, { once: true });
-    return () => {
-      window.removeEventListener("pointerdown", unlock);
-      window.removeEventListener("keydown", unlock);
+    if (!on || ready) return;
+    const unlock = (e: Event) => {
+      if (!(e.target instanceof Element && e.target.closest("[data-sound-toggle]"))) void unlockAudio();
     };
-  }, [on]);
+    void unlockAudio();
+    GESTURES.forEach((name) => window.addEventListener(name, unlock));
+    return () => GESTURES.forEach((name) => window.removeEventListener(name, unlock));
+  }, [on, ready]);
 
   useEffect(() => {
     if (!loaded) return;

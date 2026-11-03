@@ -431,14 +431,14 @@ function VolleyballPanel({ match, commit }: { match: Match; commit: (next: LiveS
     <div className="space-y-5">
       {finished && v?.winner && (
         <p className="card bg-primary/10 p-4 text-center font-display text-xl font-bold uppercase">
-          {teamOf(v.winner === "a" ? match.team_a : match.team_b).name} win{rules.bestOf > 1 && ` ${v.won.a}–${v.won.b}`}
+          {teamOf(v.winner === "a" ? match.team_a : match.team_b).name} win {v.won.a}–{v.won.b}
         </p>
       )}
 
       {!finished && v?.current && (
         <div className="card p-4 text-center">
           <p className="text-xs font-bold uppercase tracking-wider text-muted">
-            Set {v.sets.length} · first to {v.won.a === 1 && v.won.b === 1 && rules.bestOf === 3 ? rules.decidingSetPoints : rules.setPoints}, win by {rules.winBy}
+            Set {v.sets.length} · first to {v.won.a === rules.bestOf - 2 && v.won.b === rules.bestOf - 2 ? rules.decidingSetPoints : rules.setPoints}, win by {rules.winBy}
           </p>
           <p className="mt-1 font-display text-6xl font-extrabold tabular-nums">
             {v.current.a} <span className="text-muted">–</span> {v.current.b}
