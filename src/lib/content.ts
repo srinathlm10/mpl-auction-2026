@@ -23,7 +23,7 @@ export const leagueRules: string[] = [
 
 export const footballRules: string[] = [
   "The four teams play a league: each team plays the other three once, six matches in all.",
-  `Each match lasts ${RULES.football.halfMinutes * 2} minutes: two halves of ${RULES.football.halfMinutes} minutes.`,
+  `Each match has two halves of ${RULES.football.halfMinutes} minutes, with a ${RULES.football.breakMinutes}-minute break in between.`,
   `A win earns ${RULES.football.pointsForWin} points, a draw ${RULES.football.pointsForDraw} point and a loss 0 points.`,
   "Teams are ranked by points, then goal difference, then goals scored, then the result of their match against each other.",
   `The top ${RULES.football.finalists} teams go straight to the final. There are no semi-finals.`,

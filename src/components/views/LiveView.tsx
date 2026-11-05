@@ -91,7 +91,7 @@ export function LiveView() {
             <LeagueTable key={sport} matches={matches} sport={sport} />
           ))}
         </div>
-        <Section title="Up next" hint="In order of play. Each match has a 30-minute slot." matches={upcoming} />
+        <Section title="Up next" hint="In order of play." matches={upcoming} />
         <Section title="Results" matches={results} />
         {shown.length === 0 && <p className="text-muted">No matches.</p>}
       </div>

@@ -18,7 +18,7 @@ export const LIVE_SPORTS: LiveSport[] = ["football", "volleyball"];
 
 /** Change these to change the rules (the length of a football half can also be set per match in fixtures.json). */
 export const RULES = {
-  football: { halfMinutes: 15, pointsForWin: 3, pointsForDraw: 1, finalists: 2 },
+  football: { halfMinutes: 20, breakMinutes: 5, pointsForWin: 3, pointsForDraw: 1, finalists: 2 },
   volleyball: {
     league: { bestOf: 3, setPoints: 15, decidingSetPoints: 15, winBy: 2 },
     final: { bestOf: 3, setPoints: 25, decidingSetPoints: 25, winBy: 2 },

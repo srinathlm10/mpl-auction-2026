@@ -61,42 +61,48 @@
     "sport": "football",
     "round": "Match 1",
     "team_a": 9,
-    "team_b": 10
+    "team_b": 10,
+    "starts_at": "2026-11-06T17:00:00+05:30"
   },
   {
     "id": "football-2",
     "sport": "football",
     "round": "Match 2",
     "team_a": 11,
-    "team_b": 12
+    "team_b": 12,
+    "starts_at": "2026-11-06T18:00:00+05:30"
   },
   {
     "id": "football-3",
     "sport": "football",
     "round": "Match 3",
     "team_a": 9,
-    "team_b": 11
+    "team_b": 11,
+    "starts_at": "2026-11-06T19:00:00+05:30"
   },
   {
     "id": "football-4",
     "sport": "football",
     "round": "Match 4",
     "team_a": 10,
-    "team_b": 12
+    "team_b": 12,
+    "starts_at": "2026-11-06T20:00:00+05:30"
   },
   {
     "id": "football-5",
     "sport": "football",
     "round": "Match 5",
     "team_a": 9,
-    "team_b": 12
+    "team_b": 12,
+    "starts_at": "2026-11-07T17:00:00+05:30"
   },
   {
     "id": "football-6",
     "sport": "football",
     "round": "Match 6",
     "team_a": 10,
-    "team_b": 11
+    "team_b": 11,
+    "starts_at": "2026-11-07T18:00:00+05:30"
   },
   {
     "id": "football-7",
@@ -104,6 +110,7 @@
     "round": "Final",
     "stage": "final",
     "team_a": -1,
-    "team_b": -2
+    "team_b": -2,
+    "starts_at": "2026-11-07T19:00:00+05:30"
   }
 ]
