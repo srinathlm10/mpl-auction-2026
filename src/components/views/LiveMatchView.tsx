@@ -6,7 +6,7 @@ import { GoalBanner, useGoalAlert } from "@/components/live/GoalAlerts";
 import { ClockText, ConnectionNote, Digit, SoundToggle, StatusPill, TeamLogo } from "@/components/live/parts";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/format";
-import { formatMinute, leader, matchClock, scorerLines, setRules, teamsKnown, type EventKind, type Match, type MatchEvent, type ScorerLine, type SetScore, type Side } from "@/lib/live";
+import { addedTimeOf, formatMinute, leader, matchClock, scorerLines, setRules, teamsKnown, type EventKind, type Match, type MatchEvent, type ScorerLine, type SetScore, type Side } from "@/lib/live";
 import { formatKickoff, sportInfo, teamOf } from "@/lib/live-data";
 import { accentStyle } from "@/lib/sports";
 import { useLive } from "@/lib/use-live";
@@ -175,7 +175,12 @@ export function LiveMatchView({ id }: { id: string }) {
       under = (
         <span className="inline-flex flex-col items-center leading-none">
           <ClockText text={clock.text} running={clock.running} className="font-display text-4xl font-extrabold sm:text-5xl" />
-          {clock.running && <span className="mt-1 text-xs font-bold uppercase tracking-widest text-white/80">{match.period === "2H" ? "2nd half" : "1st half"}</span>}
+          {clock.minute !== null && (
+            <span className="mt-1 text-xs font-bold uppercase tracking-widest text-white/80">
+              {clock.paused ? "Paused" : match.period === "2H" ? "2nd half" : "1st half"}
+              {addedTimeOf(match) > 0 && <span className="text-amber-300"> · +{addedTimeOf(match)} min</span>}
+            </span>
+          )}
         </span>
       );
     }

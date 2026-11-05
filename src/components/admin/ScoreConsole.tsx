@@ -8,6 +8,7 @@ import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/format";
 import {
   addEvent,
+  addedTimeOf,
   addPoint,
   clockOf,
   editEvent,
@@ -22,11 +23,13 @@ import {
   LIVE_SPORTS,
   matchClock,
   parseMinute,
+  pauseClock,
   reopen,
   removeEvent,
+  resumeClock,
   secondHalf,
+  setAddedTime,
   setRules,
-  shiftClock,
   startMatch,
   teamsKnown,
   undo,
@@ -49,7 +52,7 @@ import { useNow } from "@/lib/use-now";
 
 /* ------------------------------------------------------------------ helpers */
 
-const stateOf = (m: Match): LiveState => ({ status: m.status, period: m.period, period_started_at: m.period_started_at, events: m.events, points: m.points });
+const stateOf = (m: Match): LiveState => ({ status: m.status, period: m.period, period_started_at: m.period_started_at, paused_at: m.paused_at, added_minutes: m.added_minutes, events: m.events, points: m.points });
 
 const byName = (a: string, b: string) => a.localeCompare(b);
 
@@ -64,6 +67,7 @@ function friendly(message: string): string {
 }
 
 const MAX_UNDO = 50;
+const EXTRA_MINUTES = [1, 2, 3, 4, 5];
 
 /** What the scorer did on a match, for Undo. Kept for this browser tab, so a reload does not lose it. */
 function useUndoHistory(matchId: string) {
@@ -291,6 +295,8 @@ function FootballPanel({
   const clock = matchClock(match, now);
   const half = halfMinutesOf(match);
   const playing = match.status === "live" || match.status === "break";
+  const inHalf = clock !== null && clock.minute !== null;
+  const added = addedTimeOf(match);
   const [picker, setPicker] = useState<{ kind: EventKind; side: Side; minute: string } | null>(null);
 
   /** The minute is taken when the button is tapped (the moment of the goal), before the scorer is chosen. */
@@ -340,18 +346,41 @@ function FootballPanel({
       <div className="card flex items-center justify-between gap-3 p-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-wider text-muted">Match clock</p>
-          <p className="font-display text-5xl font-extrabold leading-none tabular-nums">{clock?.running ? formatPlayed(clock.playedSeconds) : clock?.text ?? "00:00"}</p>
+          <p className="font-display text-5xl font-extrabold leading-none tabular-nums">{inHalf ? formatPlayed(clock.playedSeconds) : clock?.text ?? "00:00"}</p>
           <p className="mt-1 text-sm text-muted">
-            {clock?.running ? `${clock.text} · ${match.period === "2H" ? "2nd half" : "1st half"} · ${half} min halves` : match.status === "upcoming" ? "Starts when you kick off" : "Stopped"}
+            {inHalf ? `${clock.paused ? "Paused · " : ""}${clock.text} · ${match.period === "2H" ? "2nd half" : "1st half"} · ${half} min halves` : match.status === "upcoming" ? "Starts when you kick off" : "Stopped"}
           </p>
         </div>
-        {match.status === "live" && (
-          <div className="flex flex-col gap-2">
-            <button type="button" className="btn-outline !min-h-[40px]" onClick={() => moveClock("+1 min", shiftClock(state, 1))} aria-label="Move the clock forward one minute">+1 min</button>
-            <button type="button" className="btn-outline !min-h-[40px]" onClick={() => moveClock("−1 min", shiftClock(state, -1))} aria-label="Move the clock back one minute">−1 min</button>
-          </div>
+        {inHalf && (
+          <button
+            type="button"
+            className={cn(clock.paused ? "btn-primary" : "btn-outline", "!min-h-[64px] shrink-0 px-5 text-base")}
+            onClick={() => (clock.paused ? moveClock("Resume", resumeClock(state, serverNow())) : moveClock("Pause", pauseClock(state, serverNow())))}
+          >
+            <Icon name={clock.paused ? "play" : "pause"} className="h-5 w-5" />
+            {clock.paused ? "Resume" : "Pause"}
+          </button>
         )}
       </div>
+
+      {inHalf && (
+        <div className="card p-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-muted">Extra time{added > 0 && `: +${added} min shown to everyone`}</p>
+          <div className="mt-2 grid grid-cols-5 gap-2">
+            {EXTRA_MINUTES.map((n) => (
+              <button
+                key={n}
+                type="button"
+                aria-pressed={added === n}
+                className={cn(added === n ? "btn-primary" : "btn-outline", "whitespace-nowrap !px-0.5 !text-[13px]")}
+                onClick={() => (added === n ? moveClock("Clear extra time", setAddedTime(state, 0)) : moveClock(`Extra time ${n} min`, setAddedTime(state, n)))}
+              >
+                {n} min
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-2">
         <button type="button" className="btn-primary flex-1 !min-h-[52px] text-base" onClick={step.run}>{step.label}</button>

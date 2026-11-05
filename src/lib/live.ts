@@ -76,6 +76,10 @@ export interface LiveState {
   period: Period | null;
   /** When the current half kicked off (server time); the match clock counts from here. */
   period_started_at: string | null;
+  /** When the clock was paused (server time), null while it is running. */
+  paused_at: string | null;
+  /** Extra time announced for each half, in minutes. */
+  added_minutes: Partial<Record<Period, number>>;
   events: MatchEvent[];
   /** Volleyball: one letter per rally, "a" or "b" for the team that won it. */
   points: string;
@@ -86,7 +90,7 @@ export interface LiveRow extends LiveState {
   updated_at: string;
 }
 
-export const emptyState = (): LiveState => ({ status: "upcoming", period: null, period_started_at: null, events: [], points: "" });
+export const emptyState = (): LiveState => ({ status: "upcoming", period: null, period_started_at: null, paused_at: null, added_minutes: {}, events: [], points: "" });
 
 /** Players of each team, by team id (from the auction results). */
 export type Squads = Record<number, string[]>;
@@ -172,6 +176,8 @@ export interface FootballClock {
   /** What to show: "34'", "20+2'", "HT" or "FT". */
   text: string;
   running: boolean;
+  /** A half is in play but the scorer has stopped the clock. */
+  paused: boolean;
   /** The minute being played (the cap in stoppage time), null at half time / full time. */
   minute: number | null;
   /** Stoppage-time minutes, 0 normally. */
@@ -190,20 +196,22 @@ export function halfMinutesOf(m: { half_minutes?: number }): number {
  */
 export function footballClock(state: LiveState, now: Date, halfMinutes: number = RULES.football.halfMinutes): FootballClock | null {
   if (state.status === "upcoming") return null;
-  if (state.status === "break") return { text: "HT", running: false, minute: null, added: 0, playedSeconds: halfMinutes * 60 };
-  if (state.status === "finished") return { text: "FT", running: false, minute: null, added: 0, playedSeconds: halfMinutes * 120 };
+  if (state.status === "break") return { text: "HT", running: false, paused: false, minute: null, added: 0, playedSeconds: halfMinutes * 60 };
+  if (state.status === "finished") return { text: "FT", running: false, paused: false, minute: null, added: 0, playedSeconds: halfMinutes * 120 };
   if (!state.period_started_at) return null;
   const started = Date.parse(state.period_started_at);
   if (Number.isNaN(started)) return null;
 
-  const elapsed = Math.max(0, Math.floor((now.getTime() - started) / 1000));
+  const pausedAt = state.paused_at ? Date.parse(state.paused_at) : NaN;
+  const paused = !Number.isNaN(pausedAt);
+  const elapsed = Math.max(0, Math.floor(((paused ? pausedAt : now.getTime()) - started) / 1000));
   const second = state.period === "2H";
   const base = second ? halfMinutes : 0;
   const cap = second ? halfMinutes * 2 : halfMinutes;
   const current = base + Math.floor(elapsed / 60) + 1; // the minute being played; the first minute is 1'
   const minute = Math.min(current, cap);
   const added = Math.max(0, current - cap);
-  return { text: formatMinute(minute, added || null), running: true, minute, added, playedSeconds: base * 60 + elapsed };
+  return { text: formatMinute(minute, added || null), running: !paused, paused, minute, added, playedSeconds: base * 60 + elapsed };
 }
 
 /** "34:12" for the scorer's console. */
@@ -215,7 +223,7 @@ export function formatPlayed(seconds: number): string {
 /** The minute a goal scored right now belongs to (null when no half is running). */
 export function guessMinute(state: LiveState, now: Date, halfMinutes: number = RULES.football.halfMinutes): MatchMinute | null {
   const clock = footballClock(state, now, halfMinutes);
-  if (!clock || !clock.running) return null;
+  if (!clock || clock.minute === null) return null;
   return { minute: clock.minute, added: clock.added || null };
 }
 
@@ -253,7 +261,7 @@ export function startMatch(sport: LiveSport, state: LiveState, now: Date): LiveS
 }
 
 export function halfTime(state: LiveState): LiveState {
-  return { ...state, status: "break", period: "1H", period_started_at: null };
+  return { ...state, status: "break", period: "1H", period_started_at: null, paused_at: null };
 }
 
 export function secondHalf(state: LiveState, now: Date): LiveState {
@@ -261,7 +269,7 @@ export function secondHalf(state: LiveState, now: Date): LiveState {
 }
 
 export function fullTime(state: LiveState): LiveState {
-  return { ...state, status: "finished", period_started_at: null };
+  return { ...state, status: "finished", period_started_at: null, paused_at: null };
 }
 
 /** Football: take the match back from "finished" (a mistake) into the second half, at the end of normal time. */
@@ -270,12 +278,28 @@ export function reopen(state: LiveState, now: Date, halfMinutes: number = RULES.
   return { ...state, status: "live", period: "2H", period_started_at: new Date(now.getTime() - (halfMinutes - 1) * 60000).toISOString() };
 }
 
-/** Moves the running clock forward (positive) or back (negative) by whole minutes, to correct a late or early start. */
-export function shiftClock(state: LiveState, minutes: number): LiveState {
-  if (state.status !== "live" || !state.period_started_at) return state;
+/** Stops the clock for everyone until it is resumed. */
+export function pauseClock(state: LiveState, now: Date): LiveState {
+  if (state.status !== "live" || state.paused_at) return state;
+  return { ...state, paused_at: now.toISOString() };
+}
+
+/** Starts the clock again from where it stopped, by moving the kick-off time on by the length of the pause. */
+export function resumeClock(state: LiveState, now: Date): LiveState {
+  if (!state.paused_at || !state.period_started_at) return state;
   const started = Date.parse(state.period_started_at);
-  if (Number.isNaN(started)) return state;
-  return { ...state, period_started_at: new Date(started - minutes * 60000).toISOString() };
+  const pausedFor = now.getTime() - Date.parse(state.paused_at);
+  if (Number.isNaN(started) || Number.isNaN(pausedFor)) return state;
+  return { ...state, paused_at: null, period_started_at: new Date(started + Math.max(0, pausedFor)).toISOString() };
+}
+
+/** The extra time announced for the half being played (0 when none). */
+export const addedTimeOf = (state: Pick<LiveState, "period" | "added_minutes">): number => (state.period ? state.added_minutes[state.period] ?? 0 : 0);
+
+/** Announces extra time for the half being played, like the fourth official's board. 0 clears it. */
+export function setAddedTime(state: LiveState, minutes: number): LiveState {
+  if (state.status !== "live" || !state.period) return state;
+  return { ...state, added_minutes: { ...state.added_minutes, [state.period]: minutes } };
 }
 
 export function newEventId(): string {
@@ -297,9 +321,9 @@ export function removeEvent(state: LiveState, id: string): LiveState {
 /* ------------------------------------------------------------- football undo */
 
 /** The part of a match that is about time: Undo puts this back without touching goals or cards. */
-export type ClockState = Pick<LiveState, "status" | "period" | "period_started_at">;
+export type ClockState = Pick<LiveState, "status" | "period" | "period_started_at" | "paused_at" | "added_minutes">;
 
-export const clockOf = ({ status, period, period_started_at }: LiveState): ClockState => ({ status, period, period_started_at });
+export const clockOf = ({ status, period, period_started_at, paused_at, added_minutes }: LiveState): ClockState => ({ status, period, period_started_at, paused_at, added_minutes });
 
 /** One thing the scorer did, newest last: a change to the clock, or a goal or card. */
 export type UndoEntry = { kind: "clock"; label: string; clock: ClockState } | { kind: "event"; eventId: string };
@@ -361,7 +385,7 @@ export interface Match extends Fixture, LiveState {
 /** A fixture with whatever the database says about it (nothing yet = upcoming, 0-0). */
 export function buildMatch(fixture: Fixture, row?: LiveRow | null): Match {
   const state: LiveState = row
-    ? { status: row.status, period: row.period, period_started_at: row.period_started_at, events: row.events, points: row.points }
+    ? { status: row.status, period: row.period, period_started_at: row.period_started_at, paused_at: row.paused_at, added_minutes: row.added_minutes, events: row.events, points: row.points }
     : emptyState();
   const volleyball = fixture.sport === "volleyball" ? volleyballScore(state.points, setRules(fixture)) : null;
   // A volleyball match is over as soon as a team has won enough sets, whatever the stored status says.
@@ -492,7 +516,8 @@ export function statusLabel(m: Match, now: Date): string {
   if (m.sport === "football") {
     if (m.status === "break") return "Half time";
     if (m.status === "finished") return "Full time";
-    return matchClock(m, now)?.text ?? "1st half";
+    const clock = matchClock(m, now);
+    return clock ? `${clock.text}${clock.paused ? " · Paused" : ""}` : "1st half";
   }
   if (m.status === "finished") return "Finished";
   return `Set ${m.volleyball?.sets.length ?? 1}`;
@@ -570,6 +595,29 @@ function normalizeEvent(raw: unknown): MatchEvent[] {
 }
 
 /** The events column, whether it arrives as a list or as JSON text. */
+/*
+ * A pause and extra time are saved as one note at the end of the events list, so they need no new database
+ * columns. It is taken out again on reading: everywhere else, "events" means goals and cards only.
+ */
+const CLOCK_NOTE = "clock";
+
+/** The events list to save, with the clock note when there is anything to say. */
+export function storedEvents(state: LiveState): unknown[] {
+  const { paused_at, added_minutes } = state;
+  const hasAdded = Object.values(added_minutes).some(Boolean);
+  return paused_at || hasAdded ? [...state.events, { kind: CLOCK_NOTE, paused_at, added_minutes }] : state.events;
+}
+
+function clockNote(events: unknown[]): Pick<LiveState, "paused_at" | "added_minutes"> {
+  const note = events.find((e) => (e as { kind?: unknown } | null)?.kind === CLOCK_NOTE) as { paused_at?: unknown; added_minutes?: Record<string, unknown> } | undefined;
+  const added_minutes: LiveState["added_minutes"] = {};
+  for (const period of ["1H", "2H"] as Period[]) {
+    const value = note?.added_minutes?.[period];
+    if (typeof value === "number" && Number.isFinite(value) && value > 0) added_minutes[period] = Math.min(30, Math.round(value));
+  }
+  return { paused_at: typeof note?.paused_at === "string" ? note.paused_at : null, added_minutes };
+}
+
 function eventsOf(raw: unknown): unknown[] {
   let value = raw;
   if (typeof value === "string") {
@@ -587,12 +635,14 @@ export function normalizeRow(raw: unknown): LiveRow | null {
   if (!raw || typeof raw !== "object") return null;
   const r = raw as Record<string, unknown>;
   if (typeof r.id !== "string" || !r.id) return null;
+  const events = eventsOf(r.events);
   return {
     id: r.id,
     status: STATUSES.includes(r.status as MatchStatus) ? (r.status as MatchStatus) : "upcoming",
     period: r.period === "1H" || r.period === "2H" ? r.period : null,
     period_started_at: typeof r.period_started_at === "string" ? r.period_started_at : null,
-    events: eventsOf(r.events).flatMap(normalizeEvent),
+    ...clockNote(events),
+    events: events.flatMap(normalizeEvent),
     points: typeof r.points === "string" ? r.points.replace(/[^ab]/g, "") : "",
     updated_at: typeof r.updated_at === "string" ? r.updated_at : "",
   };

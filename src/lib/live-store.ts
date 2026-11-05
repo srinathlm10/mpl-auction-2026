@@ -1,6 +1,6 @@
 import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
 import { liveConfigured, supabaseKey, supabaseUrl } from "./live-config";
-import { normalizeRow, type LiveRow, type LiveState } from "./live";
+import { normalizeRow, storedEvents, type LiveRow, type LiveState } from "./live";
 
 /*
  * One shared connection to the live scores for the whole page.
@@ -258,7 +258,7 @@ export function saveMatch(id: string, state: LiveState, login: ScorerLogin): Pro
         p_status: state.status,
         p_period: state.period,
         p_period_started_at: state.period_started_at,
-        p_events: state.events,
+        p_events: storedEvents(state),
         p_points: state.points,
       });
       return error ? error.message : null;
