@@ -43,7 +43,7 @@ import {
   type Squads,
   type UndoEntry,
 } from "@/lib/live";
-import { sportInfo, teamOf } from "@/lib/live-data";
+import { formatKickoff, sportInfo, teamOf } from "@/lib/live-data";
 import { applyLocal, reloadScores, saveMatch, serverNow, type ScorerLogin } from "@/lib/live-store";
 import { accentStyle } from "@/lib/sports";
 import { useLive } from "@/lib/use-live";
@@ -547,7 +547,10 @@ function MatchPanel({ match, squads, login, onBack }: { match: Match; squads: Sq
 
       <section className="card overflow-hidden">
         <div className="flex items-center justify-between gap-2 bg-gradient-to-br from-accent/25 to-transparent px-4 py-2.5">
-          <span className="eyebrow !text-xs">{match.sport === "football" ? "Football" : "Volleyball"} · {match.round}</span>
+          <span className="eyebrow !text-xs">
+            {match.sport === "football" ? "Football" : "Volleyball"} · {match.round}
+            {match.starts_at && <span className="block font-medium normal-case tracking-normal text-muted">{formatKickoff(match.starts_at)}</span>}
+          </span>
           <StatusPill match={match} />
         </div>
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 p-4">
@@ -605,6 +608,7 @@ export function ScoreConsole() {
                       <button type="button" disabled={!teamsKnown(m)} onClick={() => setSelectedId(m.id)} className={cn("card-link flex w-full items-center gap-3 p-3 text-left disabled:pointer-events-none disabled:opacity-60", isLive(m) && "ring-2 ring-red-500/40")} style={accentStyle(sportInfo(sport).config)}>
                         <span className="min-w-0 flex-1">
                           <span className="block text-xs font-semibold uppercase tracking-wide text-muted">{teamsKnown(m) ? m.round : `${m.round}: opens when the league ends`}</span>
+                          {m.starts_at && <span className="block text-xs font-medium text-muted">{formatKickoff(m.starts_at)}</span>}
                           <span className="block truncate font-display text-lg font-bold uppercase leading-tight">{teamOf(m.team_a).name} vs {teamOf(m.team_b).name}</span>
                         </span>
                         {m.status !== "upcoming" && <span className="font-display text-2xl font-extrabold tabular-nums">{m.score.a}–{m.score.b}</span>}
