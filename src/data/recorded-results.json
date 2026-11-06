@@ -13,7 +13,7 @@
       { "id": "m2g4", "kind": "goal", "side": "b", "minute": 9, "added": null, "player": "Gajji Srinath", "assist": "Rohit Kumar Dey" },
       { "id": "m2g5", "kind": "goal", "side": "b", "minute": 15, "added": null, "player": "Gajji Srinath", "assist": "Abhishek Chauhan" },
       { "id": "m2g6", "kind": "goal", "side": "a", "minute": 18, "added": null, "player": "Mohammed Ov", "assist": "Biswaranjan Samasi" },
-      { "id": "m2g7", "kind": "goal", "side": "b", "minute": 24, "added": null, "player": "Abhishek Chauhan", "assist": "" },
+      { "id": "m2g7", "kind": "goal", "side": "b", "minute": 24, "added": null, "player": "Abhishek Chauhan", "assist": "Gajji Srinath" },
       { "id": "m2g8", "kind": "goal", "side": "b", "minute": 26, "added": null, "player": "Gajji Srinath", "assist": "Abhishek Chauhan" },
       { "id": "m2g9", "kind": "goal", "side": "b", "minute": 32, "added": null, "player": "Gajji Srinath", "assist": "Abhishek Chauhan" }
     ]
