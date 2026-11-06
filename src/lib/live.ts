@@ -68,6 +68,8 @@ export interface MatchEvent {
   /** Stoppage-time minutes (2 for "45+2'"). */
   added: number | null;
   player: string;
+  /** Goals only: who set it up ("" when nobody did or it wasn't recorded). */
+  assist: string;
 }
 
 /** What the database keeps for a match (table live_matches). */
@@ -306,11 +308,11 @@ export function newEventId(): string {
   return Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
 }
 
-export function addEvent(state: LiveState, event: Omit<MatchEvent, "id">): LiveState {
-  return { ...state, events: [...state.events, { ...event, id: newEventId() }] };
+export function addEvent(state: LiveState, event: Omit<MatchEvent, "id" | "assist"> & { assist?: string }): LiveState {
+  return { ...state, events: [...state.events, { assist: "", ...event, id: newEventId() }] };
 }
 
-export function editEvent(state: LiveState, id: string, patch: Partial<Pick<MatchEvent, "minute" | "added" | "player">>): LiveState {
+export function editEvent(state: LiveState, id: string, patch: Partial<Pick<MatchEvent, "minute" | "added" | "player" | "assist">>): LiveState {
   return { ...state, events: state.events.map((e) => (e.id === id ? { ...e, ...patch } : e)) };
 }
 
@@ -497,31 +499,37 @@ export function leagueTable(matches: Match[], sport: LiveSport): Standing[] {
   );
 }
 
-export interface TopScorer {
+export interface PlayerTally {
   player: string;
   team: number;
-  goals: number;
-  /** Players level on goals share a rank. */
+  count: number;
+  /** Players level on the count share a rank. */
   rank: number;
 }
 
-/** The Golden Boot race: goals by player across every football match, the final included. Own goals and goals with no scorer named don't count. */
-export function topScorers(matches: Match[]): TopScorer[] {
-  const tally = new Map<string, TopScorer>();
+/** Counts a name on every football goal, across all matches, the final included. Own goals are not goals here. */
+function tallyGoals(matches: Match[], nameOf: (goal: MatchEvent) => string): PlayerTally[] {
+  const tally = new Map<string, PlayerTally>();
   for (const m of matches) {
     if (m.sport !== "football") continue;
     for (const e of m.events) {
-      if (e.kind !== "goal" || !e.player) continue;
+      const player = e.kind === "goal" ? nameOf(e) : "";
+      if (!player) continue;
       const team = e.side === "a" ? m.team_a : m.team_b;
-      const key = `${team}|${e.player}`;
-      const row = tally.get(key) ?? { player: e.player, team, goals: 0, rank: 0 };
-      row.goals += 1;
+      const key = `${team}|${player}`;
+      const row = tally.get(key) ?? { player, team, count: 0, rank: 0 };
+      row.count += 1;
       tally.set(key, row);
     }
   }
-  const sorted = [...tally.values()].sort((x, y) => y.goals - x.goals || x.player.localeCompare(y.player));
-  return sorted.map((s) => ({ ...s, rank: sorted.findIndex((o) => o.goals === s.goals) + 1 }));
+  const sorted = [...tally.values()].sort((x, y) => y.count - x.count || x.player.localeCompare(y.player));
+  return sorted.map((s) => ({ ...s, rank: sorted.findIndex((o) => o.count === s.count) + 1 }));
 }
+
+/** The Golden Boot race. Goals with no scorer named don't count. */
+export const topScorers = (matches: Match[]) => tallyGoals(matches, (e) => e.player);
+
+export const topAssists = (matches: Match[]) => tallyGoals(matches, (e) => e.assist);
 
 /** The two teams in a sport's final, once every league match has finished. */
 function finalists(matches: Match[], sport: LiveSport): [number, number] | null {
@@ -616,8 +624,9 @@ function normalizeEvent(raw: unknown): MatchEvent[] {
   const minute = typeof e.minute === "number" && Number.isFinite(e.minute) ? Math.min(200, Math.max(0, Math.round(e.minute))) : null;
   const added = minute !== null && typeof e.added === "number" && Number.isFinite(e.added) && e.added > 0 ? Math.min(30, Math.round(e.added)) : null;
   const player = typeof e.player === "string" ? e.player.trim().slice(0, 60) : "";
+  const assist = e.kind === "goal" && typeof e.assist === "string" ? e.assist.trim().slice(0, 60) : "";
   const id = typeof e.id === "string" && e.id ? e.id.slice(0, 24) : newEventId();
-  return [{ id, kind: e.kind as EventKind, side: e.side, minute, added, player }];
+  return [{ id, kind: e.kind as EventKind, side: e.side, minute, added, player, assist }];
 }
 
 /** The events column, whether it arrives as a list or as JSON text. */

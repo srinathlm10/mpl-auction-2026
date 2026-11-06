@@ -125,7 +125,7 @@ const KIND_TITLE: Record<EventKind, (team: string) => string> = {
 };
 const KIND_ICON: Record<EventKind, string> = { goal: "⚽", own_goal: "⚽", yellow: "🟨", red: "🟥" };
 
-/** A sheet to choose the player (from the right team) and the minute, then record the event. */
+/** A sheet to choose the player (from the right team) and the minute, then, for a goal, who assisted. */
 function PlayerPicker({
   kind,
   teamId,
@@ -141,12 +141,14 @@ function PlayerPicker({
   forTeamName: string;
   names: string[];
   initialMinute: string;
-  onPick: (player: string, minute: MatchMinute) => void;
+  onPick: (player: string, minute: MatchMinute, assist: string) => void;
   onCancel: () => void;
 }) {
   const [minuteText, setMinuteText] = useState(initialMinute);
   const [filter, setFilter] = useState("");
   const [error, setError] = useState<string | null>(null);
+  /** Set once a goal's scorer is chosen: the sheet then asks who assisted. */
+  const [scorer, setScorer] = useState<{ player: string; minute: MatchMinute } | null>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onCancel();
@@ -154,30 +156,38 @@ function PlayerPicker({
     return () => window.removeEventListener("keydown", onKey);
   }, [onCancel]);
 
-  const shown = names.filter((n) => n.toLowerCase().includes(filter.trim().toLowerCase()));
+  const shown = names.filter((n) => n !== scorer?.player && n.toLowerCase().includes(filter.trim().toLowerCase()));
 
   function choose(player: string) {
+    if (scorer) return onPick(scorer.player, scorer.minute, player);
     const minute = parseMinute(minuteText);
     if (!minute) {
       setError("The minute should look like 34 or 45+2.");
       return;
     }
-    onPick(player, minute);
+    if (kind === "goal" && player) {
+      setScorer({ player, minute });
+      setFilter("");
+      return;
+    }
+    onPick(player, minute, "");
   }
+
+  const title = scorer ? `Who assisted ${scorer.player}?` : KIND_TITLE[kind](forTeamName);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-4" onClick={onCancel}>
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={KIND_TITLE[kind](forTeamName)}
+        aria-label={title}
         onClick={(e) => e.stopPropagation()}
         className="card flex max-h-[92dvh] w-full max-w-lg flex-col overflow-hidden !rounded-b-none sm:!rounded-2xl"
       >
         <div className="flex items-center gap-3 border-b border-border p-4">
           <span aria-hidden className="text-3xl">{KIND_ICON[kind]}</span>
           <div className="min-w-0 flex-1">
-            <h2 className="font-display text-xl font-bold uppercase leading-tight">{KIND_TITLE[kind](forTeamName)}</h2>
+            <h2 className="font-display text-xl font-bold uppercase leading-tight">{title}</h2>
             <p className="text-xs text-muted">
               Players of {teamOf(teamId).name}
             </p>
@@ -185,18 +195,20 @@ function PlayerPicker({
           <TeamLogo teamId={teamId} size="sm" />
         </div>
 
-        <div className="flex items-end gap-3 border-b border-border p-4">
-          <div className="w-28 shrink-0">
-            <label className="label" htmlFor="picker-minute">Minute</label>
-            <input id="picker-minute" className="input" inputMode="text" placeholder="e.g. 34" value={minuteText} onChange={(e) => { setMinuteText(e.target.value.slice(0, 7)); setError(null); }} />
-          </div>
-          {names.length > 10 && (
-            <div className="min-w-0 flex-1">
-              <label className="label" htmlFor="picker-search">Find a player</label>
-              <input id="picker-search" className="input" placeholder="Type a name" value={filter} onChange={(e) => setFilter(e.target.value)} />
+        {!scorer && (
+          <div className="flex items-end gap-3 border-b border-border p-4">
+            <div className="w-28 shrink-0">
+              <label className="label" htmlFor="picker-minute">Minute</label>
+              <input id="picker-minute" className="input" inputMode="text" placeholder="e.g. 34" value={minuteText} onChange={(e) => { setMinuteText(e.target.value.slice(0, 7)); setError(null); }} />
             </div>
-          )}
-        </div>
+            {names.length > 10 && (
+              <div className="min-w-0 flex-1">
+                <label className="label" htmlFor="picker-search">Find a player</label>
+                <input id="picker-search" className="input" placeholder="Type a name" value={filter} onChange={(e) => setFilter(e.target.value)} />
+              </div>
+            )}
+          </div>
+        )}
         {error && <p role="alert" className="px-4 pt-3 text-sm font-semibold text-red-600 dark:text-red-400">{error}</p>}
 
         <div className="grid min-h-0 flex-1 grid-cols-2 gap-2 overflow-y-auto p-4">
@@ -209,7 +221,7 @@ function PlayerPicker({
         </div>
 
         <div className="flex gap-2 border-t border-border p-4">
-          <button type="button" className="btn-primary flex-1" onClick={() => choose("")}>Unknown player</button>
+          <button type="button" className="btn-primary flex-1" onClick={() => choose("")}>{scorer ? "No assist" : "Unknown player"}</button>
           <button type="button" className="btn-outline" onClick={onCancel}>Cancel</button>
         </div>
       </div>
@@ -225,6 +237,7 @@ function EventRow({ match, event, squads, onChange }: { match: Match; event: Mat
   const state = stateOf(match);
   const [editing, setEditing] = useState(false);
   const [player, setPlayer] = useState(event.player);
+  const [assist, setAssist] = useState(event.assist);
   const [minute, setMinute] = useState(minuteBox({ minute: event.minute, added: event.added }));
   const [error, setError] = useState<string | null>(null);
 
@@ -236,7 +249,7 @@ function EventRow({ match, event, squads, onChange }: { match: Match; event: Mat
   function save() {
     const parsed = parseMinute(minute);
     if (!parsed) return setError("The minute should look like 34 or 45+2.");
-    onChange(editEvent(state, event.id, { player, minute: parsed.minute, added: parsed.added }));
+    onChange(editEvent(state, event.id, { player, assist: assist === player ? "" : assist, minute: parsed.minute, added: parsed.added }));
     setEditing(false);
   }
 
@@ -254,6 +267,15 @@ function EventRow({ match, event, squads, onChange }: { match: Match; event: Mat
           </select>
           <input className="input !w-24 shrink-0" placeholder="Minute" value={minute} onChange={(e) => { setMinute(e.target.value.slice(0, 7)); setError(null); }} aria-label="Minute" />
         </div>
+        {event.kind === "goal" && (
+          <select className="input" value={assist} onChange={(e) => setAssist(e.target.value)} aria-label="Assist">
+            <option value="">No assist</option>
+            {names.filter((n) => n !== player).map((n) => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+            {assist && !names.includes(assist) && <option value={assist}>{assist}</option>}
+          </select>
+        )}
         {error && <p role="alert" className="text-sm font-semibold text-red-600 dark:text-red-400">{error}</p>}
         <div className="flex gap-2">
           <button type="button" className="btn-primary flex-1" onClick={save}>Save</button>
@@ -269,9 +291,9 @@ function EventRow({ match, event, squads, onChange }: { match: Match; event: Mat
       <span aria-hidden className="text-xl">{KIND_ICON[event.kind]}</span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold">{event.player || EVENT_NAME[event.kind]}</span>
-        <span className="block truncate text-xs text-muted">{event.player ? `${EVENT_NAME[event.kind]} · ` : ""}{creditedTeam}</span>
+        <span className="block truncate text-xs text-muted">{event.assist ? `Assist: ${event.assist}` : `${event.player ? `${EVENT_NAME[event.kind]} · ` : ""}${creditedTeam}`}</span>
       </span>
-      <button type="button" className="icon-btn !h-10 !w-10" aria-label="Edit player and minute" onClick={() => setEditing(true)}>✎</button>
+      <button type="button" className="icon-btn !h-10 !w-10" aria-label="Edit player, assist and minute" onClick={() => setEditing(true)}>✎</button>
       <ConfirmButton label="✕" confirmLabel="Delete?" className="!min-h-[40px] !px-3" onConfirm={() => onChange(removeEvent(state, event.id))} />
     </li>
   );
@@ -304,9 +326,9 @@ function FootballPanel({
     setPicker({ kind, side, minute: minuteBox(guessMinute(state, serverNow(), half)) });
   }
 
-  function record(player: string, minute: MatchMinute) {
+  function record(player: string, minute: MatchMinute, assist: string) {
     if (!picker) return;
-    const next = addEvent(state, { kind: picker.kind, side: picker.side, minute: minute.minute, added: minute.added, player });
+    const next = addEvent(state, { kind: picker.kind, side: picker.side, minute: minute.minute, added: minute.added, player, assist });
     const eventId = next.events[next.events.length - 1].id;
     setHistory((h) => [...h, { kind: "event" as const, eventId }].slice(-MAX_UNDO));
     commit(next);
@@ -408,7 +430,7 @@ function FootballPanel({
           ))}
         </div>
         <p className="text-xs text-muted">
-          Tap <b>Goal</b> the moment it happens: the minute is taken from the clock, then pick the scorer from that team. “OG” is an own goal: the goal counts for the team you tap it under.
+          Tap <b>Goal</b> the moment it happens: the minute is taken from the clock, then pick the scorer and who assisted. “OG” is an own goal: the goal counts for the team you tap it under.
         </p>
       </div>
 

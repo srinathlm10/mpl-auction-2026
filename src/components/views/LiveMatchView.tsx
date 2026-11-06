@@ -51,6 +51,7 @@ function EventText({ event, align }: { event: MatchEvent; align: "left" | "right
       <span className="min-w-0">
         <span className="block break-words font-semibold leading-tight">{event.player || EVENT_NAME[event.kind]}</span>
         {event.player && <span className="block truncate text-xs text-muted">{EVENT_NAME[event.kind]}</span>}
+        {event.assist && <span className="block break-words text-xs text-muted">Assist: {event.assist}</span>}
       </span>
     </div>
   );
