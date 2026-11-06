@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { LeagueTable } from "@/components/live/LeagueTable";
 import { ScoreTable } from "@/components/live/ScoreTable";
+import { Standings } from "@/components/live/Standings";
 import { StatCard } from "@/components/ui/StatCard";
 import { LIVE_SPORTS } from "@/lib/live";
 import { useAuctionData } from "@/lib/use-auction";
@@ -27,7 +27,7 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-6">
         {LIVE_SPORTS.map((sport) => (
-          <LeagueTable key={sport} matches={matches} sport={sport} />
+          <Standings key={sport} matches={matches} sport={sport} />
         ))}
       </div>
 

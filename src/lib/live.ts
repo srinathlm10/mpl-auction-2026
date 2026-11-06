@@ -497,6 +497,32 @@ export function leagueTable(matches: Match[], sport: LiveSport): Standing[] {
   );
 }
 
+export interface TopScorer {
+  player: string;
+  team: number;
+  goals: number;
+  /** Players level on goals share a rank. */
+  rank: number;
+}
+
+/** The Golden Boot race: goals by player across every football match, the final included. Own goals and goals with no scorer named don't count. */
+export function topScorers(matches: Match[]): TopScorer[] {
+  const tally = new Map<string, TopScorer>();
+  for (const m of matches) {
+    if (m.sport !== "football") continue;
+    for (const e of m.events) {
+      if (e.kind !== "goal" || !e.player) continue;
+      const team = e.side === "a" ? m.team_a : m.team_b;
+      const key = `${team}|${e.player}`;
+      const row = tally.get(key) ?? { player: e.player, team, goals: 0, rank: 0 };
+      row.goals += 1;
+      tally.set(key, row);
+    }
+  }
+  const sorted = [...tally.values()].sort((x, y) => y.goals - x.goals || x.player.localeCompare(y.player));
+  return sorted.map((s) => ({ ...s, rank: sorted.findIndex((o) => o.goals === s.goals) + 1 }));
+}
+
 /** The two teams in a sport's final, once every league match has finished. */
 function finalists(matches: Match[], sport: LiveSport): [number, number] | null {
   const league = leagueMatches(matches, sport);

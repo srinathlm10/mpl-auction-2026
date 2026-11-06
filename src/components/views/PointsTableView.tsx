@@ -1,8 +1,8 @@
 "use client";
 
-import { LeagueTable } from "@/components/live/LeagueTable";
 import { ConnectionNote } from "@/components/live/parts";
 import { ScoreTable } from "@/components/live/ScoreTable";
+import { Standings } from "@/components/live/Standings";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LIVE_SPORTS } from "@/lib/live";
 import { useLive } from "@/lib/use-live";
@@ -25,7 +25,7 @@ export function PointsTableView() {
       <div className="space-y-10 sm:space-y-12">
         {LIVE_SPORTS.map((sport) => (
           <div key={sport} className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-6">
-            <LeagueTable matches={matches} sport={sport} />
+            <Standings matches={matches} sport={sport} />
             <ScoreTable matches={matches} sport={sport} />
           </div>
         ))}

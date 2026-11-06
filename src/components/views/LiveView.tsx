@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { GoalBanner, useGoalAlert } from "@/components/live/GoalAlerts";
-import { LeagueTable } from "@/components/live/LeagueTable";
 import { ConnectionNote, MatchCard, SoundToggle } from "@/components/live/parts";
+import { Standings } from "@/components/live/Standings";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { cn } from "@/lib/format";
 import { isLive, LIVE_SPORTS, type LiveSport, type Match } from "@/lib/live";
@@ -88,7 +88,7 @@ export function LiveView() {
         <Section title="Live now" matches={liveNow} />
         <div className="grid gap-8 lg:grid-cols-2">
           {LIVE_SPORTS.filter((sport) => filter === "all" || filter === sport).map((sport) => (
-            <LeagueTable key={sport} matches={matches} sport={sport} />
+            <Standings key={sport} matches={matches} sport={sport} />
           ))}
         </div>
         <Section title="Up next" hint="In order of play." matches={upcoming} />

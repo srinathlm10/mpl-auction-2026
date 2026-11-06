@@ -138,6 +138,8 @@ Live scores need a free [Supabase](https://supabase.com) project, because every 
 
 The matches (which teams play, in what order, optional start time) are in `src/data/fixtures.json`: by default every team plays every other team once in each sport. Add `"starts_at": "2026-11-14T16:00:00+05:30"` to show a start time.
 
+The **Golden Boot** table (Live Scores, Points Table and the admin Dashboard) counts each player's goals across all football matches, the final included, the moment they are recorded. Own goals and goals saved as "Unknown player" don't count.
+
 Football has a league and a final. Every team plays the other three, the table on Live Scores updates when each match ends (3 points for a win, 1 for a draw, then goal difference, goals scored and head-to-head), and the top 2 go straight to the final (`football-7`). The final's teams fill in by themselves once all six league matches are finished, and the scorer can open it from then on. To choose the finalists by hand, put real team ids in place of `-1` and `-2` in `fixtures.json`. The points are in `RULES.football` in `src/lib/live.ts`.
 
 Volleyball works the same way: every team plays the other three, and each league match is best of 3 sets to 15 (win a set by 2). A win earns 3 points, then set difference, point difference, points scored and head-to-head decide ties. The top 2 play the final (`volleyball-7`), best of 3 sets to 25. The rules are in `RULES.volleyball` in `src/lib/live.ts`.
