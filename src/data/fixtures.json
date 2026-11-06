@@ -60,16 +60,16 @@
     "id": "football-1",
     "sport": "football",
     "round": "Match 1",
-    "team_a": 9,
-    "team_b": 10,
+    "team_a": 11,
+    "team_b": 12,
     "starts_at": "2026-11-06T17:00:00+05:30"
   },
   {
     "id": "football-2",
     "sport": "football",
     "round": "Match 2",
-    "team_a": 11,
-    "team_b": 12,
+    "team_a": 9,
+    "team_b": 10,
     "starts_at": "2026-11-06T18:00:00+05:30"
   },
   {
